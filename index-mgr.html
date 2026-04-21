@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>社内ダッシュボード（管理職）</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f7fa;
+    --surface: #ffffff;
+    --surface2: #eef2f7;
+    --border: #dde3ed;
+    --accent: #0ea88a;
+    --accent2: #2563eb;
+    --text: #0f172a;
+    --text-muted: #64748b;
+    --text-dim: #334155;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(14,168,138,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(14,168,138,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+    position: relative; z-index: 1;
+  }
+
+  /* ===== HEADER ===== */
+  header {
+    background: #0f172a;
+    border-bottom: 1px solid #1e293b;
+    padding: 0;
+  }
+
+  .header-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    max-width: 1100px; margin: 0 auto;
+  }
+
+  .logo { display: flex; align-items: center; gap: 14px; }
+
+  .logo-mark {
+    width: 44px; height: 44px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: #fff;
+    letter-spacing: 0.02em;
+  }
+
+  .logo-text { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
+  .logo-sub { font-size: 11px; color: #475569; font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  .header-right {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px; color: #475569;
+  }
+
+  /* ===== HERO ===== */
+  .hero {
+    padding: 52px 0 40px;
+    text-align: center;
+  }
+
+  .hero-title {
+    font-size: 28px; font-weight: 700;
+    color: var(--text); margin-bottom: 10px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-sub {
+    font-size: 14px; color: var(--text-muted); line-height: 1.7;
+  }
+
+  /* ===== SECTION ===== */
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+
+  /* ===== CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 52px;
+  }
+
+  .db-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    text-decoration: none;
+    color: inherit;
+    display: flex; flex-direction: column;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    position: relative; overflow: hidden;
+  }
+
+  .db-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--card-color1), var(--card-color2));
+  }
+
+  .db-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    border-color: var(--card-color1);
+  }
+
+  .card-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700;
+    color: #fff; margin-bottom: 18px;
+    background: linear-gradient(135deg, var(--card-color1), var(--card-color2));
+  }
+
+  .card-name {
+    font-size: 15px; font-weight: 600; margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .card-desc {
+    font-size: 12px; color: var(--text-muted);
+    line-height: 1.7; flex: 1; margin-bottom: 20px;
+  }
+
+  .card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 16px; border-top: 1px solid var(--border);
+  }
+
+  .card-tag {
+    font-size: 10px; font-family: 'DM Mono', monospace;
+    padding: 3px 9px; border-radius: 20px;
+    background: var(--surface2); color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .card-arrow {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--surface2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+  }
+
+  .db-card:hover .card-arrow {
+    background: var(--card-color1);
+    border-color: var(--card-color1);
+  }
+
+  .db-card:hover .card-arrow svg { stroke: #fff; }
+
+  /* ===== ADD CARD ===== */
+  .db-card.add-card {
+    border-style: dashed;
+    border-color: #cbd5e1;
+    background: transparent;
+    box-shadow: none;
+    align-items: center; justify-content: center;
+    text-align: center;
+    cursor: default;
+    min-height: 200px;
+  }
+
+  .db-card.add-card::before { display: none; }
+  .db-card.add-card:hover {
+    transform: none; box-shadow: none; border-color: #94a3b8;
+  }
+
+  .add-icon {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--surface2); border: 1px dashed #94a3b8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; color: #94a3b8;
+    margin: 0 auto 12px;
+  }
+
+  .add-text { font-size: 13px; color: var(--text-muted); }
+  .add-hint { font-size: 11px; color: #94a3b8; margin-top: 4px; font-family: 'DM Mono', monospace; }
+
+  /* ===== HOW TO ADD ===== */
+  .howto {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 32px;
+    margin-bottom: 52px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  }
+
+  .howto-title {
+    font-size: 13px; font-weight: 600; margin-bottom: 20px;
+    color: var(--text-dim);
+  }
+
+  .steps {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .step { display: flex; gap: 14px; }
+
+  .step-num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+
+  .step-text { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
+  .step-text strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 2px; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 20px 0;
+    text-align: center;
+    font-size: 11px; color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  @media (max-width: 800px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .steps { grid-template-columns: 1fr; }
+    .hero-title { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-mark">DB</div>
+      <div>
+        <div class="logo-text">社内ダッシュボード</div>
+        <div class="logo-sub">INTERNAL ANALYTICS PORTAL</div>
+      </div>
+    </div>
+    <div class="header-right"><span style="background:#0ea88a22;color:#0ea88a;border:1px solid #0ea88a44;padding:4px 12px;border-radius:20px;font-size:11px;margin-right:12px;">管理職</span><span id="lastUpdated"></span></div>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <div class="hero">
+      <div class="hero-title">ダッシュボード一覧</div>
+      <div class="hero-sub">各ダッシュボードをクリックして開きます。<br>毎月のExcelアップロードでデータを更新できます。</div>
+    </div>
+
+    <div class="section-header">
+      <span class="section-title">ダッシュボード</span>
+      <div class="section-line"></div>
+    </div>
+
+    <!-- =============================================
+         ダッシュボードカード一覧
+         新しいDBを追加するときはここにコピペ
+    ============================================= -->
+    <div class="cards-grid">
+
+      <!-- 粗利分析 -->
+      <a href="gross-profit.html" class="db-card" style="--card-color1:#0ea88a;--card-color2:#2563eb;">
+        <div class="card-icon">粗利</div>
+        <div class="card-name">粗利分析ダッシュボード</div>
+        <div class="card-desc">部門別（3PL・SaaS・受託開発・コンサルティング）の粗利を前年同期比で分析。大家さん・佐々木さんコミッション計算つき。</div>
+        <div class="card-footer">
+          <span class="card-tag">月次更新</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- 3PL損益 -->
+      <a href="3pl-pnl.html" class="db-card" style="--card-color1:#2563eb;--card-color2:#7c3aed;">
+        <div class="card-icon">3PL</div>
+        <div class="card-name">3PL損益ダッシュボード</div>
+        <div class="card-desc">取引先別（白銅・ムトウユニパック・吉川紙商事）の月次P&L。ルート別内訳と粗利率推移を可視化。</div>
+        <div class="card-footer">
+          <span class="card-tag">月次更新</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- 白銅定例 -->
+      <a href="hakudo.html" class="db-card" style="--card-color1:#d97706;--card-color2:#dc2626;">
+        <div class="card-icon">白銅</div>
+        <div class="card-name">白銅 定例ダッシュボード</div>
+        <div class="card-desc">白銅向け定例報告用ダッシュボード。月次スライド形式でKPI・グラフ・コメントを管理。</div>
+        <div class="card-footer">
+          <span class="card-tag">月次更新</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- ↓ 新しいDBを追加する時はここからコピペ ↓
+
+      <a href="新ファイル名.html" class="db-card" style="--card-color1:#059669;--card-color2:#0284c7;">
+        <div class="card-icon">略称</div>
+        <div class="card-name">ダッシュボード名</div>
+        <div class="card-desc">説明文をここに書く。</div>
+        <div class="card-footer">
+          <span class="card-tag">月次更新</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      ↑ ここまでコピペ ↑ -->
+
+      <!-- 追加枠（見た目用） -->
+      <div class="db-card add-card">
+        <div class="add-icon">＋</div>
+        <div class="add-text">新しいダッシュボードを追加</div>
+        <div class="add-hint">index-mgr.html を編集してカード追加</div>
+      </div>
+
+    </div>
+    <!-- ============================================= -->
+
+    <!-- 追加方法ガイド -->
+    <div class="section-header">
+      <span class="section-title">DBを追加するには</span>
+      <div class="section-line"></div>
+    </div>
+
+    <div class="howto">
+      <div class="howto-title">新しいダッシュボードの追加手順</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>HTMLファイルをアップ</strong>
+            GitHubの「Add file → Upload files」から新しいダッシュボードのHTMLをアップロード
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>index.htmlを編集</strong>
+            GitHubでこのファイルを開き鉛筆アイコンをクリック。コメントの箇所にカードをコピペして追加
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>Commit して完了</strong>
+            「Commit changes」を押すだけ。数分でポータルに反映される
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    INTERNAL ANALYTICS PORTAL — GitHub Pages
+  </div>
+</footer>
+
+<script>
+  document.getElementById('lastUpdated').textContent =
+    new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+</script>
+</body>
+</html>
