@@ -291,7 +291,7 @@
          ダッシュボードカード一覧
          新しいDBを追加するときはここにコピペ
     ============================================= -->
-    <div class="cards-grid" style="grid-template-columns: repeat(2, 1fr); max-width: 720px;">
+    <div class="cards-grid">
 
       <!-- 白銅定例 -->
       <a href="hakudo.html" class="db-card" style="--card-color1:#d97706;--card-color2:#dc2626;">
@@ -300,6 +300,32 @@
         <div class="card-desc">白銅向け定例報告用ダッシュボード。月次スライド形式でKPI・グラフ・コメントを管理。</div>
         <div class="card-footer">
           <span class="card-tag">月次更新</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- 粗利分析（Mgr用） -->
+      <a href="gross-profit.html" class="db-card" style="--card-color1:#0ea88a;--card-color2:#2563eb;">
+        <div class="card-icon">粗利</div>
+        <div class="card-name">粗利分析ダッシュボード 🔒</div>
+        <div class="card-desc">部門別（3PL・SaaS・受託開発・コンサルティング）の粗利を前年同期比で分析。大家さん・佐々木さんコミッション計算つき。</div>
+        <div class="card-footer">
+          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
+          <span class="card-arrow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </span>
+        </div>
+      </a>
+
+      <!-- 3PL損益（Mgr用） -->
+      <a href="3pl-pnl.html" class="db-card" style="--card-color1:#2563eb;--card-color2:#7c3aed;">
+        <div class="card-icon">3PL</div>
+        <div class="card-name">3PL損益ダッシュボード 🔒</div>
+        <div class="card-desc">取引先別（白銅・ムトウユニパック・吉川紙商事）の月次P&L。ルート別内訳と粗利率推移を可視化。</div>
+        <div class="card-footer">
+          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
           <span class="card-arrow">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </span>
