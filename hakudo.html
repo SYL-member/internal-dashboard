@@ -566,6 +566,16 @@ function handleExcelUpload(input) {
   reader.onload = e => {
     try {
       const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      const sheetNames = wb.SheetNames;
+
+      // ファイルタイプ判定
+      if (sheetNames.some(s => s.trim() === '請求書転記用')) {
+        handleSourceExcel(wb); return;
+      }
+      if (!sheetNames.includes('物量')) {
+        alert('対応するシートが見つかりません。\n・請求書Excelまたは\n・テンプレートExcel（「物量」シート）をアップしてください。');
+        input.value = ''; return;
+      }
 
       // 物量シート（必須）
       const ws1 = wb.Sheets['物量'];
@@ -651,6 +661,65 @@ function handleExcelUpload(input) {
     input.value = '';
   };
   reader.readAsArrayBuffer(file);
+}
+
+// ===== 請求書Excel直接読込 =====
+function handleSourceExcel(wb) {
+  const wsName = wb.SheetNames.find(s => s.trim() === '請求書転記用');
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wsName], {header:1, defval:null});
+
+  // 稼働日数・年月
+  const workDays = +rows[0][0] || 21;
+  const year  = String(rows[1][0] || '').trim();
+  const month = String(rows[1][1] || '').trim().padStart(2, '0');
+  const monthKey = `${year}-${month}`;
+  if (!/^\d{4}-\d{2}$/.test(monthKey)) {
+    alert(`年月の読み取りに失敗しました（A2=${year}, B2=${month}）`); return;
+  }
+
+  // "clean"ピボット（行ラベル|合計/801|合計/002|...）の総計行を探す
+  let totalRow = null;
+  for (let i = 0; i < rows.length - 1; i++) {
+    const r = rows[i];
+    if (r[0] === '行ラベル' &&
+        String(r[1]||'').startsWith('合計 / 801') &&
+        String(r[2]||'').startsWith('合計 / 002')) {
+      const next = rows[i + 1];
+      if (next && (next[0] === 0 || next[0] === null)) { totalRow = next; break; }
+    }
+  }
+  if (!totalRow) { alert('総計行が見つかりません。ファイル形式を確認してください。'); return; }
+
+  const w801 = +totalRow[1]||0, w002 = +totalRow[2]||0, w023 = +totalRow[3]||0;
+  const w035 = +totalRow[4]||0, w041 = +totalRow[5]||0, w042 = +totalRow[6]||0;
+  const w045 = +totalRow[7]||0, w675 = +totalRow[8]||0, w677 = +totalRow[9]||0;
+
+  const totalKg    = Math.round(w801+w002+w023+w035+w041+w042+w045);
+  const tokyoKg    = Math.round(w801+w041+w042);       // 東京便 = 801+041+042
+  const kanagawaKg = Math.round(w002+w023+w035+w045);  // 神奈川便 = 002+023+035+045
+  const perDay     = workDays > 0 ? Math.round(totalKg / workDays) : 0;
+
+  if (!DB[monthKey]) DB[monthKey] = mkEmpty(monthKey);
+  const d = DB[monthKey];
+
+  // 前年値は既存DBを引き継ぐ（このファイルからは取得不可）
+  d.volume.totalKg     = totalKg;
+  d.volume.perDay      = perDay;
+  d.volume.workDays    = workDays;
+  d.volume.tokyoKg     = tokyoKg;
+  d.volume.kanagawaKg  = kanagawaKg;
+
+  // 便別重量（今月分のみ更新・前年は維持）
+  const wmap = {'801':w801,'02':w002,'23':w023,'35':w035,'41':w041,'42':w042,'45':w045,'675':w675,'677':w677};
+  Object.keys(d.volume.routes).forEach(r => { d.volume.routes[r].curr = Math.round(wmap[r]||0); });
+
+  cur = monthKey;
+  initSelect(); kill(); renderAll();
+
+  const t = document.getElementById('toast');
+  t.textContent = `${monthKey} 更新完了｜前年値・Kg単価・事故は✏️で入力してください`;
+  t.classList.add('on');
+  setTimeout(()=>{ t.classList.remove('on'); t.textContent='保存しました'; }, 5000);
 }
 
 // ===== Excelテンプレートダウンロード =====
