@@ -263,9 +263,12 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
   <div class="sbody" style="flex-direction:column">
     <div class="krow" style="grid-template-columns:repeat(3,1fr);flex-shrink:0" id="kpi4"></div>
     <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
-      <div class="ctitle" style="margin-bottom:10px">今月の事故詳細</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="ctitle">今月の事故詳細</div>
+        <button onclick="openAccidentEdit(-1)" style="padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 事故を追加</button>
+      </div>
       <table class="atbl" id="atbl4">
-        <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th></tr></thead>
+        <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th><th></th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -378,8 +381,8 @@ function renderAll() {
   // 事故テーブル
   const tbody = document.querySelector('#atbl4 tbody');
   tbody.innerHTML = a.length === 0
-    ? '<tr><td colspan="6" style="padding:16px;color:#888;font-style:italic">今月の事故はありません</td></tr>'
-    : a.map(x => `<tr>
+    ? '<tr><td colspan="8" style="padding:16px;color:#888;font-style:italic">今月の事故はありません　　<button onclick="openAccidentEdit(-1)" style="padding:3px 10px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 追加</button></td></tr>'
+    : a.map((x,i) => `<tr>
         <td style="white-space:nowrap">${x.date}</td>
         <td style="white-space:nowrap">${x.route}便</td>
         <td style="white-space:nowrap">${x.customer}</td>
@@ -387,6 +390,10 @@ function renderAll() {
         <td>${x.detail}</td>
         <td style="color:#666">${x.action}</td>
         <td>${x.img?`<img src="${x.img}" style="max-width:200px;max-height:150px;border-radius:4px;display:block;cursor:pointer" onclick="openImg('${x.img}')">`:''}</td>
+        <td style="white-space:nowrap">
+          <button onclick="openAccidentEdit(${i})" style="padding:2px 8px;background:#555;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;margin-bottom:3px;display:block">編集</button>
+          <button onclick="deleteAccidentDirect(${i})" style="padding:2px 8px;background:#8b2020;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;display:block">削除</button>
+        </td>
       </tr>`).join('');
 
   // チャート描画
@@ -834,6 +841,64 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'hakudo_' + cur + '.xlsx');
 }
 
+// ===== 事故直接編集 =====
+let _accIdx = -1; // -1=新規, 0以上=編集対象index
+
+function openAccidentEdit(idx) {
+  _accIdx = idx;
+  const a = idx >= 0 ? DB[cur].quality.accidents[idx] : {date:'',route:'',customer:'',type:'誤配達',major:false,detail:'',action:'',img:''};
+  document.getElementById('accModalTtl').textContent = idx >= 0 ? '事故を編集' : '事故を追加';
+  document.getElementById('ac_date').value     = a.date || '';
+  document.getElementById('ac_route').value    = a.route || '';
+  document.getElementById('ac_customer').value = a.customer || '';
+  document.getElementById('ac_type').value     = a.type || '誤配達';
+  document.getElementById('ac_major').value    = a.major ? '1' : '0';
+  document.getElementById('ac_detail').value   = a.detail || '';
+  document.getElementById('ac_action').value   = a.action || '';
+  document.getElementById('ac_imgpv').innerHTML = a.img ? `<img src="${a.img}" style="max-width:100%;max-height:150px;border-radius:4px">` : '';
+  document.getElementById('ac_imgfile').value = '';
+  document.getElementById('ac_imgfile')._b64 = a.img || '';
+  document.getElementById('accOv').style.display = 'block';
+  document.getElementById('accModal').style.display = 'block';
+}
+function closeAccidentEdit() {
+  document.getElementById('accOv').style.display = 'none';
+  document.getElementById('accModal').style.display = 'none';
+}
+function accLoadImg(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    input._b64 = e.target.result;
+    document.getElementById('ac_imgpv').innerHTML = `<img src="${e.target.result}" style="max-width:100%;max-height:150px;border-radius:4px">`;
+  };
+  reader.readAsDataURL(file);
+}
+function saveAccidentEdit() {
+  const imgInput = document.getElementById('ac_imgfile');
+  const acc = {
+    date:     document.getElementById('ac_date').value.trim(),
+    route:    document.getElementById('ac_route').value.trim(),
+    customer: document.getElementById('ac_customer').value.trim(),
+    type:     document.getElementById('ac_type').value,
+    major:    document.getElementById('ac_major').value === '1',
+    detail:   document.getElementById('ac_detail').value.trim(),
+    action:   document.getElementById('ac_action').value.trim(),
+    img:      imgInput._b64 || ''
+  };
+  const accidents = DB[cur].quality.accidents;
+  if (_accIdx >= 0) { accidents[_accIdx] = acc; } else { accidents.push(acc); }
+  closeAccidentEdit(); kill(); renderAll();
+  const t = document.getElementById('toast');
+  t.textContent = '事故データを保存しました'; t.classList.add('on');
+  setTimeout(() => { t.classList.remove('on'); t.textContent = '保存しました'; }, 2000);
+}
+function deleteAccidentDirect(idx) {
+  if (!confirm('この事故を削除しますか？')) return;
+  DB[cur].quality.accidents.splice(idx, 1);
+  kill(); renderAll();
+}
+
 // ===== ヘルプ =====
 function openHelp() {
   document.getElementById('helpOv').style.display = 'flex';
@@ -848,6 +913,44 @@ function closeHelp() {
 initSelect();
 renderAll();
 </script>
+
+<!-- 事故編集モーダル -->
+<div id="accOv" onclick="closeAccidentEdit()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400"></div>
+<div id="accModal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:520px;max-height:90vh;overflow-y:auto;background:#fff;border-radius:8px;z-index:401;box-shadow:0 8px 40px rgba(0,0,0,.3)">
+  <div style="padding:14px 20px;border-bottom:1px solid #e0e0da;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff">
+    <div id="accModalTtl" style="font-size:13px;font-weight:700">事故を追加</div>
+    <button onclick="closeAccidentEdit()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#888;line-height:1">✕</button>
+  </div>
+  <div style="padding:16px 20px">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">日付</label><input id="ac_date" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px"></div>
+      <div><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">便番号</label><input id="ac_route" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px"></div>
+    </div>
+    <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">お客様</label><input id="ac_customer" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">種別</label>
+        <select id="ac_type" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;background:#fafaf8">
+          <option>誤配達</option><option>納品場所間違い</option><option>降し忘れ</option><option>延着</option><option>紛失（重大）</option><option>破損（重大）</option><option>車両事故</option><option>その他</option>
+        </select>
+      </div>
+      <div><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">重大事故</label>
+        <select id="ac_major" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;background:#fafaf8">
+          <option value="0">いいえ</option><option value="1">はい</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">事故詳細</label><textarea id="ac_detail" rows="3" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
+    <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">対応</label><textarea id="ac_action" rows="2" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
+    <div style="margin-bottom:16px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">現場写真（任意）</label>
+      <input type="file" id="ac_imgfile" accept="image/*" onchange="accLoadImg(this)" style="font-size:11px">
+      <div id="ac_imgpv" style="margin-top:6px"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="closeAccidentEdit()" style="flex:0 0 auto;padding:9px 16px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:12px;cursor:pointer">キャンセル</button>
+      <button onclick="saveAccidentEdit()" style="flex:1;padding:9px;background:#8fc31f;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer">保存</button>
+    </div>
+  </div>
+</div>
 
 <div id="imgModal" onclick="closeImg()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out">
   <img id="imgModalSrc" style="max-width:90vw;max-height:90vh;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6)">
