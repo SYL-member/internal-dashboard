@@ -589,6 +589,12 @@
           </svg>
           データ更新
         </button>
+        <button class="upload-btn" onclick="exportHtml()" style="background:#1a6b3a;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          HTMLに保存
+        </button>
       </div>
     </div>
   </div>
@@ -1281,6 +1287,23 @@ dropZone.addEventListener('drop', e => {
 document.getElementById('modalOverlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeModal();
 });
+
+// =============================================
+// EXPORT HTML
+// =============================================
+function exportHtml() {
+  let html = document.documentElement.outerHTML;
+  const startMarker = 'const DEFAULT_DATA = ';
+  const endMarker = '\n\n// =============================================\n// STATE';
+  const start = html.indexOf(startMarker);
+  const end = html.indexOf(endMarker, start);
+  if (start === -1 || end === -1) { alert('保存エラー: データ位置を特定できませんでした'); return; }
+  html = html.slice(0, start) + startMarker + JSON.stringify(currentData) + ';' + html.slice(end);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  a.download = 'gross-profit.html';
+  a.click();
+}
 
 // =============================================
 // INIT
