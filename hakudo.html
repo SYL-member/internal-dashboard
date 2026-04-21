@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <title>白銅 定例ダッシュボード</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;background:#999;display:flex;flex-direction:column;align-items:center;padding:12px 0 40px;min-height:100vh}
@@ -92,6 +93,8 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 .bex{padding:9px 14px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:11px;cursor:pointer}
 .toast{position:fixed;bottom:80px;right:22px;background:#1e1e1c;color:#fff;padding:7px 14px;border-radius:4px;font-size:11px;opacity:0;transition:opacity .3s;z-index:300}
 .toast.on{opacity:1}
+.home-btn{padding:4px 12px;background:#333;color:#aaa;border-radius:3px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap}
+.home-btn:hover{color:#fff;background:#444}
 </style>
 </head>
 <body>
@@ -104,9 +107,13 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
   <button onclick="goS(4)">5. 事故詳細</button>
 </nav>
 <div class="month-sel">
-  <span style="font-size:10px;color:#888">表示月：</span>
+  <a href="index.html" class="home-btn">← ホーム</a>
+  <span style="font-size:10px;color:#888;margin-left:8px">表示月：</span>
   <select id="msel" onchange="switchMonth(this.value)"></select>
   <button onclick="addMonth()">＋ 月を追加</button>
+  <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
+  <button onclick="document.getElementById('xlsxIn').click()" style="background:#2a6496">📊 Excelで更新</button>
+  <button onclick="downloadTemplate()" style="background:#555">📋 テンプレート</button>
   <button onclick="exportHtml()" style="background:#444;margin-left:auto">📥 HTMLに保存</button>
 </div>
 
@@ -288,12 +295,14 @@ function renderAll() {
   document.getElementById('cmt1').textContent = d.comments.s1 || '';
   document.getElementById('cmt3').textContent = d.comments.s3 || '';
 
-  // Kg単価コメント（数値カード）
-  document.getElementById('cmt2').innerHTML = `
-    <div class="kitem"><div class="kyear">24年2月</div><div class="knum">46.7<span style="font-size:13px">円</span></div></div>
-    <div class="kitem"><div class="kyear">25年2月</div><div class="knum">49.4<span style="font-size:13px">円</span></div></div>
-    <div class="kitem"><div class="kyear">26年2月</div><div class="knum cur">50.0<span style="font-size:13px">円</span></div></div>
-    <div class="kitem"><div class="kyear">26年3月</div><div class="knum cur">51.2<span style="font-size:13px">円</span></div></div>`;
+  // Kg単価コメント（数値カード・動的）
+  const mi = parseInt(cur.split('-')[1]) - 1;
+  const kgYears = [{y:'23年',k:TR.kg23},{y:'24年',k:TR.kg24},{y:'25年',k:TR.kg25},{y:'26年',k:TR.kg26}];
+  const kgItems = kgYears.filter(({k})=>k[mi]!=null);
+  const latestY = kgItems.length ? kgItems[kgItems.length-1].y : '';
+  document.getElementById('cmt2').innerHTML = kgItems.map(({y,k})=>
+    `<div class="kitem"><div class="kyear">${y}${mi+1}月</div><div class="knum ${y===latestY?'cur':''}">${k[mi].toFixed(1)}<span style="font-size:13px">円</span></div></div>`
+  ).join('') || '<div style="color:#888;font-size:12px;padding:8px">データなし</div>';
 
   // KPI Slide 0
   const v = d.volume;
@@ -547,6 +556,148 @@ function exportHtml() {
   a.href = URL.createObjectURL(new Blob([u],{type:'text/html;charset=utf-8'}));
   a.download = 'hakudo_dashboard_'+cur.replace('-','')+'.html';
   a.click(); URL.revokeObjectURL(a.href);
+}
+
+// ===== Excelアップロード =====
+function handleExcelUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+
+      // 物量シート（必須）
+      const ws1 = wb.Sheets['物量'];
+      if (!ws1) { alert('「物量」シートが見つかりません'); return; }
+      const kv = {};
+      XLSX.utils.sheet_to_json(ws1, {header:1}).forEach(r => { if (r[0] && r[1] !== undefined) kv[r[0]] = r[1]; });
+      const monthKey = String(kv['年月'] || '');
+      if (!/^\d{4}-\d{2}$/.test(monthKey)) { alert('「物量」シートの「年月」が不正です（例: 2026-04）'); return; }
+      if (!DB[monthKey]) DB[monthKey] = mkEmpty(monthKey);
+      const d = DB[monthKey];
+      d.volume.totalKg     = +kv['東神合計(kg)']      || 0;
+      d.volume.perDay      = +kv['1日あたり(kg)']     || 0;
+      d.volume.workDays    = +kv['稼働日数']           || 21;
+      d.volume.tokyoKg     = +kv['東京便(kg)']        || 0;
+      d.volume.kanagawaKg  = +kv['神奈川便(kg)']      || 0;
+      d.volume.prevTotalKg = +kv['前年 東神合計(kg)'] || 0;
+      d.volume.prevPerDay  = +kv['前年 1日あたり(kg)']|| 0;
+
+      // 便別シート
+      const ws2 = wb.Sheets['便別'];
+      if (ws2) {
+        XLSX.utils.sheet_to_json(ws2, {header:1}).slice(1).forEach(r => {
+          const rn = String(r[0]||'').trim();
+          if (rn && d.volume.routes[rn]) { d.volume.routes[rn].curr = +r[1]||0; d.volume.routes[rn].prev = +r[2]||0; }
+        });
+      }
+
+      // Kg単価シート
+      const ws3 = wb.Sheets['Kg単価'];
+      if (ws3) {
+        XLSX.utils.sheet_to_json(ws3, {header:1}).slice(1).forEach((r, i) => {
+          if (i < 12) {
+            if (r[1] != null) TR.kg23[i] = +r[1] || null;
+            if (r[2] != null) TR.kg24[i] = +r[2] || null;
+            if (r[3] != null) TR.kg25[i] = +r[3] || null;
+            if (r[4] != null) TR.kg26[i] = +r[4] || null;
+          }
+        });
+      }
+
+      // 事故シート
+      const ws4 = wb.Sheets['事故'];
+      if (ws4) {
+        d.quality.accidents = XLSX.utils.sheet_to_json(ws4, {header:1}).slice(1)
+          .filter(r => r[0] || r[1] || r[2])
+          .map(r => ({date:String(r[0]||''), route:String(r[1]||''), customer:String(r[2]||''),
+            type:String(r[3]||'その他'), major:String(r[4]||'').includes('はい'),
+            detail:String(r[5]||''), action:String(r[6]||''), img:''}));
+      }
+
+      // コメントシート
+      const ws5 = wb.Sheets['コメント'];
+      if (ws5) {
+        const cv = {};
+        XLSX.utils.sheet_to_json(ws5, {header:1}).slice(1).forEach(r => { if (r[0]) cv[r[0]] = String(r[1]||''); });
+        if (cv['物量推移'] !== undefined) d.comments.s0 = cv['物量推移'];
+        if (cv['便別']     !== undefined) d.comments.s1 = cv['便別'];
+        if (cv['事故']     !== undefined) d.comments.s3 = cv['事故'];
+      }
+
+      // 物量推移（年間）シート
+      const ws6 = wb.Sheets['物量推移'];
+      if (ws6) {
+        XLSX.utils.sheet_to_json(ws6, {header:1}).slice(1).forEach((r, i) => {
+          if (i < 12) {
+            if (r[1] != null) TR.y24[i] = +r[1]||0;
+            if (r[2] != null) TR.y25[i] = +r[2]||0;
+            if (r[3] != null) TR.d24[i] = +r[3]||0;
+            if (r[4] != null) TR.d25[i] = +r[4]||0;
+          }
+        });
+      }
+
+      cur = monthKey;
+      initSelect(); kill(); renderAll();
+      const t = document.getElementById('toast');
+      t.textContent = monthKey + ' のデータを更新しました';
+      t.classList.add('on');
+      setTimeout(() => { t.classList.remove('on'); t.textContent = '保存しました'; }, 3000);
+    } catch(err) {
+      alert('Excelの読み込みに失敗しました: ' + err.message);
+    }
+    input.value = '';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ===== Excelテンプレートダウンロード =====
+function downloadTemplate() {
+  const wb = XLSX.utils.book_new();
+  const routes = ['801','02','23','35','41','42','45','675','677'];
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['項目','値'],
+    ['年月', cur],
+    ['東神合計(kg)', DB[cur]?.volume.totalKg||0],
+    ['1日あたり(kg)', DB[cur]?.volume.perDay||0],
+    ['稼働日数', DB[cur]?.volume.workDays||21],
+    ['東京便(kg)', DB[cur]?.volume.tokyoKg||0],
+    ['神奈川便(kg)', DB[cur]?.volume.kanagawaKg||0],
+    ['前年 東神合計(kg)', DB[cur]?.volume.prevTotalKg||0],
+    ['前年 1日あたり(kg)', DB[cur]?.volume.prevPerDay||0],
+  ]), '物量');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['便','今月(kg)','前年同月(kg)'],
+    ...routes.map(r => [r, DB[cur]?.volume.routes[r]?.curr||0, DB[cur]?.volume.routes[r]?.prev||0])
+  ]), '便別');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['月','23年','24年','25年','26年'],
+    ...TR.M.map((m,i) => [m, TR.kg23[i], TR.kg24[i], TR.kg25[i], TR.kg26[i]])
+  ]), 'Kg単価');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['日付','便','お客様','種別','重大(はい/いいえ)','事故詳細','対応'],
+    ...(DB[cur]?.quality.accidents.map(a=>[a.date,a.route,a.customer,a.type,a.major?'はい':'いいえ',a.detail,a.action])||[['','','','誤配達','いいえ','','']])
+  ]), '事故');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['スライド','コメント'],
+    ['物量推移', DB[cur]?.comments.s0||''],
+    ['便別',     DB[cur]?.comments.s1||''],
+    ['事故',     DB[cur]?.comments.s3||''],
+  ]), 'コメント');
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([
+    ['月','24年総重量','25年総重量','24年1日あたり','25年1日あたり'],
+    ...TR.M.map((m,i) => [m, TR.y24[i], TR.y25[i], TR.d24[i], TR.d25[i]])
+  ]), '物量推移');
+
+  XLSX.writeFile(wb, 'hakudo_' + cur + '.xlsx');
 }
 
 // ===== 初期化 =====
