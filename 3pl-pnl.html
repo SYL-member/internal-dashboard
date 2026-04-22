@@ -442,10 +442,10 @@ let pendingFile = null;
 
 const CLIENTS = ['白銅','ムトウユニパック','吉川紙商事','ナチュラジャパン'];
 const CLIENT_COLORS = {
-  '白銅':       { solid: 'rgba(18,65,197,0.85)',  faint: 'rgba(18,65,197,0.15)',  line: '#1241C5' },
-  'ムトウユニパック': { solid: 'rgba(64,96,212,0.80)',  faint: 'rgba(64,96,212,0.15)',  line: '#4060D4' },
-  '吉川紙商事':     { solid: 'rgba(130,130,130,0.75)', faint: 'rgba(130,130,130,0.15)', line: '#888' },
-  'ナチュラジャパン':  { solid: 'rgba(180,180,180,0.70)', faint: 'rgba(180,180,180,0.15)', line: '#aaa' },
+  '白銅':       { solid: 'rgba(18,65,197,0.88)',  faint: 'rgba(18,65,197,0.15)',  line: '#1241C5' },
+  'ムトウユニパック': { solid: 'rgba(25,25,25,0.82)',   faint: 'rgba(25,25,25,0.12)',   line: '#222' },
+  '吉川紙商事':     { solid: 'rgba(120,120,120,0.78)', faint: 'rgba(120,120,120,0.15)', line: '#777' },
+  'ナチュラジャパン':  { solid: 'rgba(185,185,185,0.72)', faint: 'rgba(185,185,185,0.15)', line: '#aaa' },
 };
 const CLIENT_BADGE = {
   '白銅': 'badge-shirako',
@@ -655,8 +655,8 @@ function renderRouteCharts(data, month) {
     });
   };
 
-  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(200,200,200,0.5)', 'rgba(18,65,197,0.85)');
-  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(200,200,200,0.5)', 'rgba(64,96,212,0.85)');
+  charts.route1 = makeRouteChart('routeChart1', routes1, 'rgba(200,200,200,0.5)', 'rgba(18,65,197,0.88)');
+  charts.route2 = makeRouteChart('routeChart2', routes2, 'rgba(200,200,200,0.5)', 'rgba(25,25,25,0.82)');
 }
 
 // =============================================

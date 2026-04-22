@@ -1217,10 +1217,10 @@ function renderCharts(data) {
     data: {
       labels: cats,
       datasets: [
-        { label: 'Q1 2024（前年）', data: q1_24, backgroundColor: 'rgba(180,180,180,0.35)', borderRadius: 4 },
-        { label: 'Q1 2025', data: q1_25, backgroundColor: 'rgba(18,65,197,0.85)',   borderRadius: 4 },
-        { label: 'Q2 2024（前年）', data: q2_24, backgroundColor: 'rgba(150,150,150,0.35)', borderRadius: 4 },
-        { label: 'Q2 2025', data: q2_25, backgroundColor: 'rgba(18,65,197,0.55)', borderRadius: 4 },
+        { label: 'Q1 2024（前年）', data: q1_24, backgroundColor: 'rgba(190,190,190,0.40)', borderRadius: 4 },
+        { label: 'Q1 2025',         data: q1_25, backgroundColor: 'rgba(30,30,30,0.75)',    borderRadius: 4 },
+        { label: 'Q2 2024（前年）', data: q2_24, backgroundColor: 'rgba(160,160,160,0.35)', borderRadius: 4 },
+        { label: 'Q2 2025（直近）', data: q2_25, backgroundColor: 'rgba(18,65,197,0.90)',   borderRadius: 4 },
       ]
     },
     options: {
@@ -1261,7 +1261,7 @@ function renderCharts(data) {
       labels: cats,
       datasets: [{
         data: h1_cats,
-        backgroundColor: ['rgba(18,65,197,0.85)', 'rgba(64,96,212,0.8)', 'rgba(150,150,150,0.7)', 'rgba(195,195,195,0.65)'],
+        backgroundColor: ['rgba(18,65,197,0.9)', 'rgba(30,30,30,0.82)', 'rgba(120,120,120,0.75)', 'rgba(195,195,195,0.65)'],
         borderColor: '#f5f7fa',
         borderWidth: 3,
       }]
@@ -1279,7 +1279,7 @@ function renderCharts(data) {
 
   // --- Margin Line Chart ---
   const marginDepts = ['白銅', 'ムトウユニパック', 'trackerr', '配録', '受託開発'];
-  const mColors = ['#1241C5', '#4060D4', '#7080E0', '#999', '#bbb'];
+  const mColors = ['#1241C5', '#222', '#666', '#999', '#bbb'];
 
   const mCtx = document.getElementById('marginChart').getContext('2d');
   charts.margin = new Chart(mCtx, {
@@ -1369,8 +1369,8 @@ function renderCharts(data) {
   const deptCtx = document.getElementById('deptGrossChart')?.getContext('2d');
   if (deptCtx) {
     // カテゴリ別カラー定義
-    const CAT_Q1 = { '3PL':'rgba(18,65,197,0.85)', 'SaaS':'rgba(64,96,212,0.85)', '受託開発':'rgba(130,130,130,0.8)', 'コンサルティング':'rgba(185,185,185,0.8)' };
-    const CAT_Q2 = { '3PL':'rgba(18,65,197,0.38)', 'SaaS':'rgba(64,96,212,0.38)', '受託開発':'rgba(130,130,130,0.38)', 'コンサルティング':'rgba(185,185,185,0.38)' };
+    const CAT_Q1 = { '3PL':'rgba(18,65,197,0.88)', 'SaaS':'rgba(25,25,25,0.82)', '受託開発':'rgba(110,110,110,0.78)', 'コンサルティング':'rgba(185,185,185,0.75)' };
+    const CAT_Q2 = { '3PL':'rgba(18,65,197,0.42)', 'SaaS':'rgba(25,25,25,0.38)', '受託開発':'rgba(110,110,110,0.38)', 'コンサルティング':'rgba(185,185,185,0.38)' };
     const CAT_LBL = { '3PL':'3PL', 'SaaS':'SaaS', '受託開発':'DEV', 'コンサルティング':'CONS' };
 
     // summary から全部門を取得、H1合計降順ソート
