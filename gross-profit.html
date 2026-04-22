@@ -1365,28 +1365,54 @@ function renderCharts(data) {
     });
   }
 
-  // --- 部門別粗利 横棒グラフ ---
+  // --- 部門別粗利 横棒グラフ（事業カテゴリ別カラー） ---
   const deptCtx = document.getElementById('deptGrossChart')?.getContext('2d');
   if (deptCtx) {
+    // カテゴリ別カラー定義
+    const CAT_Q1 = { '3PL':'rgba(14,168,138,0.85)', 'SaaS':'rgba(59,130,246,0.85)', '受託開発':'rgba(245,158,11,0.85)', 'コンサルティング':'rgba(168,85,247,0.85)' };
+    const CAT_Q2 = { '3PL':'rgba(14,168,138,0.38)', 'SaaS':'rgba(59,130,246,0.38)', '受託開発':'rgba(245,158,11,0.38)', 'コンサルティング':'rgba(168,85,247,0.38)' };
+    const CAT_LBL = { '3PL':'3PL', 'SaaS':'SaaS', '受託開発':'DEV', 'コンサルティング':'CONS' };
+
     // summary から全部門を取得、H1合計降順ソート
     const depts = [...data.summary].sort((a,b) => (b.q1_2025+b.q2_2025) - (a.q1_2025+a.q2_2025));
-    const deptLabels = depts.map(r => r.dept);
+    // ラベルにカテゴリ略称を付ける
+    const deptLabels = depts.map(r => `[${CAT_LBL[r.category]||r.category}] ${r.dept}`);
+    const q1Colors   = depts.map(r => CAT_Q1[r.category] || 'rgba(100,116,139,0.8)');
+    const q2Colors   = depts.map(r => CAT_Q2[r.category] || 'rgba(100,116,139,0.35)');
+
     if (charts.deptGross) charts.deptGross.destroy();
     charts.deptGross = new Chart(deptCtx, {
       type: 'bar',
       data: {
         labels: deptLabels,
         datasets: [
-          { label: 'Q1', data: depts.map(r => r.q1_2025), backgroundColor: 'rgba(14,168,138,0.75)', borderRadius: 4 },
-          { label: 'Q2', data: depts.map(r => r.q2_2025), backgroundColor: 'rgba(37,99,235,0.7)',   borderRadius: 4 },
+          { label: 'Q1（濃色）', data: depts.map(r => r.q1_2025), backgroundColor: q1Colors, borderRadius: 2 },
+          { label: 'Q2（淡色）', data: depts.map(r => r.q2_2025), backgroundColor: q2Colors, borderRadius: 2 },
         ]
       },
       options: {
         indexAxis: 'y',
         responsive: true, maintainAspectRatio: false,
         plugins: {
-          legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
-          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.x)}` } }
+          legend: {
+            labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12,
+              generateLabels: () => [
+                { text: '3PL',    fillStyle: CAT_Q1['3PL'],    strokeStyle: 'transparent', lineWidth: 0 },
+                { text: 'SaaS',   fillStyle: CAT_Q1['SaaS'],   strokeStyle: 'transparent', lineWidth: 0 },
+                { text: 'DEV',    fillStyle: CAT_Q1['受託開発'], strokeStyle: 'transparent', lineWidth: 0 },
+                { text: 'CONS',   fillStyle: CAT_Q1['コンサルティング'], strokeStyle: 'transparent', lineWidth: 0 },
+                { text: '濃=Q1 淡=Q2', fillStyle: 'rgba(100,116,139,0.5)', strokeStyle: 'transparent', lineWidth: 0 },
+              ]
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const dept = depts[ctx.dataIndex];
+                return ` ${ctx.dataset.label.replace(/（.*）/,'')}（${dept.category}）: ¥${fmt(ctx.parsed.x)}`;
+              }
+            }
+          }
         },
         scales: {
           x: { ticks: { color: '#64748b', font: { family: 'DM Mono', size: 11 }, callback: v => '¥'+fmt(v) }, grid: { color: 'rgba(0,0,0,0.06)' } },
