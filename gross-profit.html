@@ -221,17 +221,15 @@
     background: var(--border);
   }
 
-  /* Chart section */
+  /* Chart section — すべて縦積み（1カラム） */
   .charts-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 16px;
     margin-bottom: 32px;
   }
 
-  .chart-wide {
-    grid-column: 1 / -1;
-  }
+  .chart-wide { /* 後方互換のため残す */ }
 
   .card {
     background: var(--surface);
@@ -738,6 +736,16 @@
     <div class="section-header">
       <span class="section-title">部門別 粗利詳細</span>
       <div class="section-line"></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">
+        <span>部門別 粗利（Q1 / Q2 比較）</span>
+        <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">単位: 円</span>
+      </div>
+      <div class="chart-container" style="height:360px;">
+        <canvas id="deptGrossChart"></canvas>
+      </div>
     </div>
 
     <div class="table-section">
@@ -1352,6 +1360,37 @@ function renderCharts(data) {
         scales: {
           x: { stacked: true, ticks: { color:'#64748b', font:{ family:'Noto Sans JP', size:11 } }, grid:{ color:'rgba(0,0,0,0.05)' } },
           y: { stacked: true, ticks: { color:'#64748b', font:{ family:'DM Mono', size:11 }, callback: v => '¥'+fmt(v) }, grid:{ color:'rgba(0,0,0,0.06)' } }
+        }
+      }
+    });
+  }
+
+  // --- 部門別粗利 横棒グラフ ---
+  const deptCtx = document.getElementById('deptGrossChart')?.getContext('2d');
+  if (deptCtx) {
+    // summary から全部門を取得、H1合計降順ソート
+    const depts = [...data.summary].sort((a,b) => (b.q1_2025+b.q2_2025) - (a.q1_2025+a.q2_2025));
+    const deptLabels = depts.map(r => r.dept);
+    if (charts.deptGross) charts.deptGross.destroy();
+    charts.deptGross = new Chart(deptCtx, {
+      type: 'bar',
+      data: {
+        labels: deptLabels,
+        datasets: [
+          { label: 'Q1', data: depts.map(r => r.q1_2025), backgroundColor: 'rgba(14,168,138,0.75)', borderRadius: 4 },
+          { label: 'Q2', data: depts.map(r => r.q2_2025), backgroundColor: 'rgba(37,99,235,0.7)',   borderRadius: 4 },
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.x)}` } }
+        },
+        scales: {
+          x: { ticks: { color: '#64748b', font: { family: 'DM Mono', size: 11 }, callback: v => '¥'+fmt(v) }, grid: { color: 'rgba(0,0,0,0.06)' } },
+          y: { ticks: { color: '#334155', font: { family: 'Noto Sans JP', size: 11 } }, grid: { display: false } }
         }
       }
     });
