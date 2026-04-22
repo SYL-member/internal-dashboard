@@ -646,7 +646,6 @@ function renderAll() {
 
   // KPI Slide 0
   const v = d.volume;
-  const mi = parseInt(cur.split('-')[1]) - 1;
   const prevTotal = TR.y25[mi] || v.prevTotalKg || 0;
   const prevDay   = TR.d25[mi] || v.prevPerDay  || 0;
   const tp = pct(v.totalKg, prevTotal);
@@ -927,9 +926,11 @@ async function exportHtml() {
   }
   PAT = PAT.trim();
 
-  // 最新HTMLにDBデータを埋め込む
+  // 最新HTMLにDBデータ・TR.kg26を埋め込む
   const h = document.documentElement.outerHTML;
-  const updated = h.replace(/let DB = \{[\s\S]*?\};/, 'let DB = ' + JSON.stringify(DB, null, 2) + ';');
+  const updated = h
+    .replace(/let DB = \{[\s\S]*?\};/, 'let DB = ' + JSON.stringify(DB, null, 2) + ';')
+    .replace(/kg26:\[[\s\S]*?\]/, 'kg26:' + JSON.stringify(TR.kg26));
 
   const showToast = (msg, duration=3000) => {
     const t = document.getElementById('toast');
@@ -1093,22 +1094,39 @@ function handleSourceExcel(wb) {
     alert(`年月の読み取りに失敗しました（A2=${year}, B2=${month}）`); return;
   }
 
-  // "clean"ピボット（行ラベル|合計/801|合計/002|...）の総計行を探す
-  let totalRow = null;
+  // ヘッダー行・総計行を探す（「行ラベル」かつ「合計 / 801...」を含む行）
+  let headerRow = null, totalRow = null;
   for (let i = 0; i < rows.length - 1; i++) {
     const r = rows[i];
-    if (r[0] === '行ラベル' &&
-        String(r[1]||'').startsWith('合計 / 801') &&
-        String(r[2]||'').startsWith('合計 / 002')) {
+    if (r[0] === '行ラベル' && String(r[1]||'').includes('801')) {
       const next = rows[i + 1];
-      if (next && (next[0] === 0 || next[0] === null)) { totalRow = next; break; }
+      if (next && (next[0] === 0 || next[0] === null)) {
+        headerRow = r; totalRow = next; break;
+      }
     }
   }
   if (!totalRow) { alert('総計行が見つかりません。ファイル形式を確認してください。'); return; }
 
-  const w801 = +totalRow[1]||0, w002 = +totalRow[2]||0, w023 = +totalRow[3]||0;
-  const w035 = +totalRow[4]||0, w041 = +totalRow[5]||0, w042 = +totalRow[6]||0;
-  const w045 = +totalRow[7]||0, w675 = +totalRow[8]||0, w677 = +totalRow[9]||0;
+  // ヘッダー解析：重量列（コード3桁以下）と金額列（コード4桁以上）を仕分け
+  // 例: "合計 / 801 (東京)" → code="801" → weight
+  //     "合計 / 80110"      → code="80110" → amount
+  const weightColIdx = {}; // {route3桁 → colIndex}
+  const amountColIdx = []; // amount列のcolIndex配列
+  headerRow.forEach((h, i) => {
+    if (i === 0 || h == null) return;
+    const m = String(h).match(/合計\s*\/\s*(\d+)/);
+    if (m) {
+      const code = m[1];
+      if (code.length <= 3) weightColIdx[code] = i;
+      else                   amountColIdx.push(i);
+    }
+  });
+
+  // 重量取得（コードが weightColIdx にあれば使う、なければ 0）
+  const getW = code => weightColIdx[code] != null ? (+totalRow[weightColIdx[code]] || 0) : 0;
+  const w801 = getW('801'), w002 = getW('002'), w023 = getW('023');
+  const w035 = getW('035'), w041 = getW('041'), w042 = getW('042');
+  const w045 = getW('045'), w675 = getW('675'), w677 = getW('677');
 
   const totalKg    = Math.round(w801+w002+w023+w035+w041+w042+w045);
   const tokyoKg    = Math.round(w801+w041+w042);       // 東京便 = 801+041+042
@@ -1129,11 +1147,24 @@ function handleSourceExcel(wb) {
   const wmap = {'801':w801,'02':w002,'23':w023,'35':w035,'41':w041,'42':w042,'45':w045,'675':w675,'677':w677};
   Object.keys(d.volume.routes).forEach(r => { d.volume.routes[r].curr = Math.round(wmap[r]||0); });
 
+  // Kg単価自動計算（金額列が存在する場合）
+  // 式: 東神福運賃（全amount列合計） ÷ 全便重量（東神+675+677）
+  let kgMsg = '';
+  if (amountColIdx.length > 0) {
+    const totalFare   = amountColIdx.reduce((s, i) => s + (+totalRow[i] || 0), 0);
+    const allRouteKg  = w801+w002+w023+w035+w041+w042+w045+w675+w677;
+    if (allRouteKg > 0 && totalFare > 0) {
+      const kgUnit = Math.round(totalFare / allRouteKg * 10) / 10;
+      TR.kg26[parseInt(month) - 1] = kgUnit;
+      kgMsg = `・Kg単価=${kgUnit}円`;
+    }
+  }
+
   cur = monthKey;
   initSelect(); kill(); renderAll();
 
   const t = document.getElementById('toast');
-  t.textContent = `${monthKey} 更新完了｜前年値・Kg単価・事故は✏️で入力してください`;
+  t.textContent = `${monthKey} 更新完了${kgMsg}｜前年値・事故は✏️で入力してください`;
   t.classList.add('on');
   setTimeout(()=>{ t.classList.remove('on'); t.textContent='保存しました'; }, 5000);
 }
