@@ -423,8 +423,11 @@ function renderAll() {
 
   // KPI Slide 0
   const v = d.volume;
-  const tp = pct(v.totalKg, v.prevTotalKg);
-  const dp = pct(v.perDay, v.prevPerDay);
+  const mi = parseInt(cur.split('-')[1]) - 1;
+  const prevTotal = TR.y25[mi] || v.prevTotalKg || 0;
+  const prevDay   = TR.d25[mi] || v.prevPerDay  || 0;
+  const tp = pct(v.totalKg, prevTotal);
+  const dp = pct(v.perDay,  prevDay);
   document.getElementById('kpi0').innerHTML = `
     <div class="kcard"><div class="klbl">月間総重量（東神）</div><div class="kval">${fmt(v.totalKg)}<span class="kunit"> kg</span></div><div class="kdelta ${tp.v>=0?'up':'dn'}">${tp.s}（前年同月比）</div></div>
     <div class="kcard"><div class="klbl">1日あたり重量</div><div class="kval">${fmt(v.perDay)}<span class="kunit"> kg/日</span></div><div class="kdelta ${dp.v>=0?'up':'dn'}">${dp.s}（稼働${v.workDays}日）</div></div>
@@ -557,12 +560,7 @@ function buildForm(d) {
   const kgVal = TR.kg26[mi] != null ? TR.kg26[mi] : '';
   document.getElementById('epBd').innerHTML = `
     <div class="epsec">
-      <div class="epst">前年同月値</div>
-      <div class="g2f">
-        <div class="fr"><label>前年同月 総重量 (kg)</label><input id="fpt" type="number" value="${v.prevTotalKg||''}"></div>
-        <div class="fr"><label>前年同月 1日あたり (kg)</label><input id="fpd" type="number" value="${v.prevPerDay||''}"></div>
-      </div>
-      <div class="epst" style="margin-top:12px">便別 前年同月 (kg)</div>
+      <div class="epst">便別 前年同月 (kg)</div>
       ${Object.keys(v.routes).map(r=>`<div class="fr" style="display:inline-block;width:calc(50% - 4px);margin-right:4px"><label>${r}便</label><input id="rp_${r}" type="number" value="${v.routes[r].prev||''}"></div>`).join('')}
     </div>
     <div class="epsec">
@@ -606,8 +604,6 @@ function rmAe(i) { document.getElementById('ae'+i)?.remove(); document.querySele
 
 function saveData() {
   const d = DB[cur];
-  d.volume.prevTotalKg= +document.getElementById('fpt').value||0;
-  d.volume.prevPerDay = +document.getElementById('fpd').value||0;
   Object.keys(d.volume.routes).forEach(r => {
     const p=document.getElementById('rp_'+r);
     if(p) d.volume.routes[r].prev=+p.value||0;
