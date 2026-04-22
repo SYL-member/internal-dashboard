@@ -122,8 +122,8 @@
   .section-title { font-size: 13px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-dim); white-space: nowrap; }
   .section-line { flex: 1; height: 1px; background: var(--border); }
 
-  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-  .chart-wide { grid-column: 1 / -1; }
+  .charts-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
+  .chart-wide { /* 後方互換 */ }
 
   .card {
     background: var(--surface); border: 1px solid var(--border);
@@ -136,8 +136,8 @@
     margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
   }
 
-  .chart-container { position: relative; height: 260px; }
-  .chart-container.tall { height: 320px; }
+  .chart-container { position: relative; height: 320px; }
+  .chart-container.tall { height: 400px; }
 
   /* Table */
   .table-wrap { overflow-x: auto; }
