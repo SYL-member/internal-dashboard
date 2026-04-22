@@ -390,11 +390,11 @@
 
     <div class="charts-grid">
       <div class="card">
-        <div class="card-title" id="routeChartTitle">白銅 ルート別 売上・原価・粗利（2026.3）</div>
+        <div class="card-title" id="routeChartTitle">白銅 ルート別 原価＋粗利 積み上げ（2026.3）</div>
         <div class="chart-container"><canvas id="routeChart1" width="1236" height="520" style="display: block; box-sizing: border-box; height: 260px; width: 618px;"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title" id="routeChartTitle2">ムトウ ルート別 売上・原価・粗利（2026.3）</div>
+        <div class="card-title" id="routeChartTitle2">ムトウ ルート別 原価＋粗利 積み上げ（2026.3）</div>
         <div class="chart-container"><canvas id="routeChart2" width="1236" height="520" style="display: block; box-sizing: border-box; height: 260px; width: 618px;"></canvas></div>
       </div>
     </div>
@@ -618,8 +618,8 @@ function renderRouteCharts(data, month) {
   const routes1 = data.monthly[month]?.routes?.['白銅'] || {};
   const routes2 = data.monthly[month]?.routes?.['ムトウユニパック'] || {};
 
-  document.getElementById('routeChartTitle').textContent = `白銅 ルート別 売上・原価・粗利（${month}）`;
-  document.getElementById('routeChartTitle2').textContent = `ムトウ ルート別 売上・原価・粗利（${month}）`;
+  document.getElementById('routeChartTitle').textContent = `白銅 ルート別 原価＋粗利 積み上げ（${month}）`;
+  document.getElementById('routeChartTitle2').textContent = `ムトウ ルート別 原価＋粗利 積み上げ（${month}）`;
 
   // 原価＋粗利 積み上げ棒グラフ（売上高 = 原価+粗利）
   const makeRouteChart = (ctxId, routes, costColor, grossColor) => {
