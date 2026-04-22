@@ -213,6 +213,17 @@
     .month-tabs { flex-wrap: wrap; }
   }
 
+  /* ===== INSIGHT STRIP ===== */
+  .insight-strip { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 28px; }
+  .ic { display: flex; align-items: flex-start; gap: 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; flex: 1; min-width: 200px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+  .ic-head { font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .ic-main { font-size: 18px; font-weight: 700; line-height: 1.1; color: var(--text); }
+  .ic-sub  { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .ic-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .ic-pos .ic-main { color: #0d9488; }
+  .ic-neg .ic-main { color: #dc2626; }
+  .ic-neu .ic-main { color: var(--accent); }
+
   /* Nav bar */
   .nav-bar {
     background: #0f172a;
@@ -346,6 +357,9 @@
       <div class="kpi-sub">2026.2 → 2026.3</div>
     </div>
   </div>
+
+    <!-- Insight Strip -->
+    <div id="insightStrip" class="insight-strip"></div>
 
     <div class="section-header">
       <span class="section-title">月次推移</span>
@@ -724,11 +738,79 @@ function renderTable(data) {
 // =============================================
 // FULL RENDER
 // =============================================
+// =============================================
+// INSIGHT STRIP
+// =============================================
+function renderInsights(data) {
+  const strip = document.getElementById('insightStrip');
+  if (!strip) return;
+
+  const months = data.months;
+  const chips = [];
+
+  // 1. 最新月 前月比粗利
+  if (months.length >= 2) {
+    const latest = months[months.length - 1];
+    const prev   = months[months.length - 2];
+    const g1 = data.monthly[prev]?.total?.gross || 0;
+    const g2 = data.monthly[latest]?.total?.gross || 0;
+    const diff = g2 - g1;
+    const cls = diff >= 0 ? 'ic-pos' : 'ic-neg';
+    const icon = diff >= 0 ? '📈' : '📉';
+    chips.push({ icon, head: `前月比 粗利（${latest}）`, main: `${diff >= 0 ? '+' : ''}¥${diff.toLocaleString()}`, sub: `${prev}: ¥${g1.toLocaleString()} → ${latest}: ¥${g2.toLocaleString()}`, cls });
+  }
+
+  // 2. 期間ベスト月
+  const bestMonth = months.reduce((best, m) => {
+    const g = data.monthly[m]?.total?.gross || 0;
+    return g > (data.monthly[best]?.total?.gross || 0) ? m : best;
+  }, months[0]);
+  if (bestMonth) {
+    const g = data.monthly[bestMonth]?.total?.gross || 0;
+    chips.push({ icon: '🏆', head: '期間ベスト月', main: bestMonth, sub: `粗利 ¥${g.toLocaleString()}`, cls: 'ic-pos' });
+  }
+
+  // 3. 最新月 最高粗利率取引先
+  const latest = months[months.length - 1];
+  if (latest && data.monthly[latest]) {
+    const clients = Object.entries(data.monthly[latest].clients)
+      .filter(([, v]) => v.gross > 0)
+      .sort((a, b) => b[1].margin - a[1].margin);
+    if (clients.length > 0) {
+      const [name, d] = clients[0];
+      chips.push({ icon: '💎', head: `最高粗利率（${latest}）`, main: name, sub: `粗利率 ${(d.margin * 100).toFixed(1)}%`, cls: 'ic-neu' });
+    }
+  }
+
+  // 4. 直近3ヶ月トレンド
+  if (months.length >= 3) {
+    const last3 = months.slice(-3).map(m => data.monthly[m]?.total?.gross || 0);
+    const rising = last3[0] < last3[1] && last3[1] < last3[2];
+    const falling = last3[0] > last3[1] && last3[1] > last3[2];
+    const label = rising ? '連続増加 ▲' : falling ? '連続減少 ▼' : '推移混在';
+    const cls = rising ? 'ic-pos' : falling ? 'ic-neg' : 'ic-neu';
+    const icon = rising ? '🔼' : falling ? '🔽' : '➡️';
+    chips.push({ icon, head: '直近3ヶ月トレンド', main: label, sub: months.slice(-3).join(' → '), cls });
+  }
+
+  strip.innerHTML = chips.map(c => `
+    <div class="ic ${c.cls || ''}">
+      <div class="ic-icon">${c.icon}</div>
+      <div>
+        <div class="ic-head">${c.head}</div>
+        <div class="ic-main">${c.main}</div>
+        <div class="ic-sub">${c.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
 function renderAll(data) {
   document.getElementById('periodBadge').textContent = data.period;
   document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 3PL損益xlsx`;
   renderTabs(data);
   renderKPI(data);
+  renderInsights(data);
   renderCharts(data);
   renderTable(data);
 }
