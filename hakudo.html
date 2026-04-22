@@ -188,8 +188,9 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
   <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
   <button class="tb-btn" onclick="document.getElementById('xlsxIn').click()">📊 Excelで更新</button>
   <button class="tb-btn" onclick="downloadTemplate()">📋 テンプレート</button>
+  <button class="tb-btn" onclick="openEp()">✏️ 手入力</button>
   <button class="tb-btn tb-save" onclick="exportHtml()">☁️ GitHubに保存</button>
-  <button class="tb-btn" onclick="openHelp()" style="margin-left:4px">？ 使い方</button>
+  <button class="tb-btn" onclick="openHelp()">？ 使い方</button>
 </div>
 </div>
 
@@ -336,7 +337,6 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
   </div>
 </div>
 
-<button class="efab" onclick="openEp()">✏️</button>
 <div class="ov" id="ov" onclick="closeEp()"></div>
 <div class="ep" id="ep">
   <div class="ephdr"><h2 id="epTtl">データ入力</h2><button class="epcl" onclick="closeEp()">✕</button></div>
@@ -553,30 +553,27 @@ function closeEp() {
 
 function buildForm(d) {
   const v = d.volume;
+  const mi = parseInt(cur.split('-')[1]) - 1;
+  const kgVal = TR.kg26[mi] != null ? TR.kg26[mi] : '';
   document.getElementById('epBd').innerHTML = `
     <div class="epsec">
-      <div class="epst">物量データ</div>
-      <div class="g3f">
-        <div class="fr"><label>東神合計 (kg)</label><input id="ft" type="number" value="${v.totalKg||''}"></div>
-        <div class="fr"><label>1日あたり (kg)</label><input id="fd" type="number" value="${v.perDay||''}"></div>
-        <div class="fr"><label>稼働日数</label><input id="fw" type="number" value="${v.workDays||''}"></div>
-      </div>
+      <div class="epst">前年同月値</div>
       <div class="g2f">
-        <div class="fr"><label>東京便 (kg)</label><input id="ftk" type="number" value="${v.tokyoKg||''}"></div>
-        <div class="fr"><label>神奈川便 (kg)</label><input id="fkk" type="number" value="${v.kanagawaKg||''}"></div>
+        <div class="fr"><label>前年同月 総重量 (kg)</label><input id="fpt" type="number" value="${v.prevTotalKg||''}"></div>
+        <div class="fr"><label>前年同月 1日あたり (kg)</label><input id="fpd" type="number" value="${v.prevPerDay||''}"></div>
       </div>
-      <div class="g2f">
-        <div class="fr"><label>前年同月 総重量</label><input id="fpt" type="number" value="${v.prevTotalKg||''}"></div>
-        <div class="fr"><label>前年同月 1日あたり</label><input id="fpd" type="number" value="${v.prevPerDay||''}"></div>
-      </div>
-      <div class="epst" style="margin-top:12px">便別重量（今月 / 前年同月）</div>
-      ${Object.keys(v.routes).map(r=>`<div class="g2f"><div class="fr"><label>${r}便 今月</label><input id="rc_${r}" type="number" value="${v.routes[r].curr||''}"></div><div class="fr"><label>${r}便 前年</label><input id="rp_${r}" type="number" value="${v.routes[r].prev||''}"></div></div>`).join('')}
+      <div class="epst" style="margin-top:12px">便別 前年同月 (kg)</div>
+      ${Object.keys(v.routes).map(r=>`<div class="fr" style="display:inline-block;width:calc(50% - 4px);margin-right:4px"><label>${r}便</label><input id="rp_${r}" type="number" value="${v.routes[r].prev||''}"></div>`).join('')}
     </div>
     <div class="epsec">
-      <div class="epst">コメント（各スライド右側）</div>
-      <div class="fr"><label>スライド1：物量推移コメント</label><textarea id="fs0" rows="5">${d.comments.s0||''}</textarea></div>
-      <div class="fr"><label>スライド2：便別コメント</label><textarea id="fs1" rows="5">${d.comments.s1||''}</textarea></div>
-      <div class="fr"><label>スライド4：事故コメント</label><textarea id="fs3" rows="4">${d.comments.s3||''}</textarea></div>
+      <div class="epst">Kg単価（今月・26年${mi+1}月）</div>
+      <div class="fr"><label>Kg単価（円）</label><input id="fkg" type="number" step="0.1" value="${kgVal}" placeholder="例: 54.5"></div>
+    </div>
+    <div class="epsec">
+      <div class="epst">コメント</div>
+      <div class="fr"><label>スライド1：物量推移</label><textarea id="fs0" rows="4">${d.comments.s0||''}</textarea></div>
+      <div class="fr"><label>スライド2：便別</label><textarea id="fs1" rows="4">${d.comments.s1||''}</textarea></div>
+      <div class="fr"><label>スライド4：事故</label><textarea id="fs3" rows="3">${d.comments.s3||''}</textarea></div>
     </div>
     <div class="epsec">
       <div class="epst">事故データ</div>
@@ -609,18 +606,18 @@ function rmAe(i) { document.getElementById('ae'+i)?.remove(); document.querySele
 
 function saveData() {
   const d = DB[cur];
-  d.volume.totalKg    = +document.getElementById('ft').value||0;
-  d.volume.perDay     = +document.getElementById('fd').value||0;
-  d.volume.workDays   = +document.getElementById('fw').value||0;
-  d.volume.tokyoKg    = +document.getElementById('ftk').value||0;
-  d.volume.kanagawaKg = +document.getElementById('fkk').value||0;
   d.volume.prevTotalKg= +document.getElementById('fpt').value||0;
   d.volume.prevPerDay = +document.getElementById('fpd').value||0;
   Object.keys(d.volume.routes).forEach(r => {
-    const c=document.getElementById('rc_'+r),p=document.getElementById('rp_'+r);
-    if(c) d.volume.routes[r].curr=+c.value||0;
+    const p=document.getElementById('rp_'+r);
     if(p) d.volume.routes[r].prev=+p.value||0;
   });
+  // Kg単価
+  const kgEl = document.getElementById('fkg');
+  if (kgEl && kgEl.value !== '') {
+    const mi = parseInt(cur.split('-')[1]) - 1;
+    TR.kg26[mi] = +kgEl.value || null;
+  }
   d.comments.s0 = document.getElementById('fs0').value;
   d.comments.s1 = document.getElementById('fs1').value;
   d.comments.s3 = document.getElementById('fs3').value;
