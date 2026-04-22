@@ -1217,10 +1217,10 @@ function renderCharts(data) {
     data: {
       labels: cats,
       datasets: [
-        { label: 'Q1 2024（前年）', data: q1_24, backgroundColor: 'rgba(190,190,190,0.40)', borderRadius: 4 },
-        { label: 'Q1 2025',         data: q1_25, backgroundColor: 'rgba(30,30,30,0.75)',    borderRadius: 4 },
-        { label: 'Q2 2024（前年）', data: q2_24, backgroundColor: 'rgba(160,160,160,0.35)', borderRadius: 4 },
-        { label: 'Q2 2025（直近）', data: q2_25, backgroundColor: 'rgba(18,65,197,0.90)',   borderRadius: 4 },
+        { label: 'Q1 2024（前年）', data: q1_24, backgroundColor: 'transparent',         borderColor: 'rgba(170,170,170,0.8)', borderWidth: 2, borderRadius: 3 },
+        { label: 'Q1 2025',         data: q1_25, backgroundColor: 'rgba(35,35,35,0.82)',    borderColor: 'transparent',           borderWidth: 0, borderRadius: 4 },
+        { label: 'Q2 2024（前年）', data: q2_24, backgroundColor: 'rgba(195,195,195,0.25)', borderColor: 'rgba(160,160,160,0.6)', borderWidth: 2, borderRadius: 3 },
+        { label: 'Q2 2025（直近）', data: q2_25, backgroundColor: 'rgba(18,65,197,0.90)',   borderColor: 'transparent',           borderWidth: 0, borderRadius: 4 },
       ]
     },
     options: {
@@ -1279,23 +1279,37 @@ function renderCharts(data) {
 
   // --- Margin Line Chart ---
   const marginDepts = ['白銅', 'ムトウユニパック', 'trackerr', '配録', '受託開発'];
-  const mColors = ['#1241C5', '#222', '#666', '#999', '#bbb'];
+  // 折れ線＋ダッシュパターンで5系列を識別
+  const mStyles = [
+    { color: '#1241C5', dash: [],       width: 2.5, radius: 5 },
+    { color: '#222',    dash: [],       width: 2.5, radius: 5 },
+    { color: '#1241C5', dash: [6,4],    width: 2,   radius: 4 },
+    { color: '#555',    dash: [3,3],    width: 2,   radius: 4 },
+    { color: '#999',    dash: [1,3],    width: 2,   radius: 3 },
+  ];
 
   const mCtx = document.getElementById('marginChart').getContext('2d');
   charts.margin = new Chart(mCtx, {
-    type: 'bar',
+    type: 'line',
     data: {
       labels: ['Q1 2025', 'Q2 2025'],
       datasets: marginDepts.map((dept, i) => {
         const rows = data.detail.filter(r => r.dept === dept);
+        const st = mStyles[i];
         return {
           label: dept,
           data: ['2025 Q1', '2025 Q2'].map(p => {
             const r = rows.find(x => x.period === p);
             return r ? +(r.margin * 100).toFixed(1) : 0;
           }),
-          backgroundColor: mColors[i] + 'cc',
-          borderRadius: 4,
+          borderColor: st.color,
+          backgroundColor: st.color + '22',
+          borderWidth: st.width,
+          borderDash: st.dash,
+          pointRadius: st.radius,
+          pointBackgroundColor: st.color,
+          tension: 0.1,
+          fill: false,
         };
       })
     },
@@ -1377,8 +1391,10 @@ function renderCharts(data) {
     const depts = [...data.summary].sort((a,b) => (b.q1_2025+b.q2_2025) - (a.q1_2025+a.q2_2025));
     // ラベルにカテゴリ略称を付ける
     const deptLabels = depts.map(r => `[${CAT_LBL[r.category]||r.category}] ${r.dept}`);
-    const q1Colors   = depts.map(r => CAT_Q1[r.category] || 'rgba(100,116,139,0.8)');
-    const q2Colors   = depts.map(r => CAT_Q2[r.category] || 'rgba(100,116,139,0.35)');
+    // Q2(直近)=塗り潰し、Q1(前期)=アウトラインのみ → 見た目で瞬時に判別
+    const q1FillColors   = depts.map(r => CAT_Q2[r.category] || 'rgba(100,116,139,0.20)');
+    const q1BorderColors = depts.map(r => CAT_Q1[r.category] || 'rgba(100,116,139,0.8)');
+    const q2Colors       = depts.map(r => CAT_Q1[r.category] || 'rgba(100,116,139,0.85)');
 
     if (charts.deptGross) charts.deptGross.destroy();
     charts.deptGross = new Chart(deptCtx, {
@@ -1386,8 +1402,8 @@ function renderCharts(data) {
       data: {
         labels: deptLabels,
         datasets: [
-          { label: 'Q1（濃色）', data: depts.map(r => r.q1_2025), backgroundColor: q1Colors, borderRadius: 2 },
-          { label: 'Q2（淡色）', data: depts.map(r => r.q2_2025), backgroundColor: q2Colors, borderRadius: 2 },
+          { label: 'Q1（前期・枠）', data: depts.map(r => r.q1_2025), backgroundColor: q1FillColors, borderColor: q1BorderColors, borderWidth: 2, borderRadius: 2 },
+          { label: 'Q2（直近・塗）', data: depts.map(r => r.q2_2025), backgroundColor: q2Colors,     borderWidth: 0, borderRadius: 2 },
         ]
       },
       options: {
