@@ -277,10 +277,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
         <div class="leg">
           <span><span class="sw" style="background:#bbb;border-radius:0"></span>24年重量</span>
           <span><span class="sw" style="background:#888;border-radius:0"></span>25年重量</span>
-          <span><span class="sw" style="background:#8fc31f;border-radius:0"></span>26年重量</span>
+          <span><span class="sw" style="background:#444;border-radius:0"></span>26年重量</span>
           <span style="margin-left:6px"><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#bbb" stroke-width="2"></line></svg>24年/日</span>
           <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#888" stroke-width="2"></line></svg>25年/日</span>
-          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#8fc31f" stroke-width="2.5"></line></svg>26年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#444" stroke-width="2.5"></line></svg>26年/日</span>
         </div>
         <div class="cvs"><canvas id="cT" width="1860" height="963" style="display: block; box-sizing: border-box; height: 481px; width: 930px;"></canvas></div>
       </div>
@@ -306,7 +306,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
         <div class="ctitle">便別重量（前年同月比）</div>
         <div class="leg">
           <span><span class="sw" style="background:#ddd;border:1px solid #ccc"></span>前年同月</span>
-          <span><span class="sw" style="background:#8fc31f"></span>今月</span>
+          <span><span class="sw" style="background:#444"></span>今月</span>
         </div>
         <div class="cvs"><canvas id="cR" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
@@ -335,7 +335,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
           <span><span class="sw" style="background:#ddd"></span>23年</span>
           <span><span class="sw" style="background:#bbb"></span>24年</span>
           <span><span class="sw" style="background:#888"></span>25年</span>
-          <span><span class="sw" style="background:#8fc31f"></span>26年</span>
+          <span><span class="sw" style="background:#444"></span>26年</span>
         </div>
         <div class="cvs"><canvas id="cK" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
@@ -731,10 +731,10 @@ function renderCharts(d) {
     data: { labels: TR.M, datasets: [
       {type:'bar', data:TR.y24, backgroundColor:'#bbb', yAxisID:'yR', order:4},
       {type:'bar', data:TR.y25, backgroundColor:'#888', yAxisID:'yR', order:3},
-      {type:'bar', data:b26,   backgroundColor:'#8fc31f', yAxisID:'yR', order:2},
+      {type:'bar', data:b26,   backgroundColor:'#444', yAxisID:'yR', order:2},
       {type:'line',data:TR.d24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:7,spanGaps:false},
       {type:'line',data:TR.d25,borderColor:'#888',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:6,spanGaps:false},
-      {type:'line',data:l26,  borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
+      {type:'line',data:l26,  borderColor:'#444',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
     ]},
     options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{
@@ -748,8 +748,8 @@ function renderCharts(d) {
   const R = Object.keys(v.routes);
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
     data:{labels:R.map(r=>r+'便'),datasets:[
-      {data:R.map(r=>v.routes[r].prev),backgroundColor:'#ddd'},
-      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#8fc31f'}
+      {data:R.map(r=>v.routes[r].prev),backgroundColor:'#ccc'},
+      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#444'}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
@@ -761,7 +761,7 @@ function renderCharts(d) {
       {data:TR.kg23,borderColor:'#ddd',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
       {data:TR.kg24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
       {data:TR.kg25,borderColor:'#888',backgroundColor:'transparent',borderWidth:2,  pointRadius:2,spanGaps:true},
-      {data:TR.kg26,borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
+      {data:TR.kg26,borderColor:'#444',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:12}},grid:{color:'rgba(0,0,0,.05)'}},y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
