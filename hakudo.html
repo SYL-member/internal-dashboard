@@ -188,7 +188,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
   <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
   <button class="tb-btn" onclick="document.getElementById('xlsxIn').click()">📊 Excelで更新</button>
   <button class="tb-btn" onclick="downloadTemplate()">📋 テンプレート</button>
-  <button class="tb-btn tb-save" onclick="exportHtml()">📥 HTMLに保存</button>
+  <button class="tb-btn tb-save" onclick="exportHtml()">☁️ GitHubに保存</button>
   <button class="tb-btn" onclick="openHelp()" style="margin-left:4px">？ 使い方</button>
 </div>
 </div>
@@ -342,7 +342,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
   <div class="ephdr"><h2 id="epTtl">データ入力</h2><button class="epcl" onclick="closeEp()">✕</button></div>
   <div class="epbd" id="epBd"></div>
   <div class="epft">
-    <button class="bex" onclick="exportHtml()">📥 HTMLに保存</button>
+    <button class="bex" onclick="exportHtml()">☁️ GitHubに保存</button>
     <button class="bsv" onclick="saveData()">保存</button>
   </div>
 </div>
@@ -696,13 +696,66 @@ function mkEmpty(k) {
   return {label:y+'年'+parseInt(m)+'月',volume:{totalKg:0,perDay:0,workDays:21,tokyoKg:0,kanagawaKg:0,prevTotalKg:0,prevPerDay:0,routes:{"801":{curr:0,prev:0},"02":{curr:0,prev:0},"23":{curr:0,prev:0},"35":{curr:0,prev:0},"41":{curr:0,prev:0},"42":{curr:0,prev:0},"45":{curr:0,prev:0},"675":{curr:0,prev:0},"677":{curr:0,prev:0}}},quality:{accidents:[]},comments:{s0:'',s1:'',s3:''}};
 }
 
-function exportHtml() {
+async function exportHtml() {
+  const OWNER = 'Kei-SYL';
+  const REPO  = 'internal-dashboard';
+  const PATH  = 'hakudo.html';
+  const BRANCH = 'main';
+
+  // PATをlocalStorageから取得（なければ入力ダイアログ）
+  let PAT = localStorage.getItem('gh_pat_sylink') || '';
+  if (!PAT) {
+    PAT = prompt('GitHub Personal Access Token を入力してください\n（repo スコープが必要。次回から自動入力されます）');
+    if (!PAT) return;
+    localStorage.setItem('gh_pat_sylink', PAT.trim());
+  }
+  PAT = PAT.trim();
+
+  // 最新HTMLにDBデータを埋め込む
   const h = document.documentElement.outerHTML;
-  const u = h.replace(/let DB = \{[\s\S]*?\};/, 'let DB = '+JSON.stringify(DB,null,2)+';');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([u],{type:'text/html;charset=utf-8'}));
-  a.download = 'hakudo_dashboard_'+cur.replace('-','')+'.html';
-  a.click(); URL.revokeObjectURL(a.href);
+  const updated = h.replace(/let DB = \{[\s\S]*?\};/, 'let DB = ' + JSON.stringify(DB, null, 2) + ';');
+
+  const showToast = (msg, duration=3000) => {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('on');
+    setTimeout(() => { t.classList.remove('on'); t.textContent = '保存しました'; }, duration);
+  };
+
+  showToast('⏳ GitHubに保存中…', 30000);
+
+  try {
+    // 現在のSHAを取得
+    const metaRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}?ref=${BRANCH}`,
+      { headers: { Authorization: `token ${PAT}`, Accept: 'application/vnd.github.v3+json' } }
+    );
+    if (!metaRes.ok) throw new Error('SHA取得失敗: ' + metaRes.status);
+    const { sha } = await metaRes.json();
+
+    // UTF-8 → Base64
+    const b64 = btoa(unescape(encodeURIComponent(updated)));
+
+    // コミット
+    const d = new Date();
+    const label = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const putRes = await fetch(
+      `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+      {
+        method: 'PUT',
+        headers: { Authorization: `token ${PAT}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `hakudo: データ更新 ${label}`, content: b64, sha, branch: BRANCH })
+      }
+    );
+    if (putRes.ok) {
+      showToast('✅ GitHubに保存しました（1〜2分で反映）', 4000);
+    } else {
+      const err = await putRes.json();
+      showToast('❌ 保存失敗: ' + (err.message || putRes.status), 5000);
+    }
+  } catch(e) {
+    showToast('❌ エラー: ' + e.message, 5000);
+  }
 }
 
 // ===== Excelアップロード =====
