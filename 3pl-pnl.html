@@ -297,7 +297,7 @@
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="3" x2="12" y2="15"/>
           </svg>
-          HTMLに保存
+          ☁️ GitHubに保存
         </button>
       </div>
     </div>
@@ -919,18 +919,56 @@ document.getElementById('modalOverlay').addEventListener('click', e => { if (e.t
 // =============================================
 // EXPORT HTML
 // =============================================
-function exportHtml() {
+async function exportHtml() {
+  const OWNER  = 'Kei-SYL';
+  const REPO   = 'internal-dashboard';
+  const PATH   = '3pl-pnl.html';
+  const BRANCH = 'main';
+
+  let PAT = localStorage.getItem('gh_pat_sylink') || '';
+  if (!PAT) {
+    PAT = prompt('GitHub Personal Access Token を入力してください\n（repo スコープが必要。次回から自動入力されます）');
+    if (!PAT) return;
+    localStorage.setItem('gh_pat_sylink', PAT.trim());
+  }
+  PAT = PAT.trim();
+
   let html = document.documentElement.outerHTML;
   const startMarker = 'const DEFAULT_DATA = ';
   const endMarker = '\n\n// =============================================\n// STATE';
   const start = html.indexOf(startMarker);
   const end = html.indexOf(endMarker, start);
   if (start === -1 || end === -1) { alert('保存エラー: データ位置を特定できませんでした'); return; }
-  html = html.slice(0, start) + startMarker + JSON.stringify(currentData) + ';' + html.slice(end);
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-  a.download = '3pl-pnl.html';
-  a.click();
+  const updated = html.slice(0, start) + startMarker + JSON.stringify(currentData) + ';' + html.slice(end);
+
+  let _toast = document.getElementById('_gh_toast');
+  if (!_toast) {
+    _toast = document.createElement('div');
+    _toast.id = '_gh_toast';
+    Object.assign(_toast.style, {position:'fixed',bottom:'24px',right:'24px',background:'#1e1e1c',color:'#fff',padding:'10px 18px',borderRadius:'6px',fontSize:'13px',fontWeight:'500',zIndex:'9999',boxShadow:'0 4px 16px rgba(0,0,0,.3)',transition:'opacity .3s',opacity:'0'});
+    document.body.appendChild(_toast);
+  }
+  const showToast = (msg, duration=4000) => {
+    _toast.textContent = msg; _toast.style.opacity = '1';
+    clearTimeout(_toast._timer);
+    _toast._timer = setTimeout(() => { _toast.style.opacity = '0'; }, duration);
+  };
+  showToast('⏳ GitHubに保存中…', 30000);
+
+  try {
+    const metaRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}?ref=${BRANCH}`,
+      { headers: { Authorization: `token ${PAT}`, Accept: 'application/vnd.github.v3+json' } });
+    if (!metaRes.ok) throw new Error('SHA取得失敗: ' + metaRes.status);
+    const { sha } = await metaRes.json();
+    const b64 = btoa(unescape(encodeURIComponent(updated)));
+    const d = new Date();
+    const label = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
+    const putRes = await fetch(`https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`,
+      { method: 'PUT', headers: { Authorization: `token ${PAT}`, Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: `3pl-pnl: データ更新 ${label}`, content: b64, sha, branch: BRANCH }) });
+    if (putRes.ok) { showToast('✅ GitHubに保存しました（1〜2分で反映）'); }
+    else { const err = await putRes.json(); showToast('❌ 保存失敗: ' + (err.message || putRes.status)); }
+  } catch(e) { showToast('❌ エラー: ' + e.message); }
 }
 
 // =============================================
