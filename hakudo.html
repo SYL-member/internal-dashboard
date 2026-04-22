@@ -5,25 +5,58 @@
 <title>白銅 定例ダッシュボード</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
+:root {
+  --accent:   #8fc31f;
+  --accent-h: #7aab18;
+  --blue:     #2a6496;
+  --blue-h:   #1e5480;
+  --red:      #8b2020;
+  --red-h:    #6b1818;
+  --neutral:  #555;
+  --neutral-h:#444;
+  --dark:     #1e1e1c;
+  --dark2:    #2a2a28;
+  --border:   #e0e0da;
+  --surface:  #fafaf8;
+  --text:     #1a1a18;
+  --muted:    #888;
+  --positive: #2d6a2d;
+  --negative: #8b2020;
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;background:#f5f7fa;display:flex;flex-direction:column;align-items:center;padding:0 0 40px;min-height:100vh}
-.topbar{width:100%;background:#1e1e1c;display:flex;flex-direction:column;align-items:center;padding:12px 0 0;margin-bottom:0}
+body{
+  font-family:'Noto Sans JP','Hiragino Kaku Gothic ProN',sans-serif;
+  background:#f5f7fa;
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 0 40px;min-height:100vh;
+  position:relative;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(143,195,31,0.05) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(143,195,31,0.05) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+.topbar{width:100%;background:var(--dark);display:flex;flex-direction:column;align-items:center;padding:12px 0 0;margin-bottom:0;position:relative;z-index:1}
 /* タブバー */
-nav{width:1280px;background:#1e1e1c;border-radius:6px 6px 0 0;display:flex;align-items:stretch}
-nav button{flex:1;padding:12px 8px;font-size:11px;font-weight:700;color:#666;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s}
+nav{width:1280px;background:var(--dark);border-radius:6px 6px 0 0;display:flex;align-items:stretch}
+nav button{flex:1;padding:12px 8px;font-size:11px;font-weight:700;color:#666;border:none;background:none;cursor:pointer;border-bottom:3px solid transparent;transition:color .15s;font-family:'Noto Sans JP',sans-serif;letter-spacing:.03em}
 nav button:hover{color:#ccc}
-nav button.on{color:#8fc31f;border-bottom-color:#8fc31f}
+nav button.on{color:var(--accent);border-bottom-color:var(--accent)}
 nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 /* スライド */
-.slide{width:1280px;height:720px;background:#f5f5f2;display:none;flex-direction:column;box-shadow:0 6px 32px rgba(0,0,0,.35)}
+.slide{width:1280px;height:720px;background:#f5f5f2;display:none;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.3);position:relative;z-index:1}
 .slide.on{display:flex}
 /* ヘッダー帯 */
-.shdr{height:44px;background:#1e1e1c;display:flex;align-items:center;padding:0 24px;flex-shrink:0}
-.shdr .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.06em;margin-right:16px}
-.shdr .logo em{color:#8fc31f;font-style:normal}
-.shdr .ttl{font-size:13px;font-weight:700;color:#ddd}
-.shdr .pn{margin-left:auto;font-size:11px;color:#666}
+.shdr{height:44px;background:var(--dark);display:flex;align-items:center;padding:0 24px;flex-shrink:0}
+.shdr .logo{font-size:13px;font-weight:700;color:#fff;letter-spacing:.06em;margin-right:16px;font-family:'DM Mono',monospace}
+.shdr .logo em{color:var(--accent);font-style:normal}
+.shdr .ttl{font-size:13px;font-weight:500;color:#ddd;letter-spacing:.02em}
+.shdr .pn{margin-left:auto;font-size:11px;color:#555;font-family:'DM Mono',monospace}
 /* ボディ */
 .sbody{flex:1;display:flex;min-height:0;padding:16px 20px;gap:16px}
 /* グラフエリア（左） */
@@ -31,71 +64,90 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 /* コメントエリア（右） */
 .side{width:260px;flex-shrink:0;display:flex;flex-direction:column;gap:10px}
 /* カード */
-.card{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:12px 16px;display:flex;flex-direction:column}
+.card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px;display:flex;flex-direction:column}
 /* KPIバー */
 .krow{display:grid;gap:8px;flex-shrink:0}
-.kcard{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:10px 14px}
-.klbl{font-size:9px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-.kval{font-size:22px;font-weight:700;color:#1a1a18;line-height:1.1}
+.kcard{background:#fff;border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 6px 6px 0;padding:10px 14px}
+.klbl{font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;font-family:'DM Mono',monospace}
+.kval{font-size:22px;font-weight:700;color:var(--text);line-height:1.1;font-feature-settings:"tnum"}
 .kunit{font-size:11px;font-weight:400}
-.kdelta{font-size:10px;margin-top:3px}
-.up{color:#2d6a2d}.dn{color:#8b2020}.neu{color:#888}
+.kdelta{font-size:10px;margin-top:3px;font-family:'DM Mono',monospace}
+.up{color:var(--positive)}.dn{color:var(--negative)}.neu{color:var(--muted)}
 /* チャートタイトル */
-.ctitle{font-size:12px;font-weight:700;color:#1a1a18;margin-bottom:6px}
+.ctitle{font-size:12px;font-weight:700;color:var(--text);margin-bottom:6px;letter-spacing:.02em}
 .leg{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}
-.leg span{display:flex;align-items:center;gap:4px;font-size:10px;color:#888}
+.leg span{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted)}
 .sw{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 /* キャンバスラッパー */
 .cvs{flex:1;position:relative;min-height:0}
 .cvs canvas{position:absolute;inset:0}
 /* コメントボックス */
-.cmt-box{background:#fff;border:1px solid #e0e0da;border-left:4px solid #8fc31f;border-radius:0 6px 6px 0;padding:14px 16px;font-size:16px;line-height:2.1;white-space:pre-line;color:#1a1a18;flex:1}
-.cmt-kpi{background:#fff;border:1px solid #e0e0da;border-radius:6px;padding:12px 16px}
+.cmt-box{background:#fff;border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 6px 6px 0;padding:14px 16px;font-size:16px;line-height:2.1;white-space:pre-line;color:var(--text);flex:1}
+.cmt-kpi{background:#fff;border:1px solid var(--border);border-radius:6px;padding:12px 16px}
 .cmt-kpi .kitem{margin-bottom:10px}
-.cmt-kpi .kyear{font-size:10px;color:#888;margin-bottom:2px}
-.cmt-kpi .knum{font-size:26px;font-weight:700;color:#1a1a18;line-height:1}
-.cmt-kpi .knum.cur{color:#8fc31f}
+.cmt-kpi .kyear{font-size:10px;color:var(--muted);margin-bottom:2px;font-family:'DM Mono',monospace}
+.cmt-kpi .knum{font-size:26px;font-weight:700;color:var(--text);line-height:1;font-feature-settings:"tnum"}
+.cmt-kpi .knum.cur{color:var(--accent)}
 /* 事故テーブル */
 .atbl{width:100%;border-collapse:collapse;font-size:14px}
-.atbl th{padding:7px 8px;border-bottom:1px solid #e0e0da;font-size:12px;font-weight:700;color:#888;text-align:left;white-space:nowrap}
-.atbl td{padding:8px 10px;border-bottom:1px solid #e0e0da;vertical-align:top;line-height:1.6}
+.atbl th{padding:7px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;font-family:'DM Mono',monospace}
+.atbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6}
 .atbl tr:last-child td{border-bottom:none}
-.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700}
-.bm{background:#f0e0e0;color:#6b1a1a}.bn{background:#ebebeb;color:#444}
-/* 月追加 */
-.month-sel{display:flex;align-items:center;gap:8px;padding:6px 16px;background:#2a2a28;border-top:1px solid #333}
-.month-sel select{background:#333;color:#aaa;border:1px solid #444;padding:4px 8px;font-size:11px;border-radius:3px}
-.month-sel button{padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer}
+.atbl tr:hover td{background:rgba(143,195,31,.04)}
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.03em}
+.bm{background:#fde8e8;color:#7f1d1d}.bn{background:#f1f5f9;color:#475569}
+/* ツールバー */
+.month-sel{display:flex;align-items:center;gap:6px;padding:7px 16px;background:var(--dark2);border-top:1px solid #333;flex-wrap:wrap}
+.month-sel select{background:#333;color:#aaa;border:1px solid #444;padding:4px 8px;font-size:11px;border-radius:4px;font-family:'Noto Sans JP',sans-serif}
+/* ボタン共通 */
+.month-sel button,.tb-btn{
+  padding:5px 12px;border:none;border-radius:4px;font-size:11px;font-weight:500;
+  cursor:pointer;display:inline-flex;align-items:center;gap:4px;
+  font-family:'Noto Sans JP',sans-serif;transition:opacity .15s,filter .15s;
+}
+.month-sel button:hover,.tb-btn:hover{filter:brightness(1.12)}
+/* ボタン種別 */
+.tb-primary{background:var(--accent);color:#fff}
+.tb-blue{background:var(--blue);color:#fff}
+.tb-neutral{background:var(--neutral);color:#fff}
+.tb-danger{background:var(--red);color:#fff}
+.tb-ghost{background:transparent;border:1px solid #555 !important;color:#aaa}
+.tb-ghost:hover{border-color:#aaa !important;color:#fff;filter:none}
+.tb-save{background:#1a6b3a;color:#fff;margin-left:auto}
 /* 編集パネル */
-.efab{position:fixed;bottom:22px;right:22px;background:#555;color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:100;display:flex;align-items:center;justify-content:center}
+.efab{position:fixed;bottom:22px;right:22px;background:var(--neutral);color:#fff;border:none;border-radius:50%;width:48px;height:48px;font-size:18px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.3);z-index:100;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.efab:hover{background:var(--accent)}
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200}
 .ov.on{display:block}
 .ep{position:fixed;top:0;right:0;width:600px;height:100vh;background:#fff;z-index:201;transform:translateX(100%);transition:transform .25s;overflow-y:auto;display:flex;flex-direction:column}
 .ep.on{transform:translateX(0)}
-.ephdr{padding:16px 20px;border-bottom:1px solid #e0e0da;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
-.ephdr h2{font-size:13px;font-weight:700}
-.epcl{background:none;border:none;font-size:20px;cursor:pointer;color:#888}
+.ephdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.ephdr h2{font-size:13px;font-weight:700;letter-spacing:.02em}
+.epcl{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted)}
 .epbd{padding:16px 20px;flex:1}
 .epsec{margin-bottom:20px}
-.epst{font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da}
+.epst{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace}
 .fr{margin-bottom:9px}
-.fr label{display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px}
-.fr input,.fr textarea,.fr select{width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:11px;font-family:inherit;background:#fafaf8;outline:none}
-.fr input:focus,.fr textarea:focus,.fr select:focus{border-color:#8fc31f}
+.fr label{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:3px;letter-spacing:.03em}
+.fr input,.fr textarea,.fr select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Noto Sans JP',sans-serif;background:var(--surface);outline:none;transition:border-color .15s}
+.fr input:focus,.fr textarea:focus,.fr select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(143,195,31,.12)}
 .fr textarea{resize:vertical;min-height:48px}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .g3f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
-.barow{width:100%;padding:6px;background:none;border:1px dashed #e0e0da;border-radius:4px;font-size:10px;color:#888;cursor:pointer;margin-top:5px}
-.barow:hover{border-color:#8fc31f;color:#8fc31f}
-.ae{border:1px solid #e0e0da;border-radius:4px;padding:10px;margin-bottom:7px;position:relative;background:#fafaf8}
-.aerm{position:absolute;top:6px;right:8px;background:none;border:none;color:#aaa;cursor:pointer;font-size:12px}
-.epft{padding:12px 20px;border-top:1px solid #e0e0da;display:flex;gap:7px;position:sticky;bottom:0;background:#fff}
-.bsv{flex:1;padding:9px;background:#8fc31f;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer}
-.bex{padding:9px 14px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:11px;cursor:pointer}
-.toast{position:fixed;bottom:80px;right:22px;background:#1e1e1c;color:#fff;padding:7px 14px;border-radius:4px;font-size:11px;opacity:0;transition:opacity .3s;z-index:300}
+.barow{width:100%;padding:6px;background:none;border:1px dashed var(--border);border-radius:4px;font-size:10px;color:var(--muted);cursor:pointer;margin-top:5px;transition:all .15s}
+.barow:hover{border-color:var(--accent);color:var(--accent)}
+.ae{border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;position:relative;background:var(--surface)}
+.aerm{position:absolute;top:8px;right:10px;background:none;border:none;color:#bbb;cursor:pointer;font-size:12px;line-height:1;padding:2px 4px;border-radius:3px}
+.aerm:hover{background:#fee2e2;color:#991b1b}
+.epft{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:7px;position:sticky;bottom:0;background:#fff}
+.bsv{flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:filter .15s}
+.bsv:hover{filter:brightness(1.1)}
+.bex{padding:9px 14px;background:none;border:1px solid var(--border);border-radius:4px;font-size:11px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;color:#555}
+.bex:hover{border-color:#999;color:#333}
+.toast{position:fixed;bottom:80px;right:22px;background:var(--dark);color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;z-index:300;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.2)}
 .toast.on{opacity:1}
-.home-btn{padding:4px 12px;background:#333;color:#aaa;border-radius:3px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap}
-.home-btn:hover{color:#fff;background:#444}
+.home-btn{padding:5px 12px;background:#333;color:#aaa;border-radius:4px;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;font-family:'Noto Sans JP',sans-serif;transition:all .15s}
+.home-btn:hover{color:#fff;background:#555}
 </style>
 </head>
 <body>
@@ -110,10 +162,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
 </nav>
 <div class="month-sel">
   <a href="index.html" class="home-btn">← ホーム</a>
-  <span style="font-size:10px;color:#888;margin-left:8px">表示月：</span>
+  <span style="font-size:10px;color:#666;margin-left:4px;font-family:'DM Mono',monospace">表示月：</span>
   <select id="msel" onchange="switchMonth(this.value)"></select>
   <div style="position:relative;display:inline-block">
-    <button id="addMonthBtn" onclick="toggleAddMonthPop()">＋ 月を追加</button>
+    <button class="tb-btn tb-ghost" id="addMonthBtn" onclick="toggleAddMonthPop()">＋ 月を追加</button>
     <div id="addMonthPop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#2a2a28;border:1px solid #444;border-radius:6px;padding:12px;z-index:300;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">
       <div style="display:flex;align-items:center;gap:6px">
         <select id="addY" style="background:#333;color:#ccc;border:1px solid #555;padding:5px 8px;font-size:12px;border-radius:3px"></select>
@@ -125,16 +177,16 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#555;border-left:1px solid #333}
           <option value="10">10月</option><option value="11">11月</option><option value="12">12月</option>
         </select>
         <span style="color:#666;font-size:12px">月</span>
-        <button onclick="confirmAddMonth()" style="padding:5px 14px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:12px;font-weight:700;cursor:pointer">追加</button>
+        <button onclick="confirmAddMonth()" class="tb-btn tb-primary" style="font-weight:700">追加</button>
       </div>
     </div>
   </div>
-  <button onclick="deleteMonth()" style="background:#6b2020">🗑 この月を削除</button>
+  <button class="tb-btn tb-danger" onclick="deleteMonth()">🗑 この月を削除</button>
   <input type="file" id="xlsxIn" accept=".xlsx,.xls" style="display:none" onchange="handleExcelUpload(this)">
-  <button onclick="document.getElementById('xlsxIn').click()" style="background:#2a6496">📊 Excelで更新</button>
-  <button onclick="downloadTemplate()" style="background:#555">📋 テンプレート</button>
-  <button onclick="exportHtml()" style="background:#444;margin-left:auto">📥 HTMLに保存</button>
-  <button onclick="openHelp()" style="background:#555;margin-left:8px">？ 使い方</button>
+  <button class="tb-btn tb-blue" onclick="document.getElementById('xlsxIn').click()">📊 Excelで更新</button>
+  <button class="tb-btn tb-neutral" onclick="downloadTemplate()">📋 テンプレート</button>
+  <button class="tb-btn tb-save" onclick="exportHtml()">📥 HTMLに保存</button>
+  <button class="tb-btn tb-ghost" onclick="openHelp()" style="margin-left:4px">？ 使い方</button>
 </div>
 </div>
 
