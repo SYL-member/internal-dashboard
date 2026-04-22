@@ -1099,7 +1099,7 @@ const DEFAULT_DATA = {"period":"2025 Q1・Q2","updatedAt":"2025年3月","summary
 // =============================================
 // STATE
 // =============================================
-let currentData = { ...DEFAULT_DATA };
+let currentData = JSON.parse(JSON.stringify(DEFAULT_DATA));
 let charts = {};
 let pendingFile = null;
 
