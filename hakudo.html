@@ -101,12 +101,12 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 .badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.03em}
 .bm{background:#fde8e8;color:#7f1d1d}.bn{background:#f1f5f9;color:#475569}
 /* ツールバー */
-.month-sel{display:flex;align-items:center;gap:6px;padding:8px 16px;background:transparent;flex-wrap:wrap}
+.month-sel{width:1280px;display:flex;align-items:center;gap:8px;padding:8px 16px;background:transparent}
 .month-sel select{background:#fff;color:var(--text);border:1px solid var(--border);padding:5px 8px;font-size:11px;border-radius:6px;font-family:'Noto Sans JP',sans-serif}
 /* ツールバーボタン共通 */
 .month-sel button,.tb-btn{
-  padding:5px 12px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;
-  cursor:pointer;display:inline-flex;align-items:center;gap:4px;
+  padding:5px 18px;border:1px solid var(--border);border-radius:6px;font-size:11px;font-weight:500;
+  cursor:pointer;display:inline-flex;align-items:center;gap:4px;white-space:nowrap;
   font-family:'Noto Sans JP',sans-serif;transition:all .15s;
   background:#fff;color:var(--text-muted,#64748b);
 }
@@ -202,40 +202,30 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
   </div>
   <div style="padding:20px 24px;font-size:13px;line-height:1.8;color:#333">
 
-    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">毎月の更新フロー</div>
-    <div style="background:#f5f5f2;border-radius:6px;padding:14px 16px;font-size:12px;line-height:2.2;margin-bottom:20px">
-      <b>①</b> <a href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fhead%2Doffice%2FShared%20Documents%2F%E7%99%BD%E9%8A%85%28%E8%AB%8B%E6%B1%82%E9%96%A2%E4%BF%82%EF%BC%89%2F1%E8%AB%8B%E6%B1%82%E6%9B%B8&viewid=e6a61e63%2D9bb7%2D47f8%2D9158%2Dc07c1eea0839" target="_blank" style="color:#4a9edd">SharePoint：白銅(請求関係)/1請求書</a> から<br>　　<span style="color:#888">【YYYYMM】神奈川便・運賃用（新料金）.xlsx</span> を開く<br>
-      <b>②</b> <span style="background:#2a6496;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px">📊 Excelで更新</span> でそのままアップ → 物量・便別重量を自動取得<br>
-      <b>③</b> <span style="background:#555;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px">✏️</span> ボタン → <b>前年同月値・Kg単価・事故・コメント</b>を手入力<br>
-      <b>④</b> <span style="background:#444;color:#fff;padding:1px 6px;border-radius:3px;font-size:11px">📥 HTMLに保存</span> を押して完了
-    </div>
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">毎月の更新手順</div>
+    <ol style="font-size:13px;line-height:2.4;padding-left:18px;margin-bottom:20px">
+      <li><a href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fhead%2Doffice%2FShared%20Documents%2F%E7%99%BD%E9%8A%85%28%E8%AB%8B%E6%B1%82%E9%96%A2%E4%BF%82%EF%BC%89%2F1%E8%AB%8B%E6%B1%82%E6%9B%B8&viewid=e6a61e63%2D9bb7%2D47f8%2D9158%2Dc07c1eea0839" target="_blank" style="color:#4a9edd">SharePoint</a> から請求書Excel（YYYYMM_神奈川便・運賃用）をダウンロード</li>
+      <li>「Excelで更新」でアップロード → 物量・便別重量を自動取得</li>
+      <li>「✏️」ボタンで前年値・Kg単価・事故・コメントを手入力</li>
+      <li>「HTMLに保存」でファイルをダウンロードし、git push</li>
+    </ol>
 
-    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">Excelで自動取得 / 手入力が必要なもの</div>
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">自動取得 / 手入力</div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
       <tr style="background:#f5f5f2">
-        <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da;width:50%">📊 自動取得（請求書Excelアップ時）</th>
-        <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da">✏️ 手入力が必要</th>
+        <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da;width:50%">自動取得（Excel アップ時）</th>
+        <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da">手入力が必要</th>
       </tr>
       <tr>
-        <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2">稼働日数<br>9便の重量（今月分）<br>東神合計・1日あたり<br>東京便・神奈川便の内訳</td>
-        <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2">前年同月の重量・1日あたり<br>便別の前年同月値<br>Kg単価（23〜26年）<br>事故データ・コメント</td>
+        <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2.2">稼働日数<br>9便の重量（今月）<br>東神合計・1日あたり</td>
+        <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2.2">前年同月値（重量・1日あたり・便別）<br>Kg単価（23〜26年）<br>事故・コメント</td>
       </tr>
     </table>
 
-    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">ボタン一覧</div>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
-      <tr style="background:#f5f5f2"><th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da;width:44%">ボタン</th><th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da">機能</th></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>＋ 月を追加</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">新しい月を空データで追加（追加後に✏️で入力）</td></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>🗑 この月を削除</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">表示中の月を削除（最後の1ヶ月は削除不可）</td></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>📊 Excelで更新</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">請求書Excel or テンプレートExcelをアップして一括更新</td></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>📋 テンプレート</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">現在月のデータ入りExcelをDL（手入力用）</td></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>📥 HTMLに保存</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">編集内容を確定・HTMLファイルとしてDL</td></tr>
-      <tr><td style="padding:7px 12px;border:1px solid #e0e0da"><b>✏️（右下フローティング）</b></td><td style="padding:7px 12px;border:1px solid #e0e0da">前年値・Kg単価・事故・コメントの手入力モーダル</td></tr>
-    </table>
-
-    <div style="background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:12px 16px;font-size:12px;line-height:2">
-      ⚠️ <b>📥 HTMLに保存を押し忘れると、次回開いた時にデータが消えます</b><br>
-      ⚠️ 保存したHTMLをGitHubにアップしないと、公開URLには反映されません
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">注意</div>
+    <div style="font-size:12px;line-height:2.2;color:#555">
+      「HTMLに保存」を押さないと編集は消えます。<br>
+      ダウンロードしたHTMLをgit pushするとGitHub Pagesに反映されます。
     </div>
 
   </div>
