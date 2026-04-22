@@ -1,11 +1,9 @@
-<!DOCTYPE html>
-<html lang="ja">
-<head>
+<html lang="ja"><head>
 <meta charset="UTF-8">
 <title>白銅 定例ダッシュボード</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <style>
 :root {
   --accent:   #8fc31f;
@@ -166,7 +164,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 <div class="month-sel">
   <a href="index.html" class="home-btn">← ホーム</a>
   <span style="font-size:10px;color:#666;margin-left:4px;font-family:'DM Mono',monospace">表示月：</span>
-  <select id="msel" onchange="switchMonth(this.value)"></select>
+  <select id="msel" onchange="switchMonth(this.value)"><option value="2026-01">2026年1月</option><option value="2026-02">2026年2月</option><option value="2026-03">2026年3月</option></select>
   <div style="position:relative;display:inline-block">
     <button class="tb-btn" id="addMonthBtn" onclick="toggleAddMonthPop()">＋ 月を追加</button>
     <div id="addMonthPop" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#2a2a28;border:1px solid #444;border-radius:6px;padding:12px;z-index:300;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.4)">
@@ -204,7 +202,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">毎月の更新手順</div>
     <ol style="font-size:13px;line-height:2.4;padding-left:18px;margin-bottom:20px">
-      <li><a href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fhead%2Doffice%2FShared%20Documents%2F%E7%99%BD%E9%8A%85%28%E8%AB%8B%E6%B1%82%E9%96%A2%E4%BF%82%EF%BC%89%2F1%E8%AB%8B%E6%B1%82%E6%9B%B8&viewid=e6a61e63%2D9bb7%2D47f8%2D9158%2Dc07c1eea0839" target="_blank" style="color:#4a9edd">SharePoint</a> から請求書Excel（YYYYMM_神奈川便・運賃用）をダウンロード</li>
+      <li><a href="https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/Forms/AllItems.aspx?id=%2Fsites%2Fhead%2Doffice%2FShared%20Documents%2F%E7%99%BD%E9%8A%85%28%E8%AB%8B%E6%B1%82%E9%96%A2%E4%BF%82%EF%BC%89%2F1%E8%AB%8B%E6%B1%82%E6%9B%B8&amp;viewid=e6a61e63%2D9bb7%2D47f8%2D9158%2Dc07c1eea0839" target="_blank" style="color:#4a9edd">SharePoint</a> から請求書Excel（YYYYMM_神奈川便・運賃用）をダウンロード</li>
       <li>「Excelで更新」でアップロード → 物量・便別重量を自動取得</li>
       <li>「✏️」ボタンで前年値・Kg単価・事故・コメントを手入力</li>
       <li>「HTMLに保存」でファイルをダウンロードし、git push</li>
@@ -212,7 +210,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">自動取得 / 手入力</div>
     <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px">
-      <tr style="background:#f5f5f2">
+      <tbody><tr style="background:#f5f5f2">
         <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da;width:50%">自動取得（Excel アップ時）</th>
         <th style="padding:8px 12px;text-align:left;border:1px solid #e0e0da">手入力が必要</th>
       </tr>
@@ -220,7 +218,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
         <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2.2">稼働日数<br>9便の重量（今月）<br>東神合計・1日あたり</td>
         <td style="padding:8px 12px;border:1px solid #e0e0da;vertical-align:top;line-height:2.2">前年同月値（重量・1日あたり・便別）<br>Kg単価（23〜26年）<br>事故・コメント</td>
       </tr>
-    </table>
+    </tbody></table>
 
     <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0da">注意</div>
     <div style="font-size:12px;line-height:2.2;color:#555">
@@ -233,32 +231,42 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 
 <!-- Slide 0: 物量推移 -->
 <div class="slide on" id="s0">
-  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl0"></div><div class="pn">1 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl0">2026年3月 — 1. 物量把握（神奈川工場からの出荷分・神奈川・東京）</div><div class="pn">1 / 5</div></div>
   <div class="sbody">
     <div class="main">
-      <div class="krow" style="grid-template-columns:repeat(4,1fr)" id="kpi0"></div>
+      <div class="krow" style="grid-template-columns:repeat(4,1fr)" id="kpi0">
+    <div class="kcard"><div class="klbl">月間総重量（東神）</div><div class="kval">181,612<span class="kunit"> kg</span></div><div class="kdelta up">+0.6%（前年同月比）</div></div>
+    <div class="kcard"><div class="klbl">1日あたり重量</div><div class="kval">8,648<span class="kunit"> kg/日</span></div><div class="kdelta dn">-4.2%（稼働21日）</div></div>
+    <div class="kcard"><div class="klbl">東京便</div><div class="kval">68,587<span class="kunit"> kg</span></div><div class="kdelta neu">東神の38%</div></div>
+    <div class="kcard"><div class="klbl">神奈川便</div><div class="kval">113,025<span class="kunit"> kg</span></div><div class="kdelta neu">東神の62%</div></div></div>
       <div class="card" style="flex:1">
         <div class="ctitle">出荷重量【東京・神奈川】月間・日平均</div>
         <div class="leg">
           <span><span class="sw" style="background:#bbb;border-radius:0"></span>24年重量</span>
           <span><span class="sw" style="background:#888;border-radius:0"></span>25年重量</span>
           <span><span class="sw" style="background:#8fc31f;border-radius:0"></span>26年重量</span>
-          <span style="margin-left:6px"><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#bbb" stroke-width="2"/></svg>24年/日</span>
-          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#888" stroke-width="2"/></svg>25年/日</span>
-          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#8fc31f" stroke-width="2.5"/></svg>26年/日</span>
+          <span style="margin-left:6px"><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#bbb" stroke-width="2"></line></svg>24年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#888" stroke-width="2"></line></svg>25年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#8fc31f" stroke-width="2.5"></line></svg>26年/日</span>
         </div>
-        <div class="cvs"><canvas id="cT"></canvas></div>
+        <div class="cvs"><canvas id="cT" width="1860" height="963" style="display: block; box-sizing: border-box; height: 481px; width: 930px;"></canvas></div>
       </div>
     </div>
     <div class="side">
-      <div class="cmt-box" id="cmt0"></div>
+      <div class="cmt-box" id="cmt0">2025年比
+月あたり（線）+0.6%
+1日あたり（棒）▲4.2%
+
+増えた便：801、675
+減った便：02、23、35
+　　　　　41、42、45、677</div>
     </div>
   </div>
 </div>
 
 <!-- Slide 1: 便別重量 -->
 <div class="slide" id="s1">
-  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl1"></div><div class="pn">2 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl1">2026年3月 — 1. 物量把握（便ごと、神奈川・東京）</div><div class="pn">2 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -267,18 +275,25 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
           <span><span class="sw" style="background:#ddd;border:1px solid #ccc"></span>前年同月</span>
           <span><span class="sw" style="background:#8fc31f"></span>今月</span>
         </div>
-        <div class="cvs"><canvas id="cR"></canvas></div>
+        <div class="cvs"><canvas id="cR" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
     </div>
     <div class="side">
-      <div class="cmt-box" id="cmt1"></div>
+      <div class="cmt-box" id="cmt1">2026年3月比
+
+増えた便
+801、41、45
+
+減った便
+02、23、35
+42、675、677</div>
     </div>
   </div>
 </div>
 
 <!-- Slide 2: Kg単価 -->
 <div class="slide" id="s2">
-  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl2"></div><div class="pn">3 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl2">2026年3月 — 1. 物量把握：Kg単価把握（神奈川・東京・福島）</div><div class="pn">3 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -289,18 +304,18 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
           <span><span class="sw" style="background:#888"></span>25年</span>
           <span><span class="sw" style="background:#8fc31f"></span>26年</span>
         </div>
-        <div class="cvs"><canvas id="cK"></canvas></div>
+        <div class="cvs"><canvas id="cK" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
     </div>
     <div class="side">
-      <div class="cmt-kpi" id="cmt2"></div>
+      <div class="cmt-kpi" id="cmt2"><div class="kitem"><div class="kyear">23年3月</div><div class="knum ">47.1<span style="font-size:13px">円</span></div></div><div class="kitem"><div class="kyear">24年3月</div><div class="knum ">49.4<span style="font-size:13px">円</span></div></div><div class="kitem"><div class="kyear">25年3月</div><div class="knum ">48.6<span style="font-size:13px">円</span></div></div><div class="kitem"><div class="kyear">26年3月</div><div class="knum cur">51.2<span style="font-size:13px">円</span></div></div></div>
     </div>
   </div>
 </div>
 
 <!-- Slide 3: 事故グラフ -->
 <div class="slide" id="s3">
-  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl3"></div><div class="pn">4 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl3">2026年3月 — 2. 貨物事故について</div><div class="pn">4 / 5</div></div>
   <div class="sbody">
     <div class="main">
       <div class="card" style="flex:1">
@@ -309,20 +324,25 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
           <span><span class="sw" style="background:#888"></span>重大（紛失・破損）</span>
           <span><span class="sw" style="background:#ccc"></span>その他</span>
         </div>
-        <div class="cvs"><canvas id="cA"></canvas></div>
+        <div class="cvs"><canvas id="cA" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
     </div>
     <div class="side">
-      <div class="cmt-box" id="cmt3"></div>
+      <div class="cmt-box" id="cmt3">2026年3月発生分
+納品場所間違い・・・1件
+不在置き対応・・・0件</div>
     </div>
   </div>
 </div>
 
 <!-- Slide 4: 事故詳細 -->
 <div class="slide" id="s4">
-  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl4"></div><div class="pn">5 / 5</div></div>
+  <div class="shdr"><div class="logo"><div class="logo-mark">SY</div>SY<em>-</em>LINK</div><div class="ttl" id="ttl4">2026年3月 — 2. 貨物事故について</div><div class="pn">5 / 5</div></div>
   <div class="sbody" style="flex-direction:column">
-    <div class="krow" style="grid-template-columns:repeat(3,1fr);flex-shrink:0" id="kpi4"></div>
+    <div class="krow" style="grid-template-columns:repeat(3,1fr);flex-shrink:0" id="kpi4">
+    <div class="kcard kc-warn"><div class="klbl">今月の事故件数</div><div class="kval">1<span class="kunit"> 件</span></div><div class="kdelta up">重大事故なし</div></div>
+    <div class="kcard "><div class="klbl">重大事故（紛失・破損）</div><div class="kval">0<span class="kunit"> 件</span></div><div class="kdelta up">問題なし</div></div>
+    <div class="kcard kc-neutral"><div class="klbl">その他</div><div class="kval">1<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div></div>
     <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="ctitle">今月の事故詳細</div>
@@ -330,7 +350,19 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
       </div>
       <table class="atbl" id="atbl4">
         <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th><th></th></tr></thead>
-        <tbody></tbody>
+        <tbody><tr>
+        <td style="white-space:nowrap">3/6</td>
+        <td style="white-space:nowrap">801便</td>
+        <td style="white-space:nowrap">大進精機(株)</td>
+        <td><span class="badge bn">納品場所間違い</span></td>
+        <td>南六郷工場に納入予定を本社工場に誤って納入。</td>
+        <td style="color:#666">お客様転送対応済み。配送一覧マーキング運用開始。</td>
+        <td></td>
+        <td style="white-space:nowrap">
+          <button onclick="openAccidentEdit(0)" style="padding:2px 8px;background:#555;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;margin-bottom:3px;display:block">編集</button>
+          <button onclick="deleteAccidentDirect(0)" style="padding:2px 8px;background:#8b2020;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;display:block">削除</button>
+        </td>
+      </tr></tbody>
       </table>
     </div>
   </div>
@@ -351,9 +383,200 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 <script>
 // ===== データ定義 =====
 let DB = {
-  "2026-01":{label:"2026年1月",volume:{totalKg:147642,perDay:7771,workDays:19,tokyoKg:51984,kanagawaKg:95658,prevTotalKg:164056,prevPerDay:8635,routes:{"801":{curr:30258,prev:30881},"02":{curr:35370,prev:40137},"23":{curr:11687,prev:11487},"35":{curr:23236,prev:26450},"41":{curr:10809,prev:10359},"42":{curr:10916,prev:21922},"45":{curr:25366,prev:22820},"675":{curr:11131,prev:12691},"677":{curr:21927,prev:28224}}},quality:{accidents:[]},comments:{s0:"",s1:"",s3:""}},
-  "2026-02":{label:"2026年2月",volume:{totalKg:152907,perDay:8495,workDays:18,tokyoKg:55976,kanagawaKg:96931,prevTotalKg:164739,prevPerDay:8670,routes:{"801":{curr:29488,prev:28799},"02":{curr:35265,prev:38391},"23":{curr:13439,prev:15175},"35":{curr:23619,prev:24903},"41":{curr:13364,prev:14941},"42":{curr:13124,prev:17387},"45":{curr:24608,prev:25143},"675":{curr:13861,prev:12601},"677":{curr:23182,prev:25658}}},quality:{accidents:[{date:"2/6",route:"801",customer:"大進精機(株)",type:"納品場所間違い",detail:"南六郷工場に納入予定を本社工場に誤って納入。",action:"お客様転送対応済み。配送一覧マーキング運用開始。",major:false}]},comments:{s0:"2025年比\n月あたり（線） 92.8%\n1日あたり（棒）98.0%\n\n去年より少ない\n一昨年より多い",s1:"2026年2月比\n\n増えた便\n801、675\n\n減った便\n02、23、35\n41、42、45、677",s3:"2026年2月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"}},
-  "2026-03":{label:"2026年3月",volume:{totalKg:181612,perDay:8648,workDays:21,tokyoKg:68587,kanagawaKg:113025,prevTotalKg:180506,prevPerDay:9025,routes:{"801":{curr:31619,prev:29110},"02":{curr:41950,prev:43433},"23":{curr:15897,prev:16835},"35":{curr:23069,prev:28804},"41":{curr:17831,prev:13540},"42":{curr:19137,prev:22315},"45":{curr:32109,prev:26469},"675":{curr:10256,prev:14460},"677":{curr:24804,prev:22339}}},quality:{accidents:[{date:"3/6",route:"801",customer:"大進精機(株)",type:"納品場所間違い",detail:"南六郷工場に納入予定を本社工場に誤って納入。",action:"お客様転送対応済み。配送一覧マーキング運用開始。",major:false}]},comments:{s0:"2025年比\n月あたり（線）+0.6%\n1日あたり（棒）▲4.2%\n\n増えた便：801、675\n減った便：02、23、35\n　　　　　41、42、45、677",s1:"2026年3月比\n\n増えた便\n801、41、45\n\n減った便\n02、23、35\n42、675、677",s3:"2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"}}
+  "2026-01": {
+    "label": "2026年1月",
+    "volume": {
+      "totalKg": 147642,
+      "perDay": 7771,
+      "workDays": 19,
+      "tokyoKg": 51984,
+      "kanagawaKg": 95658,
+      "prevTotalKg": 164056,
+      "prevPerDay": 8635,
+      "routes": {
+        "23": {
+          "curr": 11687,
+          "prev": 11487
+        },
+        "35": {
+          "curr": 23236,
+          "prev": 26450
+        },
+        "41": {
+          "curr": 10809,
+          "prev": 10359
+        },
+        "42": {
+          "curr": 10916,
+          "prev": 21922
+        },
+        "45": {
+          "curr": 25366,
+          "prev": 22820
+        },
+        "675": {
+          "curr": 11131,
+          "prev": 12691
+        },
+        "677": {
+          "curr": 21927,
+          "prev": 28224
+        },
+        "801": {
+          "curr": 30258,
+          "prev": 30881
+        },
+        "02": {
+          "curr": 35370,
+          "prev": 40137
+        }
+      }
+    },
+    "quality": {
+      "accidents": []
+    },
+    "comments": {
+      "s0": "",
+      "s1": "",
+      "s3": ""
+    }
+  },
+  "2026-02": {
+    "label": "2026年2月",
+    "volume": {
+      "totalKg": 152907,
+      "perDay": 8495,
+      "workDays": 18,
+      "tokyoKg": 55976,
+      "kanagawaKg": 96931,
+      "prevTotalKg": 164739,
+      "prevPerDay": 8670,
+      "routes": {
+        "23": {
+          "curr": 13439,
+          "prev": 15175
+        },
+        "35": {
+          "curr": 23619,
+          "prev": 24903
+        },
+        "41": {
+          "curr": 13364,
+          "prev": 14941
+        },
+        "42": {
+          "curr": 13124,
+          "prev": 17387
+        },
+        "45": {
+          "curr": 24608,
+          "prev": 25143
+        },
+        "675": {
+          "curr": 13861,
+          "prev": 12601
+        },
+        "677": {
+          "curr": 23182,
+          "prev": 25658
+        },
+        "801": {
+          "curr": 29488,
+          "prev": 28799
+        },
+        "02": {
+          "curr": 35265,
+          "prev": 38391
+        }
+      }
+    },
+    "quality": {
+      "accidents": [
+        {
+          "date": "2/6",
+          "route": "801",
+          "customer": "大進精機(株)",
+          "type": "納品場所間違い",
+          "detail": "南六郷工場に納入予定を本社工場に誤って納入。",
+          "action": "お客様転送対応済み。配送一覧マーキング運用開始。",
+          "major": false
+        }
+      ]
+    },
+    "comments": {
+      "s0": "2025年比\n月あたり（線） 92.8%\n1日あたり（棒）98.0%\n\n去年より少ない\n一昨年より多い",
+      "s1": "2026年2月比\n\n増えた便\n801、675\n\n減った便\n02、23、35\n41、42、45、677",
+      "s3": "2026年2月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"
+    }
+  },
+  "2026-03": {
+    "label": "2026年3月",
+    "volume": {
+      "totalKg": 181612,
+      "perDay": 8648,
+      "workDays": 21,
+      "tokyoKg": 68587,
+      "kanagawaKg": 113025,
+      "prevTotalKg": 180506,
+      "prevPerDay": 9025,
+      "routes": {
+        "23": {
+          "curr": 15897,
+          "prev": 16835
+        },
+        "35": {
+          "curr": 23069,
+          "prev": 28804
+        },
+        "41": {
+          "curr": 17831,
+          "prev": 13540
+        },
+        "42": {
+          "curr": 19137,
+          "prev": 22315
+        },
+        "45": {
+          "curr": 32109,
+          "prev": 26469
+        },
+        "675": {
+          "curr": 10256,
+          "prev": 14460
+        },
+        "677": {
+          "curr": 24804,
+          "prev": 22339
+        },
+        "801": {
+          "curr": 31619,
+          "prev": 29110
+        },
+        "02": {
+          "curr": 41950,
+          "prev": 43433
+        }
+      }
+    },
+    "quality": {
+      "accidents": [
+        {
+          "date": "3/6",
+          "route": "801",
+          "customer": "大進精機(株)",
+          "type": "納品場所間違い",
+          "detail": "南六郷工場に納入予定を本社工場に誤って納入。",
+          "action": "お客様転送対応済み。配送一覧マーキング運用開始。",
+          "major": false
+        }
+      ]
+    },
+    "comments": {
+      "s0": "2025年比\n月あたり（線）+0.6%\n1日あたり（棒）▲4.2%\n\n増えた便：801、675\n減った便：02、23、35\n　　　　　41、42、45、677",
+      "s1": "2026年3月比\n\n増えた便\n801、41、45\n\n減った便\n02、23、35\n42、675、677",
+      "s3": "2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"
+    }
+  }
 };
 
 const TR = {
@@ -1068,5 +1291,6 @@ renderAll();
   </div>
 </div>
 
-</body>
-</html>
+
+
+</body></html>
