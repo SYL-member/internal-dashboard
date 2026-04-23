@@ -570,16 +570,18 @@ function renderCharts(data) {
     }
   });
 
-  // --- Donut Chart ---
+  // --- Donut Chart (ゼロ取引先は除外) ---
   const totals = CLIENTS.map(c => months.reduce((a, m) => a + (monthly[m].clients[c]?.gross || 0), 0));
+  const activeClients = CLIENTS.filter((_, i) => totals[i] > 0);
+  const activeTotals  = totals.filter(v => v > 0);
   const dCtx = document.getElementById('donutChart').getContext('2d');
   charts.donut = new Chart(dCtx, {
     type: 'doughnut',
     data: {
-      labels: CLIENTS,
+      labels: activeClients,
       datasets: [{
-        data: totals,
-        backgroundColor: CLIENTS.map(c => CLIENT_COLORS[c].solid),
+        data: activeTotals,
+        backgroundColor: activeClients.map(c => CLIENT_COLORS[c].solid),
         borderColor: '#f5f7fa', borderWidth: 3,
       }]
     },
@@ -791,6 +793,11 @@ function renderInsights(data) {
     const cls = rising ? 'ic-pos' : falling ? 'ic-neg' : 'ic-neu';
     const icon = rising ? '🔼' : falling ? '🔽' : '➡️';
     chips.push({ icon, head: '直近3ヶ月トレンド', main: label, sub: months.slice(-3).join(' → '), cls });
+  }
+
+  if (chips.length === 0) {
+    strip.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">データを更新するとインサイトが表示されます</div>';
+    return;
   }
 
   strip.innerHTML = chips.map(c => `

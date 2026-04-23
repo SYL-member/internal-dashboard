@@ -1787,6 +1787,11 @@ function renderInsights(data) {
     chips.push({ icon: '💎', head: 'Q2 最高粗利率', main: best.dept, sub: `粗利率 ${(best.margin * 100).toFixed(1)}%`, cls: 'ic-neu' });
   }
 
+  if (chips.length === 0) {
+    strip.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0;">データを更新するとインサイトが表示されます</div>';
+    return;
+  }
+
   strip.innerHTML = chips.map(c => `
     <div class="ic ${c.cls || ''}">
       <div class="ic-icon">${c.icon}</div>
@@ -1837,7 +1842,8 @@ function parseXLSX(workbook) {
   };
 
   const summary = [];
-  const skipDepts = ['【3PL】','【ソフトウェア】','SaaS','受託開発','【コンサルティング】','3PL 小計','SaaS 小計','ソフトウェア 小計','全部門 合計'];
+  // 受託開発は部門名でもあるので除外しない（セクションヘッダーは【受託開発】形式のみ除外）
+  const skipDepts = ['【3PL】','【ソフトウェア】','【受託開発】','SaaS','【コンサルティング】','3PL 小計','SaaS 小計','ソフトウェア 小計','全部門 合計'];
   const deptCatMap = {
     '白銅': '3PL', 'ムトウユニパック': '3PL', '化研マテリアル': '3PL', '吉川紙商事': '3PL', 'ナチュラジャパン': '3PL',
     'trackerr': 'SaaS', '配録': 'SaaS', 'イツクルLOGI': 'SaaS', 'KURAud': 'SaaS', 'HaKoPo': 'SaaS',
@@ -1852,7 +1858,7 @@ function parseXLSX(workbook) {
     if (skipDepts.includes(dept)) continue;
     if (dept === 'カテゴリ') break;
     const cat = deptCatMap[dept];
-    if (!cat) continue;
+    if (!cat) { console.warn('[gross-profit] 未登録の部門名:', dept, '→ スキップ。deptCatMapに追加してください。'); continue; }
 
     summary.push({
       dept,
