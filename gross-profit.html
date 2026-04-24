@@ -1255,6 +1255,11 @@ let pendingFile = null;
 const fmt = n => new Intl.NumberFormat('ja-JP').format(Math.round(n));
 const fmtPct = n => (n * 100).toFixed(1) + '%';
 const fmtDelta = n => (n >= 0 ? '+' : '') + fmt(n);
+const fmtDeltaBoth = (delta, prev) => {
+  const pct = prev > 0 ? ((delta / prev) * 100).toFixed(1) : null;
+  const pctStr = pct !== null ? (delta >= 0 ? '+' : '') + pct + '%' : '';
+  return pctStr ? `${pctStr} (¥${fmtDelta(delta)})` : `¥${fmtDelta(delta)}`;
+};
 
 function deltaClass(v) {
   if (v > 0) return 'positive';
@@ -1288,19 +1293,19 @@ function renderKPI(data) {
     {
       label: `${periodLbl} 粗利合計 (${yr})`,
       value: '¥' + fmt(h1_2025),
-      sub: `前年同期比 <span class="${pl(h1_delta)}">${fmtDelta(h1_delta)}</span>`,
+      sub: `前年同期比 <span class="${pl(h1_delta)}">${fmtDeltaBoth(h1_delta, h1_2024)}</span>`,
       color: 'green'
     },
     {
       label: `${q2L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q2_2025),
-      sub: `前年同期比 <span class="${pl(q2_2025-q2_2024)}">${fmtDelta(q2_2025-q2_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q2_2025-q2_2024)}">${fmtDeltaBoth(q2_2025-q2_2024, q2_2024)}</span>`,
       color: 'amber'
     },
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
-      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDeltaBoth(q1_2025-q1_2024, q1_2024)}</span>`,
       color: 'blue'
     },
     {
@@ -1314,7 +1319,7 @@ function renderKPI(data) {
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
-      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDeltaBoth(q1_2025-q1_2024, q1_2024)}</span>`,
       color: 'green'
     },
     {

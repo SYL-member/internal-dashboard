@@ -7,8 +7,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <style>
 :root {
-  --accent:   #1241C5;
-  --accent-h: #0D35A8;
+  --accent:   #8fc31f;
+  --accent-h: #72a019;
   --blue:     #2a6496;
   --blue-h:   #1e5480;
   --red:      #8b2020;
@@ -132,7 +132,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 .fr{margin-bottom:9px}
 .fr label{display:block;font-size:10px;font-weight:600;color:var(--muted);margin-bottom:3px;letter-spacing:.03em}
 .fr input,.fr textarea,.fr select{width:100%;padding:6px 8px;border:1px solid var(--border);border-radius:4px;font-size:12px;font-family:'Noto Sans JP',sans-serif;background:var(--surface);outline:none;transition:border-color .15s}
-.fr input:focus,.fr textarea:focus,.fr select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(18,65,197,0.12)}
+.fr input:focus,.fr textarea:focus,.fr select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(143,195,31,0.12)}
 .fr textarea{resize:vertical;min-height:48px}
 .g2f{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 .g3f{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}
@@ -277,10 +277,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
         <div class="leg">
           <span><span class="sw" style="background:#bbb;border-radius:0"></span>24年重量</span>
           <span><span class="sw" style="background:#888;border-radius:0"></span>25年重量</span>
-          <span><span class="sw" style="background:#1241C5;border-radius:0"></span>26年重量</span>
+          <span><span class="sw" style="background:#8fc31f;border-radius:0"></span>26年重量</span>
           <span style="margin-left:6px"><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#bbb" stroke-width="2"></line></svg>24年/日</span>
           <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#888" stroke-width="2"></line></svg>25年/日</span>
-          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#1241C5" stroke-width="2.5"></line></svg>26年/日</span>
+          <span><svg width="16" height="2" style="vertical-align:middle;margin-right:3px"><line x1="0" y1="1" x2="16" y2="1" stroke="#8fc31f" stroke-width="2.5"></line></svg>26年/日</span>
         </div>
         <div class="cvs"><canvas id="cT" width="930" height="481" style="display: block; box-sizing: border-box; height: 481px; width: 930px;"></canvas></div>
       </div>
@@ -306,7 +306,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
         <div class="ctitle">便別重量（前年同月比）</div>
         <div class="leg">
           <span><span class="sw" style="background:#ddd;border:1px solid #ccc"></span>前年同月</span>
-          <span><span class="sw" style="background:#1241C5"></span>今月</span>
+          <span><span class="sw" style="background:#8fc31f"></span>今月</span>
         </div>
         <div class="cvs"><canvas id="cR" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
@@ -335,7 +335,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
           <span><span class="sw" style="background:#ddd"></span>23年</span>
           <span><span class="sw" style="background:#bbb"></span>24年</span>
           <span><span class="sw" style="background:#888"></span>25年</span>
-          <span><span class="sw" style="background:#1241C5"></span>26年</span>
+          <span><span class="sw" style="background:#8fc31f"></span>26年</span>
         </div>
         <div class="cvs"><canvas id="cK" height="0" style="display: block; box-sizing: border-box; height: 0px; width: 0px;" width="0"></canvas></div>
       </div>
@@ -379,7 +379,7 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
     <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="ctitle">今月の事故詳細</div>
-        <button onclick="openAccidentEdit(-1)" style="padding:4px 12px;background:#1241C5;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 事故を追加</button>
+        <button onclick="openAccidentEdit(-1)" style="padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 事故を追加</button>
       </div>
       <table class="atbl" id="atbl4">
         <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th><th></th></tr></thead>
@@ -748,7 +748,7 @@ function renderAll() {
   // 事故テーブル
   const tbody = document.querySelector('#atbl4 tbody');
   tbody.innerHTML = a.length === 0
-    ? '<tr><td colspan="8" style="padding:16px;color:#888;font-style:italic">今月の事故はありません　　<button onclick="openAccidentEdit(-1)" style="padding:3px 10px;background:#1241C5;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 追加</button></td></tr>'
+    ? '<tr><td colspan="8" style="padding:16px;color:#888;font-style:italic">今月の事故はありません　　<button onclick="openAccidentEdit(-1)" style="padding:3px 10px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 追加</button></td></tr>'
     : a.map((x,i) => `<tr>
         <td style="white-space:nowrap">${x.date}</td>
         <td style="white-space:nowrap">${x.route}便</td>
@@ -780,10 +780,10 @@ function renderCharts(d) {
     data: { labels: TR.M, datasets: [
       {type:'bar', data:TR.y24, backgroundColor:'#bbb', yAxisID:'yR', order:4},
       {type:'bar', data:TR.y25, backgroundColor:'#888', yAxisID:'yR', order:3},
-      {type:'bar', data:b26,   backgroundColor:'#1241C5', yAxisID:'yR', order:2},
+      {type:'bar', data:b26,   backgroundColor:'#8fc31f', yAxisID:'yR', order:2},
       {type:'line',data:TR.d24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:7,spanGaps:false},
       {type:'line',data:TR.d25,borderColor:'#888',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:6,spanGaps:false},
-      {type:'line',data:l26,  borderColor:'#1241C5',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
+      {type:'line',data:l26,  borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
     ]},
     options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{
@@ -798,7 +798,7 @@ function renderCharts(d) {
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
     data:{labels:R.map(r=>r+'便'),datasets:[
       {data:R.map(r=>v.routes[r].prev),backgroundColor:'#ccc'},
-      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#1241C5'}
+      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#8fc31f'}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
@@ -810,7 +810,7 @@ function renderCharts(d) {
       {data:TR.kg23,borderColor:'#ddd',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
       {data:TR.kg24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
       {data:TR.kg25,borderColor:'#888',backgroundColor:'transparent',borderWidth:2,  pointRadius:2,spanGaps:true},
-      {data:TR.kg26,borderColor:'#1241C5',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
+      {data:TR.kg26,borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
       scales:{x:{ticks:{font:{size:12}},grid:{color:'rgba(0,0,0,.05)'}},y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
@@ -1391,7 +1391,7 @@ renderAll();
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="closeAccidentEdit()" style="flex:0 0 auto;padding:9px 16px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:12px;cursor:pointer">キャンセル</button>
-      <button onclick="saveAccidentEdit()" style="flex:1;padding:9px;background:#1241C5;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer">保存</button>
+      <button onclick="saveAccidentEdit()" style="flex:1;padding:9px;background:#8fc31f;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:700;cursor:pointer">保存</button>
     </div>
   </div>
 </div>
