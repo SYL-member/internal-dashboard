@@ -807,11 +807,10 @@ function renderCharts(d) {
   const R = Object.keys(v.routes);
   const rCurr = R.map(r=>v.routes[r].curr);
   const rPrev = R.map(r=>v.routes[r].prev);
-  const rBars = rCurr.map((c,i)=> c >= rPrev[i] ? '#8fc31f' : '#e05555');
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
     data:{labels:R.map(r=>r+'便'),datasets:[
-      {label:'前年同月',data:rPrev,backgroundColor:'#e8e8e0',borderColor:'#ccc',borderWidth:1},
-      {label:'今月',data:rCurr,backgroundColor:rBars}
+      {label:'前年同月',data:rPrev,backgroundColor:'#d4d4cc',borderColor:'#bbb',borderWidth:1},
+      {label:'今月',data:rCurr,backgroundColor:'#8fc31f'}
     ]},
     options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:11}}}},
       scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
