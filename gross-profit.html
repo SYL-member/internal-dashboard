@@ -673,7 +673,7 @@
     <div class="ic ic-neg">
       <div class="ic-icon">⚡</div>
       <div>
-        <div class="ic-head">Q1→Q2 モメンタム</div>
+        <div class="ic-head">粗利 Q1→Q2 推移</div>
         <div class="ic-main">-100.0%</div>
         <div class="ic-sub">Q1: ¥16,651,500 → Q2: ¥0</div>
       </div>
@@ -1284,7 +1284,7 @@ function renderKPI(data) {
   const periodLbl = q2L ? `${q1L}・${q2L}` : q1L;
 
   const kpis = q2L ? [
-    // 2期分ある場合：合計 + Q1 + Q2 + 増減率
+    // 2期分ある場合：合計 + Q2（直近）+ Q1 + 増減率
     {
       label: `${periodLbl} 粗利合計 (${yr})`,
       value: '¥' + fmt(h1_2025),
@@ -1292,16 +1292,16 @@ function renderKPI(data) {
       color: 'green'
     },
     {
-      label: `${q1L} 粗利合計 (${yr})`,
-      value: '¥' + fmt(q1_2025),
-      sub: `前年比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
-      color: 'blue'
-    },
-    {
       label: `${q2L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q2_2025),
       sub: `前年比 <span class="${pl(q2_2025-q2_2024)}">${fmtDelta(q2_2025-q2_2024)}</span>`,
       color: 'amber'
+    },
+    {
+      label: `${q1L} 粗利合計 (${yr})`,
+      value: '¥' + fmt(q1_2025),
+      sub: `前年比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
+      color: 'blue'
     },
     {
       label: `前年増減率（${periodLbl}）`,
@@ -1900,7 +1900,7 @@ function renderInsights(data) {
   if (_iQ2L && q1 > 0) {
     const mom = ((q2 - q1) / q1 * 100).toFixed(1);
     const cls = +mom >= 0 ? 'ic-pos' : 'ic-neg';
-    chips.push({ icon: '⚡', head: `${_iQ1L}→${_iQ2L} モメンタム`, main: `${+mom >= 0 ? '+' : ''}${mom}%`, sub: `${_iQ1L}: ¥${q1.toLocaleString()} → ${_iQ2L}: ¥${q2.toLocaleString()}`, cls });
+    chips.push({ icon: '⚡', head: `粗利 ${_iQ1L}→${_iQ2L} 推移`, main: `${+mom >= 0 ? '+' : ''}${mom}%`, sub: `${_iQ1L}: ¥${q1.toLocaleString()} → ${_iQ2L}: ¥${q2.toLocaleString()}`, cls });
   }
 
   // 3. 最高成長部門（Q2 前年比）
@@ -1913,9 +1913,13 @@ function renderInsights(data) {
     chips.push({ icon: '🏆', head: 'Q2 最高成長部門', main: top.dept, sub: `前年比 +${top.growth.toFixed(1)}%`, cls: 'ic-pos' });
   }
 
-  // 4. 要注意部門（Q2 前年比 最低）
-  if (growthDepts.length > 1) {
-    const bot = growthDepts[growthDepts.length - 1];
+  // 4. 要注意部門（Q2 前年比 最低 / ただし今期ゼロ部門は除外）
+  const activeGrowthDepts = growthDepts.filter(r => {
+    const s = data.summary.find(x => x.dept === r.dept);
+    return s && (s.q2_2025 || 0) > 0;
+  });
+  if (activeGrowthDepts.length > 0) {
+    const bot = activeGrowthDepts[activeGrowthDepts.length - 1];
     if (bot.growth < 0) {
       chips.push({ icon: '⚠️', head: 'Q2 要注意部門', main: bot.dept, sub: `前年比 ${bot.growth.toFixed(1)}%`, cls: 'ic-neg' });
     }
