@@ -1288,19 +1288,19 @@ function renderKPI(data) {
     {
       label: `${periodLbl} 粗利合計 (${yr})`,
       value: '¥' + fmt(h1_2025),
-      sub: `前年比 <span class="${pl(h1_delta)}">${fmtDelta(h1_delta)}</span>`,
+      sub: `前年同期比 <span class="${pl(h1_delta)}">${fmtDelta(h1_delta)}</span>`,
       color: 'green'
     },
     {
       label: `${q2L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q2_2025),
-      sub: `前年比 <span class="${pl(q2_2025-q2_2024)}">${fmtDelta(q2_2025-q2_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q2_2025-q2_2024)}">${fmtDelta(q2_2025-q2_2024)}</span>`,
       color: 'amber'
     },
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
-      sub: `前年比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
       color: 'blue'
     },
     {
@@ -1314,7 +1314,7 @@ function renderKPI(data) {
     {
       label: `${q1L} 粗利合計 (${yr})`,
       value: '¥' + fmt(q1_2025),
-      sub: `前年比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
+      sub: `前年同期比 <span class="${pl(q1_2025-q1_2024)}">${fmtDelta(q1_2025-q1_2024)}</span>`,
       color: 'green'
     },
     {
@@ -1889,7 +1889,7 @@ function renderInsights(data) {
     const yoy = ((h1 - h1prev) / h1prev * 100).toFixed(1);
     const cls = +yoy >= 0 ? 'ic-pos' : 'ic-neg';
     const icon = +yoy >= 0 ? '📈' : '📉';
-    chips.push({ icon, head: '上半期 前年比', main: `${+yoy >= 0 ? '+' : ''}${yoy}%`, sub: `前年: ¥${h1prev.toLocaleString()}`, cls });
+    chips.push({ icon, head: '上半期 粗利 前年同期比', main: `${+yoy >= 0 ? '+' : ''}${yoy}%`, sub: `前年同期: ¥${h1prev.toLocaleString()}`, cls });
   }
 
   // 2. Q1→Q2 モメンタム（2期ある場合のみ）
@@ -1910,7 +1910,7 @@ function renderInsights(data) {
     .sort((a, b) => b.growth - a.growth);
   if (growthDepts.length > 0) {
     const top = growthDepts[0];
-    chips.push({ icon: '🏆', head: 'Q2 最高成長部門', main: top.dept, sub: `前年比 +${top.growth.toFixed(1)}%`, cls: 'ic-pos' });
+    chips.push({ icon: '🏆', head: 'Q2 粗利 最高成長部門', main: top.dept, sub: `前年同期比 +${top.growth.toFixed(1)}%`, cls: 'ic-pos' });
   }
 
   // 4. 要注意部門（Q2 前年比 最低 / ただし今期ゼロ部門は除外）
@@ -1921,7 +1921,7 @@ function renderInsights(data) {
   if (activeGrowthDepts.length > 0) {
     const bot = activeGrowthDepts[activeGrowthDepts.length - 1];
     if (bot.growth < 0) {
-      chips.push({ icon: '⚠️', head: 'Q2 要注意部門', main: bot.dept, sub: `前年比 ${bot.growth.toFixed(1)}%`, cls: 'ic-neg' });
+      chips.push({ icon: '⚠️', head: 'Q2 粗利 要注意部門', main: bot.dept, sub: `前年同期比 ${bot.growth.toFixed(1)}%`, cls: 'ic-neg' });
     }
   }
 
