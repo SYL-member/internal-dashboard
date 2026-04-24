@@ -803,40 +803,18 @@ function renderCharts(d) {
       }}
   });
 
-  // Slide 1: 便別 時系列（25年→26年 連続タイムライン・積み上げ棒）
+  // Slide 1: 便別（前年同月比・増減色分け）
   const R = Object.keys(v.routes);
-  const ROUTE_COLORS = {
-    '801':'#2563eb','02':'#16a34a','23':'#d97706','35':'#9333ea',
-    '41':'#0891b2','42':'#e11d48','45':'#65a30d','675':'#c2410c','677':'#0f766e'
-  };
-  const sortedMonths = Object.keys(DB).sort();
-  const rLabels = [
-    ...sortedMonths.map(k=>{ const mi=parseInt(k.split('-')[1]); return '25/'+mi+'月'; }),
-    ...sortedMonths.map(k=>{ const mi=parseInt(k.split('-')[1]); return '26/'+mi+'月'; })
-  ];
-  const rDatasets = R.map(r => {
-    const base = ROUTE_COLORS[r] || '#888';
-    const prev25 = sortedMonths.map(k => DB[k].volume.routes[r]?.prev ?? null);
-    const curr26 = sortedMonths.map(k => DB[k].volume.routes[r]?.curr ?? null);
-    return {
-      label: r+'便',
-      data: [...prev25, ...curr26],
-      backgroundColor: [
-        ...prev25.map(()=> base+'55'),   // 25年：薄
-        ...curr26.map(()=> base)         // 26年：濃
-      ],
-      stack: 's'
-    };
-  });
+  const rCurr = R.map(r=>v.routes[r].curr);
+  const rPrev = R.map(r=>v.routes[r].prev);
+  const rBars = rCurr.map((c,i)=> c >= rPrev[i] ? '#8fc31f' : '#e05555');
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
-    data:{labels:rLabels, datasets:rDatasets},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:true,labels:{font:{size:11},boxWidth:12}}},
-      scales:{
-        x:{stacked:true,ticks:{font:{size:11}},grid:{color:ctx=> ctx.index===sortedMonths.length ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0)'}},
-        y:{stacked:true,min:0,ticks:{font:{size:11},callback:K},grid:{color:'rgba(0,0,0,.05)'}}
-      }
-    }
+    data:{labels:R.map(r=>r+'便'),datasets:[
+      {label:'前年同月',data:rPrev,backgroundColor:'#e8e8e0',borderColor:'#ccc',borderWidth:1},
+      {label:'今月',data:rCurr,backgroundColor:rBars}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:11}}}},
+      scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
   });
 
   // Slide 2: Kg単価（3年連続タイムライン）
