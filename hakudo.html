@@ -732,10 +732,10 @@ function renderAll() {
   const tp = pct(v.totalKg, prevTotal);
   const dp = pct(v.perDay,  prevDay);
   document.getElementById('kpi0').innerHTML = `
-    <div class="kcard"><div class="klbl">月間総重量（東神）</div><div class="kval">${fmt(v.totalKg)}<span class="kunit"> kg</span></div><div class="kdelta ${tp.v>=0?'up':'dn'}">${tp.s}（前年同月比）</div></div>
-    <div class="kcard"><div class="klbl">1日あたり重量</div><div class="kval">${fmt(v.perDay)}<span class="kunit"> kg/日</span></div><div class="kdelta ${dp.v>=0?'up':'dn'}">${dp.s}（稼働${v.workDays}日）</div></div>
-    <div class="kcard"><div class="klbl">東京便</div><div class="kval">${fmt(v.tokyoKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">東神の${v.totalKg?Math.round(v.tokyoKg/v.totalKg*100):0}%</div></div>
-    <div class="kcard"><div class="klbl">神奈川便</div><div class="kval">${fmt(v.kanagawaKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">東神の${v.totalKg?Math.round(v.kanagawaKg/v.totalKg*100):0}%</div></div>`;
+    <div class="kcard"><div class="klbl">月間総重量（東神）</div><div class="kval">${fmt(v.totalKg)}<span class="kunit"> kg</span></div><div class="kdelta ${tp.v>=0?'up':'dn'}">${tp.s}　前年同月比</div></div>
+    <div class="kcard"><div class="klbl">1日あたり重量</div><div class="kval">${fmt(v.perDay)}<span class="kunit"> kg/日</span></div><div class="kdelta ${dp.v>=0?'up':'dn'}">${dp.s}　前年同月比</div><div class="kdelta neu" style="font-size:10px;margin-top:2px">稼働${v.workDays}日</div></div>
+    <div class="kcard"><div class="klbl">東京便</div><div class="kval">${fmt(v.tokyoKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">構成比 ${v.totalKg?Math.round(v.tokyoKg/v.totalKg*100):0}%（東神）</div></div>
+    <div class="kcard"><div class="klbl">神奈川便</div><div class="kval">${fmt(v.kanagawaKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">構成比 ${v.totalKg?Math.round(v.kanagawaKg/v.totalKg*100):0}%（東神）</div></div>`;
 
   // KPI Slide 4
   const a = d.quality.accidents;
