@@ -653,8 +653,8 @@ let DB = {
       ]
     },
     "comments": {
-      "s0": "2025年比\n月あたり（線）+0.6%\n1日あたり（棒）▲4.2%\n\n増えた便：801、675\n減った便：02、23、35\n　　　　　41、42、45、677",
-      "s1": "2026年3月比\n\n増えた便\n801、41、45\n\n減った便\n02、23、35\n42、675、677",
+      "s0": "2025年比\n月あたり（棒）+0.6%\n1日あたり（線）▲4.2%\n\n増えた便：801、677、41、45\n減った便：02、23、35\n　　　　　42、675",
+      "s1": "2026年3月比\n\n増えた便\n801、677、41、45\n\n減った便\n02、23、35\n42、675",
       "s3": "2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"
     }
   }
@@ -769,51 +769,80 @@ function renderAll() {
 
 function renderCharts(d) {
   const v = d.volume;
-  const b26 = Array(12).fill(null), l26 = Array(12).fill(null);
+
+  // 3年連続タイムライン（24/1〜26/最新）
+  const tLabels=[], tKg=[], tDay=[], tColors=[];
+  const yearData = [{yr:'24',kg:TR.y24,day:TR.d24,col:'#ccc'},{yr:'25',kg:TR.y25,day:TR.d25,col:'#888'}];
+  yearData.forEach(({yr,kg,day,col}) => {
+    TR.M.forEach((m,i) => { tLabels.push(yr+'/'+m); tKg.push(kg[i]||null); tDay.push(day[i]||null); tColors.push(col); });
+  });
+  // 26年：DBから入力済み月のみ
   Object.keys(DB).sort().forEach(k => {
     const m = parseInt(k.split('-')[1]) - 1;
-    if (DB[k].volume.totalKg > 0) { b26[m] = DB[k].volume.totalKg; l26[m] = DB[k].volume.perDay; }
+    const row = DB[k].volume;
+    if (row.totalKg > 0) { tLabels.push('26/'+TR.M[m]); tKg.push(row.totalKg); tDay.push(row.perDay); tColors.push('#8fc31f'); }
   });
 
-  // Slide 0: 複合グラフ
+  // Slide 0: 複合グラフ（3年連続）
   CH.t = new Chart(document.getElementById('cT'), {
-    data: { labels: TR.M, datasets: [
-      {type:'bar', data:TR.y24, backgroundColor:'#bbb', yAxisID:'yR', order:4},
-      {type:'bar', data:TR.y25, backgroundColor:'#888', yAxisID:'yR', order:3},
-      {type:'bar', data:b26,   backgroundColor:'#8fc31f', yAxisID:'yR', order:2},
-      {type:'line',data:TR.d24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:7,spanGaps:false},
-      {type:'line',data:TR.d25,borderColor:'#888',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,yAxisID:'yL',order:6,spanGaps:false},
-      {type:'line',data:l26,  borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:3,yAxisID:'yL',order:0,spanGaps:false}
+    data: { labels: tLabels, datasets: [
+      {type:'bar',  data:tKg,  backgroundColor:tColors, yAxisID:'yR', order:2},
+      {type:'line', data:tDay, borderColor:'#231815', backgroundColor:'transparent', borderWidth:2, pointRadius:2, yAxisID:'yL', order:0, spanGaps:false,
+        segment:{borderColor:ctx=>tColors[ctx.p1DataIndex]||'#888'}}
     ]},
-    options: {responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    options: {responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{generateLabels:()=>[
+        {text:'24年',fillStyle:'#ccc',strokeStyle:'#ccc',lineWidth:0},
+        {text:'25年',fillStyle:'#888',strokeStyle:'#888',lineWidth:0},
+        {text:'26年',fillStyle:'#8fc31f',strokeStyle:'#8fc31f',lineWidth:0}
+      ]}}},
       scales:{
-        x:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,.05)'}},
+        x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:18},grid:{color:'rgba(0,0,0,.04)'}},
         yL:{type:'linear',position:'left', min:0,ticks:{font:{size:11},callback:K},grid:{color:'rgba(0,0,0,.05)'}},
         yR:{type:'linear',position:'right',min:0,ticks:{font:{size:11},callback:K},grid:{drawOnChartArea:false}}
       }}
   });
 
-  // Slide 1: 便別
+  // Slide 1: 便別（前年比・増減色分け）
   const R = Object.keys(v.routes);
+  const rCurr = R.map(r=>v.routes[r].curr);
+  const rPrev = R.map(r=>v.routes[r].prev);
+  const rBars = rCurr.map((c,i)=> c >= rPrev[i] ? '#8fc31f' : '#e05555');
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
     data:{labels:R.map(r=>r+'便'),datasets:[
-      {data:R.map(r=>v.routes[r].prev),backgroundColor:'#ccc'},
-      {data:R.map(r=>v.routes[r].curr),backgroundColor:'#8fc31f'}
+      {label:'前年',data:rPrev,backgroundColor:'#e8e8e0',borderColor:'#ccc',borderWidth:1},
+      {label:'今月',data:rCurr,backgroundColor:rBars}
     ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,labels:{font:{size:11}}}},
       scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
   });
 
-  // Slide 2: Kg単価
+  // Slide 2: Kg単価（3年連続タイムライン）
+  const kLabels=[], kData=[], kColors=[];
+  [{yr:'24',kg:TR.kg24,col:'#bbb'},{yr:'25',kg:TR.kg25,col:'#888'}].forEach(({yr,kg,col})=>{
+    TR.M.forEach((m,i)=>{ if(kg[i]!=null){kLabels.push(yr+'/'+m); kData.push(kg[i]); kColors.push(col);} });
+  });
+  TR.M.forEach((m,i)=>{ if(TR.kg26[i]!=null){kLabels.push('26/'+m); kData.push(TR.kg26[i]); kColors.push('#8fc31f');} });
+
   CH.k = new Chart(document.getElementById('cK'), {type:'line',
-    data:{labels:TR.M,datasets:[
-      {data:TR.kg23,borderColor:'#ddd',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
-      {data:TR.kg24,borderColor:'#bbb',backgroundColor:'transparent',borderWidth:1.5,pointRadius:2,spanGaps:true},
-      {data:TR.kg25,borderColor:'#888',backgroundColor:'transparent',borderWidth:2,  pointRadius:2,spanGaps:true},
-      {data:TR.kg26,borderColor:'#8fc31f',backgroundColor:'transparent',borderWidth:2.5,pointRadius:4,spanGaps:false}
-    ]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
-      scales:{x:{ticks:{font:{size:12}},grid:{color:'rgba(0,0,0,.05)'}},y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
+    data:{labels:kLabels,datasets:[{
+      data:kData,
+      borderColor:'#231815',
+      backgroundColor:'transparent',
+      borderWidth:2,
+      pointRadius:3,
+      pointBackgroundColor:kColors,
+      spanGaps:false,
+      segment:{borderColor:ctx=>kColors[ctx.p1DataIndex]||'#888'}
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:true,labels:{generateLabels:()=>[
+        {text:'24年',fillStyle:'#bbb',strokeStyle:'#bbb',lineWidth:0},
+        {text:'25年',fillStyle:'#888',strokeStyle:'#888',lineWidth:0},
+        {text:'26年',fillStyle:'#8fc31f',strokeStyle:'#8fc31f',lineWidth:0}
+      ]}}},
+      scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:18},grid:{color:'rgba(0,0,0,.04)'}},
+        y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
   });
 
   // Slide 3: 事故グラフ
@@ -1300,6 +1329,27 @@ function downloadTemplate() {
 // ===== 事故直接編集 =====
 let _accIdx = -1; // -1=新規, 0以上=編集対象index
 
+// 画像アップロード（base64変換）
+function loadAccImg(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    document.getElementById('ac_imgurl').value = '';
+    document.getElementById('ac_imgthumb').src = data;
+    document.getElementById('ac_imgpreview').style.display = 'block';
+    document.getElementById('ac_imgpreview').dataset.base64 = data;
+  };
+  reader.readAsDataURL(file);
+}
+function clearAccImg() {
+  document.getElementById('ac_imgfile').value = '';
+  document.getElementById('ac_imgurl').value = '';
+  document.getElementById('ac_imgpreview').style.display = 'none';
+  document.getElementById('ac_imgpreview').dataset.base64 = '';
+}
+
 function openAccidentEdit(idx) {
   _accIdx = idx;
   const a = idx >= 0 ? DB[cur].quality.accidents[idx] : {date:'',route:'',customer:'',type:'誤配達',major:false,detail:'',action:'',img:''};
@@ -1311,7 +1361,20 @@ function openAccidentEdit(idx) {
   document.getElementById('ac_major').value    = a.major ? '1' : '0';
   document.getElementById('ac_detail').value   = a.detail || '';
   document.getElementById('ac_action').value   = a.action || '';
-  document.getElementById('ac_imgurl').value = a.img || '';
+  // 画像：base64かURLかを判定して表示
+  const imgVal = a.img || '';
+  document.getElementById('ac_imgfile').value = '';
+  const preview = document.getElementById('ac_imgpreview');
+  if (imgVal.startsWith('data:')) {
+    document.getElementById('ac_imgurl').value = '';
+    document.getElementById('ac_imgthumb').src = imgVal;
+    preview.style.display = 'block';
+    preview.dataset.base64 = imgVal;
+  } else {
+    document.getElementById('ac_imgurl').value = imgVal;
+    preview.style.display = 'none';
+    preview.dataset.base64 = '';
+  }
   document.getElementById('accOv').style.display = 'block';
   document.getElementById('accModal').style.display = 'block';
 }
@@ -1320,6 +1383,8 @@ function closeAccidentEdit() {
   document.getElementById('accModal').style.display = 'none';
 }
 function saveAccidentEdit() {
+  const preview = document.getElementById('ac_imgpreview');
+  const imgVal = preview.dataset.base64 || document.getElementById('ac_imgurl').value.trim();
   const acc = {
     date:     document.getElementById('ac_date').value.trim(),
     route:    document.getElementById('ac_route').value.trim(),
@@ -1328,7 +1393,7 @@ function saveAccidentEdit() {
     major:    document.getElementById('ac_major').value === '1',
     detail:   document.getElementById('ac_detail').value.trim(),
     action:   document.getElementById('ac_action').value.trim(),
-    img:      document.getElementById('ac_imgurl').value.trim()
+    img:      imgVal
   };
   const accidents = DB[cur].quality.accidents;
   if (_accIdx >= 0) { accidents[_accIdx] = acc; } else { accidents.push(acc); }
@@ -1385,9 +1450,19 @@ renderAll();
     </div>
     <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">事故詳細</label><textarea id="ac_detail" rows="3" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
     <div style="margin-bottom:8px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">対応</label><textarea id="ac_action" rows="2" style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;resize:vertical;font-family:inherit"></textarea></div>
-    <div style="margin-bottom:16px"><label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:3px">現場写真URL（SharePoint等・任意）</label>
-      <input type="url" id="ac_imgurl" placeholder="https://sharepoint.com/..." style="width:100%;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;box-sizing:border-box">
-      <span style="font-size:10px;color:#999;margin-top:2px;display:block">SharePointにアップした写真のリンクを貼り付けてください</span>
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:10px;font-weight:600;color:#888;margin-bottom:6px">現場写真（任意）</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <label style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f5f5f0;border:1px solid #e0e0da;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap">
+          📎 ファイルを選択
+          <input type="file" id="ac_imgfile" accept="image/*" style="display:none" onchange="loadAccImg(this)">
+        </label>
+        <input type="url" id="ac_imgurl" placeholder="または URLを貼り付け" style="flex:1;min-width:160px;padding:6px 8px;border:1px solid #e0e0da;border-radius:4px;font-size:12px;box-sizing:border-box">
+      </div>
+      <div id="ac_imgpreview" style="margin-top:8px;display:none">
+        <img id="ac_imgthumb" style="max-height:80px;max-width:100%;border-radius:4px;border:1px solid #e0e0da">
+        <button onclick="clearAccImg()" style="display:block;margin-top:4px;font-size:10px;color:#999;background:none;border:none;cursor:pointer;padding:0">✕ 削除</button>
+      </div>
     </div>
     <div style="display:flex;gap:8px">
       <button onclick="closeAccidentEdit()" style="flex:0 0 auto;padding:9px 16px;background:none;border:1px solid #e0e0da;border-radius:4px;font-size:12px;cursor:pointer">キャンセル</button>
