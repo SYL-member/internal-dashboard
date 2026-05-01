@@ -109,20 +109,21 @@
   .cascade-label { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
   .cascade-value { font-family:'DM Mono',monospace; font-size:20px; font-weight:600; line-height:1.1; margin-bottom:4px; }
   .cascade-rate { font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; }
-  .cascade-delta { font-size:10px; margin-top:4px; font-family:'DM Mono',monospace; }
-  .cascade-bar { height:4px; border-radius:2px; margin-top:12px; }
-  .cb-rev  { background:var(--accent2); }
+  .cascade-target { font-size:10px; color:#94a3b8; font-family:'DM Mono',monospace; margin-top:2px; }
+  .cascade-bar-outer { height:6px; border-radius:3px; background:rgba(0,0,0,0.08); margin-top:12px; overflow:hidden; }
+  .cascade-bar { height:100%; border-radius:3px; min-width:4px; transition:width 0.4s ease; }
+  .cb-rev   { background:var(--accent2); }
   .cb-gross { background:#0d9488; }
-  .cb-op   { background:var(--positive); }
-  .cb-ord  { background:#2563eb; }
-  .cb-net  { background:#7c3aed; }
+  .cb-op    { background:var(--positive); }
+  .cb-ord   { background:#2563eb; }
+  .cb-net   { background:#7c3aed; }
 
   /* Segment table */
   .seg-table { width:100%; border-collapse:collapse; font-size:13px; }
-  .seg-table th { padding:8px 12px; font-size:10px; font-weight:600; letter-spacing:0.06em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); }
+  .seg-table th { padding:8px 10px; font-size:10px; font-weight:600; letter-spacing:0.06em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
   .seg-table th:first-child { text-align:left; padding-left:16px; }
-  .seg-table td { padding:12px 12px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.7); }
-  .seg-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:13px; color:var(--text); padding-left:16px; }
+  .seg-table td { padding:10px 10px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.7); white-space:nowrap; }
+  .seg-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:13px; color:var(--text); padding-left:16px; white-space:nowrap; }
   .seg-table tr:hover td { background:rgba(0,0,0,0.01); }
   .seg-table tr.total-row td { font-weight:700; background:rgba(15,76,117,0.04); border-top:2px solid rgba(15,76,117,0.2); color:var(--accent); }
   .seg-bar-wrap { display:flex; align-items:center; gap:6px; justify-content:flex-end; }
@@ -151,7 +152,7 @@
   .monthly-table tr.rate-row td { font-size:11px; color:var(--text-muted); background:rgba(0,0,0,0.01); }
 
   /* Category labels */
-  .seg-label { font-size:10px; padding:2px 7px; border-radius:4px; margin-right:6px; font-family:'DM Mono',monospace; font-weight:600; display:inline-block; }
+  .seg-label { font-size:10px; padding:2px 7px; border-radius:4px; margin-right:6px; font-family:'DM Mono',monospace; font-weight:600; display:inline-block; white-space:nowrap; }
   .sl-3pl  { background:rgba(15,76,117,0.12); color:var(--accent); }
   .sl-sw   { background:rgba(0,150,136,0.12); color:#0d9488; }
   .sl-re   { background:rgba(217,119,6,0.12); color:var(--accent3); }
@@ -496,19 +497,36 @@ function renderKPI(data) {
 // =============================================
 function renderCascade(data) {
   const t = data.total;
+  const tgt = data.targets;
+  // barW = 目標比（目標率を100%として何%達成か）→ 視認性の高いバー幅に変換
+  const ratioBar = (rate, maxRate) => t.op < 0 && maxRate === tgt.op_rate_target ? 0
+    : Math.min(100, Math.round(Math.max(0, rate) / maxRate * 100));
   const items = [
-    { label:'売上高',   value:t.revenue,   rate:null,        color:'cb-rev',   barW:100 },
-    { label:'粗利',     value:t.gross,     rate:t.gross_rate, color:'cb-gross', barW:Math.round(t.gross/t.revenue*100) },
-    { label:'営業利益', value:t.op,        rate:t.op_rate,   color:'cb-op',    barW:Math.max(0,Math.round(t.op/t.revenue*100)) },
-    { label:'経常利益', value:t.ord,       rate:t.ord_rate,  color:'cb-ord',   barW:Math.max(0,Math.round(t.ord/t.revenue*100)) },
-    { label:'当期純利益', value:t.net,     rate:t.net_rate,  color:'cb-net',   barW:Math.max(0,Math.round(t.net/t.revenue*100)) },
+    { label:'売上高',     value:t.revenue, rate:null,         color:'cb-rev',   barW:100, targetNote:null },
+    { label:'粗利',       value:t.gross,   rate:t.gross_rate, color:'cb-gross',
+      barW: ratioBar(t.gross_rate, tgt.gross_rate_target),
+      targetNote:`目標 ${pct(tgt.gross_rate_target)}` },
+    { label:'営業利益',   value:t.op,      rate:t.op_rate,    color:'cb-op',
+      barW: ratioBar(t.op_rate, tgt.op_rate_target),
+      targetNote:`目標 ${pct(tgt.op_rate_target)}` },
+    { label:'経常利益',   value:t.ord,     rate:t.ord_rate,   color:'cb-ord',
+      barW: ratioBar(t.ord_rate, 0.08),
+      targetNote:null },
+    { label:'当期純利益', value:t.net,     rate:t.net_rate,   color:'cb-net',
+      barW: ratioBar(t.net_rate, 0.08),
+      targetNote:null },
   ];
   document.getElementById('cascadeWrap').innerHTML = items.map(item => `
     <div class="cascade-item">
       <div class="cascade-label">${item.label}</div>
       <div class="cascade-value ${pl(item.value)}">¥${fmtM(item.value)}</div>
-      ${item.rate !== null ? `<div class="cascade-rate">${pct(item.rate)}</div>` : '<div class="cascade-rate" style="height:18px;"></div>'}
-      <div class="cascade-bar ${item.color}" style="width:${item.barW}%;min-width:${item.value >= 0 ? '4px' : '0'};"></div>
+      ${item.rate !== null
+        ? `<div class="cascade-rate">${pct(item.rate)}</div>`
+        : '<div class="cascade-rate" style="height:18px;"></div>'}
+      ${item.targetNote ? `<div class="cascade-target">${item.targetNote}</div>` : '<div class="cascade-target" style="height:15px;"></div>'}
+      <div class="cascade-bar-outer">
+        <div class="cascade-bar ${item.color}" style="width:${item.barW}%;"></div>
+      </div>
     </div>`).join('');
 }
 
