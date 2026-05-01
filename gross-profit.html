@@ -344,6 +344,33 @@
   .cost-bar-track { width:48px;height:4px;background:#e2e8f0;border-radius:2px;overflow:hidden; }
   .cost-bar-fill  { height:100%;border-radius:2px; }
 
+  /* Cost Analysis - visual bar layout */
+  .cap-row { padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .cap-row:last-child { border-bottom: none; }
+  .cap-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .cap-dept-name { font-size: 14px; font-weight: 500; flex: 1; color: var(--text); }
+  .cap-bar-outer { position: relative; padding-top: 22px; margin-bottom: 6px; }
+  .cap-bar-bg { height: 16px; background: #e2e8f0; border-radius: 4px; position: relative; overflow: visible; }
+  .cap-bar-cost-fill { height: 100%; border-radius: 4px; position: absolute; top: 0; left: 0; transition: width 0.4s ease; }
+  .cap-limit-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; z-index: 2; border-radius: 1px; }
+  .cap-limit-tag { position: absolute; top: -20px; font-size: 10px; color: var(--text-muted); transform: translateX(-50%); white-space: nowrap; font-family: 'DM Mono', monospace; background: var(--surface); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border); }
+  .cap-bar-scale { display: flex; justify-content: space-between; margin-top: 4px; font-size: 10px; color: var(--text-muted); font-family: 'DM Mono', monospace; }
+  .cap-metrics { display: flex; gap: 24px; margin-top: 10px; font-size: 12px; color: var(--text-muted); flex-wrap: wrap; align-items: center; }
+  .cap-metric { display: flex; flex-direction: column; gap: 2px; }
+  .cap-metric-label { font-size: 10px; }
+  .cap-metric-val { font-weight: 600; font-family: 'DM Mono', monospace; color: var(--text-dim); font-size: 13px; }
+  .cap-headroom-pos { font-weight: 700; color: var(--positive) !important; }
+  .cap-headroom-neg { font-weight: 700; color: var(--negative) !important; }
+
+  /* Detail table - compact cells with inline delta */
+  .cell-num { font-size: 13px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .cell-delta { font-size: 10px; margin-top: 3px; font-family: 'DM Mono', monospace; }
+  tr.row-positive td { background: rgba(5,150,105,0.04) !important; }
+  tr.row-negative td { background: rgba(220,38,38,0.04) !important; }
+  tr.row-positive.subtotal td, tr.row-negative.subtotal td { background: rgba(0,0,0,0.025) !important; }
+  tr.row-positive.total td, tr.row-negative.total td { background: rgba(18,65,197,0.06) !important; }
+  .contrib-bar { display: inline-block; height: 4px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-left: 6px; opacity: 0.5; }
+
   /* Commission section */
   .commission-grid {
     display: grid;
@@ -1590,38 +1617,46 @@ function renderCharts(data) {
 // RENDER TABLE
 // =============================================
 function renderTable(data) {
+  const q1L = data.q1Label || 'Q1';
+  const q2L = data.q2Label;
   const catClass = { '3PL':'cat-3pl','SaaS':'cat-saas','受託開発':'cat-dev','コンサルティング':'cat-cons' };
   const catLabel = { '3PL':'3PL','SaaS':'SaaS','受託開発':'DEV','コンサルティング':'CONS' };
+
+  // Grand total for contribution bar
+  const grandTotal = data.summary.reduce((a,r) => a + r.q1_2025 + r.q2_2025, 0);
+
+  // Cell: shows amount + delta badge below
+  const fmtCell = (curr, prev) => {
+    const numHtml = `<div class="cell-num">¥${fmt(curr)}</div>`;
+    if (!prev) return numHtml + `<div class="cell-delta" style="color:var(--text-muted);">—</div>`;
+    const r = (curr - prev) / prev;
+    const arrow = r >= 0 ? '▲' : '▼';
+    const cls = r >= 0 ? 'positive' : 'negative';
+    return numHtml + `<div class="cell-delta"><span class="${cls}">${arrow}${Math.abs(r*100).toFixed(1)}%</span></div>`;
+  };
+
+  // Row tint class based on H1 vs prev year
+  const rowClass = (q1, q1p, q2, q2p) => {
+    const curr = q1 + q2, prev = q1p + q2p;
+    if (!prev) return '';
+    return curr >= prev ? 'row-positive' : 'row-negative';
+  };
+
+  const q2Col = q2L ? `<th class="th-q2">${q2L} 粗利<br><span style="font-size:9px;font-weight:400;opacity:0.7;">（前年比）</span></th>` : '';
 
   let html = `<table>
   <colgroup>
     <col style="min-width:200px">
-    <col style="width:130px"><col style="width:80px">
-    <col style="width:130px"><col style="width:80px">
-    <col style="width:120px">
+    <col style="width:160px">
+    ${q2L ? '<col style="width:160px">' : ''}
+    <col style="width:150px">
   </colgroup>
-  <thead>
-    <tr class="th-group">
-      <th rowspan="2" style="text-align:left;padding:10px 16px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);">部門</th>
-      <th colspan="2" class="th-q1">${data.q1Label||'Q1'}</th>
-      <th colspan="2" class="th-q2">${data.q2Label||'Q2'}</th>
-      <th rowspan="2" class="th-total" style="vertical-align:bottom;padding-bottom:8px;">${data.q1Label||'Q1'}${data.q2Label?'・'+data.q2Label:''}<br>合計</th>
-    </tr>
-    <tr class="th-sub">
-      <th class="th-q1" style="border-left:1px solid rgba(18,65,197,0.15);">当期粗利</th>
-      <th class="th-q1">前年比</th>
-      <th class="th-q2" style="border-left:1px solid rgba(18,65,197,0.2);">当期粗利</th>
-      <th class="th-q2">前年比</th>
-    </tr>
-  </thead><tbody>`;
-
-  const fmtRate = (curr, prev) => {
-    if (!prev) return '<span style="color:var(--text-muted)">—</span>';
-    const r = (curr - prev) / prev;
-    const arrow = r >= 0 ? '▲' : '▼';
-    const cls = r >= 0 ? 'positive' : 'negative';
-    return `<span class="${cls}">${arrow}${Math.abs(r*100).toFixed(1)}%</span>`;
-  };
+  <thead><tr class="th-group">
+    <th style="text-align:left;padding:10px 16px;font-size:11px;color:var(--text-muted);border-bottom:1px solid var(--border);">部門</th>
+    <th class="th-q1">${q1L} 粗利<br><span style="font-size:9px;font-weight:400;opacity:0.7;">（前年比）</span></th>
+    ${q2Col}
+    <th class="th-total" style="vertical-align:middle;">上半期合計<br><span style="font-size:9px;font-weight:400;opacity:0.7;">（構成比）</span></th>
+  </tr></thead><tbody>`;
 
   ['3PL','SaaS','受託開発','コンサルティング'].forEach(cat => {
     const rows = data.summary.filter(r => r.category === cat);
@@ -1629,25 +1664,33 @@ function renderTable(data) {
 
     rows.forEach(r => {
       const h1 = r.q1_2025 + r.q2_2025;
-      html += `<tr>
+      const contrib = grandTotal > 0 ? Math.round(h1 / grandTotal * 100) : 0;
+      const barW = Math.max(2, contrib);
+      const rc = rowClass(r.q1_2025, r.q1_2024, r.q2_2025, r.q2_2024);
+      html += `<tr class="${rc}">
         <td><span class="category-label ${catClass[cat]}">${catLabel[cat]}</span>${r.dept}</td>
-        <td class="num-primary">¥${fmt(r.q1_2025)}</td>
-        <td class="num-delta">${fmtRate(r.q1_2025, r.q1_2024)}</td>
-        <td class="num-primary">¥${fmt(r.q2_2025)}</td>
-        <td class="num-delta">${fmtRate(r.q2_2025, r.q2_2024)}</td>
-        <td class="num-total">¥${fmt(h1)}</td>
+        <td style="text-align:right;padding:10px 12px;">${fmtCell(r.q1_2025, r.q1_2024)}</td>
+        ${q2L ? `<td style="text-align:right;padding:10px 12px;">${fmtCell(r.q2_2025, r.q2_2024)}</td>` : ''}
+        <td style="text-align:right;padding:10px 12px;">
+          <div class="cell-num">¥${fmt(h1)}</div>
+          <div class="cell-delta" style="color:var(--text-muted);">${contrib}%<span class="contrib-bar" style="width:${barW}px;"></span></div>
+        </td>
       </tr>`;
     });
 
     const sq1=rows.reduce((a,r)=>a+r.q1_2025,0), sq1p=rows.reduce((a,r)=>a+r.q1_2024,0);
     const sq2=rows.reduce((a,r)=>a+r.q2_2025,0), sq2p=rows.reduce((a,r)=>a+r.q2_2024,0);
-    html += `<tr class="subtotal">
+    const sh1 = sq1 + sq2;
+    const sContrib = grandTotal > 0 ? Math.round(sh1 / grandTotal * 100) : 0;
+    const src = rowClass(sq1, sq1p, sq2, sq2p);
+    html += `<tr class="subtotal ${src}">
       <td>${cat} 小計</td>
-      <td class="num-primary">¥${fmt(sq1)}</td>
-      <td class="num-delta">${fmtRate(sq1,sq1p)}</td>
-      <td class="num-primary">¥${fmt(sq2)}</td>
-      <td class="num-delta">${fmtRate(sq2,sq2p)}</td>
-      <td class="num-total">¥${fmt(sq1+sq2)}</td>
+      <td style="text-align:right;padding:10px 12px;">${fmtCell(sq1, sq1p)}</td>
+      ${q2L ? `<td style="text-align:right;padding:10px 12px;">${fmtCell(sq2, sq2p)}</td>` : ''}
+      <td style="text-align:right;padding:10px 12px;">
+        <div class="cell-num">¥${fmt(sh1)}</div>
+        <div class="cell-delta" style="color:var(--text-muted);">${sContrib}%<span class="contrib-bar" style="width:${Math.max(2,sContrib)}px;"></span></div>
+      </td>
     </tr>`;
   });
 
@@ -1655,11 +1698,9 @@ function renderTable(data) {
   const tq2=data.summary.reduce((a,r)=>a+r.q2_2025,0), tq2p=data.summary.reduce((a,r)=>a+r.q2_2024,0);
   html += `<tr class="total">
     <td>全部門 合計</td>
-    <td>¥${fmt(tq1)}</td>
-    <td>${fmtRate(tq1,tq1p)}</td>
-    <td>¥${fmt(tq2)}</td>
-    <td>${fmtRate(tq2,tq2p)}</td>
-    <td>¥${fmt(tq1+tq2)}</td>
+    <td style="text-align:right;padding:10px 12px;">${fmtCell(tq1, tq1p)}</td>
+    ${q2L ? `<td style="text-align:right;padding:10px 12px;">${fmtCell(tq2, tq2p)}</td>` : ''}
+    <td style="text-align:right;padding:10px 12px;"><div class="cell-num">¥${fmt(tq1+tq2)}</div></td>
   </tr>`;
 
   html += '</tbody></table>';
@@ -1675,6 +1716,7 @@ function renderCostAnalysis(data) {
   const wrap = document.getElementById('costAnalysisGrid');
   if (!wrap) return;
   const targetPct = Math.max(0.01, Math.min(0.99, parseFloat(document.getElementById('targetMargin')?.value || 20) / 100));
+  const maxCostRate = 1 - targetPct; // e.g. 0.80 when target=20%
 
   // Aggregate by dept from detail
   const byDept = {};
@@ -1696,22 +1738,14 @@ function renderCostAnalysis(data) {
   const catClass = { '3PL':'cat-3pl','SaaS':'cat-saas','受託開発':'cat-dev','コンサルティング':'cat-cons' };
   const catLabel = { '3PL':'3PL','SaaS':'SaaS','受託開発':'DEV','コンサルティング':'CONS' };
   const targetLabel = Math.round(targetPct * 100) + '%';
+  const maxCostLabel = Math.round(maxCostRate * 100) + '%';
 
-  let html = `<div style="overflow-x:auto;"><table>
-  <colgroup>
-    <col style="min-width:180px"><col style="width:130px"><col style="width:130px">
-    <col style="width:90px"><col style="width:160px"><col style="width:120px"><col style="width:80px">
-  </colgroup>
-  <thead><tr>
-    <th style="text-align:left;padding:12px 16px;">部門</th>
-    <th>売上 (H1)</th><th>現在コスト</th><th>粗利率</th>
-    <th>目標 ${targetLabel} 時の最大コスト</th>
-    <th>原価余力</th><th>状態</th>
-  </tr></thead><tbody>`;
+  let html = '';
 
   rows.forEach(d => {
-    const margin = d.revenue > 0 ? d.gross / d.revenue : 0;
-    const maxCost = d.revenue * (1 - targetPct);
+    const costRate = d.revenue > 0 ? d.cost / d.revenue : 0;  // e.g. 0.786
+    const grossRate = d.revenue > 0 ? d.gross / d.revenue : 0;
+    const maxCost = d.revenue * maxCostRate;
     const headroom = maxCost - d.cost;
     const threshold = d.revenue * 0.03;
     const status = headroom > threshold
@@ -1720,29 +1754,59 @@ function renderCostAnalysis(data) {
         ? { icon: '⚠️', label: '要注意', cls: 'status-warn' }
         : { icon: '🔴', label: '目標超過', cls: 'status-ng' };
 
-    const barPct = Math.min(100, Math.round(margin / (targetPct * 1.5) * 100));
+    // Bar: 0% → 100% represents cost rate (cost / revenue).
+    // Filled portion = costRate. Target line = maxCostRate.
+    // If costRate > 1 clamp the bar to 100% visually but mark as overflow.
+    const barFillW = Math.min(100, (costRate * 100)).toFixed(1);
+    const limitPos = (maxCostRate * 100).toFixed(1);
     const barColor = headroom >= 0 ? 'var(--positive)' : 'var(--negative)';
+    const limitLineColor = '#334155';
     const cat = d.category || '';
 
-    html += `<tr>
-      <td><span class="category-label ${catClass[cat]||''}">${catLabel[cat]||cat}</span>${d.dept}</td>
-      <td>¥${fmt(d.revenue)}</td>
-      <td>¥${fmt(d.cost)}</td>
-      <td>
-        <div class="cost-bar-wrap">
-          <div class="cost-bar-track"><div class="cost-bar-fill" style="width:${barPct}%;background:${barColor};"></div></div>
-          <span style="font-size:12px;font-weight:600;color:${headroom>=0?'var(--positive)':'var(--negative)'};">${(margin*100).toFixed(1)}%</span>
+    const headroomHtml = headroom >= 0
+      ? `<span class="cap-headroom-pos">余力　＋¥${fmt(Math.round(headroom))}</span>`
+      : `<span class="cap-headroom-neg">超過　－¥${fmt(Math.round(Math.abs(headroom)))}</span>`;
+
+    html += `<div class="cap-row">
+      <div class="cap-row-top">
+        <span class="category-label ${catClass[cat]||''}">${catLabel[cat]||cat}</span>
+        <span class="cap-dept-name">${d.dept}</span>
+        <span class="cost-status ${status.cls}">${status.icon} ${status.label}</span>
+      </div>
+      <div class="cap-bar-outer">
+        <div class="cap-bar-bg">
+          <div class="cap-bar-cost-fill" style="width:${barFillW}%;background:${barColor};opacity:0.75;border-radius:4px;"></div>
+          <div class="cap-limit-mark" style="left:${limitPos}%;background:${limitLineColor};">
+            <span class="cap-limit-tag">上限 ${maxCostLabel}</span>
+          </div>
         </div>
-      </td>
-      <td>¥${fmt(Math.round(maxCost))}</td>
-      <td class="${headroom>=0?'positive':'negative'}" style="font-weight:600;">
-        ${headroom>=0?'＋':'－'}¥${fmt(Math.round(Math.abs(headroom)))}
-      </td>
-      <td style="text-align:center;"><span class="cost-status ${status.cls}">${status.icon} ${status.label}</span></td>
-    </tr>`;
+        <div class="cap-bar-scale"><span>0%</span><span>原価率（売上に対するコスト比率）</span><span>100%</span></div>
+      </div>
+      <div class="cap-metrics">
+        <div class="cap-metric">
+          <span class="cap-metric-label">売上 (H1)</span>
+          <span class="cap-metric-val">¥${fmt(d.revenue)}</span>
+        </div>
+        <div class="cap-metric">
+          <span class="cap-metric-label">現在コスト</span>
+          <span class="cap-metric-val">¥${fmt(d.cost)}</span>
+        </div>
+        <div class="cap-metric">
+          <span class="cap-metric-label">原価率</span>
+          <span class="cap-metric-val" style="color:${headroom>=0?'var(--text-dim)':'var(--negative)'};">${(costRate*100).toFixed(1)}%</span>
+        </div>
+        <div class="cap-metric">
+          <span class="cap-metric-label">粗利率</span>
+          <span class="cap-metric-val" style="color:${headroom>=0?'var(--positive)':'var(--negative)'};">${(grossRate*100).toFixed(1)}%</span>
+        </div>
+        <div class="cap-metric" style="margin-left:auto;">
+          <span class="cap-metric-label">目標 ${targetLabel} との差</span>
+          <span class="cap-metric-val">${headroomHtml}</span>
+        </div>
+      </div>
+    </div>`;
   });
 
-  html += '</tbody></table></div>';
   wrap.innerHTML = html;
 }
 
