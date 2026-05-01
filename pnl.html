@@ -498,82 +498,105 @@ function renderCascade(data) {
   if (charts.cascade) { charts.cascade.destroy(); delete charts.cascade; }
   const t = data.total;
 
-  // Waterfall steps: type = 'total' | 'deduct' | 'gain' | 'subtotal'
+  // Waterfall steps
   const steps = [
-    { label:'売上高',     value: t.revenue, type:'total'   },
-    { label:'売上原価',   value:-t.cogs,    type:'deduct'  },
-    { label:'粗利',       value: t.gross,   type:'subtotal'},
-    { label:'販管費',     value:-t.sga,     type:'deduct'  },
-    { label:'営業利益',   value: t.op,      type:'subtotal'},
+    { label:'売上高',   value: t.revenue, type:'total'   },
+    { label:'売上原価', value:-t.cogs,    type:'deduct'  },
+    { label:'販管費',   value:-t.sga,     type:'deduct'  },
+    { label:'営業利益', value: t.op,      type:'subtotal'},
   ];
-  const extra = t.ord - t.op;
+  const extra = t.ord - t.op;   // 営業外損益
+  const taxEtc = t.net - t.ord; // 税金等特別損益
   if (Math.abs(extra) > 50000) {
-    steps.push({ label: extra >= 0 ? '営業外収益' : '営業外費用', value: extra, type: extra >= 0 ? 'gain' : 'deduct' });
+    steps.push({ label: extra >= 0 ? '営業外\n収益等' : '営業外\n費用等', value: extra, type: extra >= 0 ? 'gain' : 'deduct' });
+  }
+  if (Math.abs(taxEtc) > 50000) {
+    steps.push({ label: taxEtc < 0 ? '法人税等' : '特別利益等', value: taxEtc, type: taxEtc < 0 ? 'deduct' : 'gain' });
   }
   steps.push({ label:'当期純利益', value: t.net, type:'subtotal' });
 
-  // Convert to floating bar [min, max]
+  // Floating bar [min, max]
   let cum = 0;
   const floatData = steps.map(s => {
-    if (s.type === 'total' || s.type === 'subtotal') {
-      cum = s.value;
-      return [0, s.value];
-    }
-    const start = cum;
-    cum += s.value;
+    if (s.type === 'total' || s.type === 'subtotal') { cum = s.value; return [0, s.value]; }
+    const start = cum; cum += s.value;
     return s.value < 0 ? [cum, start] : [start, cum];
   });
 
-  const colTotal   = 'rgba(15,76,117,0.85)';
-  const colDeduct  = 'rgba(220,38,38,0.65)';
-  const colGain    = 'rgba(37,99,235,0.65)';
-  const colGross   = 'rgba(13,148,136,0.80)';
-  const colOp      = t.op >= 0 ? 'rgba(5,150,105,0.80)' : 'rgba(220,38,38,0.80)';
-  const colNet     = 'rgba(124,58,237,0.80)';
+  const C_TOTAL  = 'rgba(148,163,184,0.80)';
+  const C_DEDUCT = 'rgba(234,88,12,0.80)';
+  const C_GAIN   = 'rgba(37,99,235,0.80)';
+  const bgColors = steps.map(s =>
+    (s.type === 'total' || s.type === 'subtotal') ? C_TOTAL :
+    s.type === 'gain' ? C_GAIN : C_DEDUCT
+  );
 
-  const bgColors = steps.map(s => {
-    if (s.label === '売上高')   return colTotal;
-    if (s.label === '粗利')     return colGross;
-    if (s.label === '営業利益') return colOp;
-    if (s.label === '当期純利益') return colNet;
-    if (s.type === 'gain')      return colGain;
-    return colDeduct;
-  });
+  // Inline plugin: value labels above each bar
+  const wfLabels = {
+    id: 'wfLabels',
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { y } } = chart;
+      const meta = chart.getDatasetMeta(0);
+      ctx.save();
+      ctx.font = '500 11px "DM Mono",monospace';
+      ctx.textAlign = 'center';
+      meta.data.forEach((bar, i) => {
+        const s = steps[i];
+        const topVal = floatData[i][1];
+        const px = y.getPixelForValue(topVal);
+        const sign = s.type === 'deduct' ? '-' : '';
+        ctx.fillStyle = s.type === 'deduct' ? '#c2410c' : s.type === 'gain' ? '#1d4ed8' : '#475569';
+        ctx.fillText(sign + '¥' + fmtM(Math.abs(s.value)), bar.x, px - 7);
+      });
+      ctx.restore();
+    }
+  };
 
   charts.cascade = new Chart(document.getElementById('cascadeChart'), {
     type: 'bar',
+    plugins: [wfLabels],
     data: {
-      labels: steps.map(s => s.label),
+      labels: steps.map(s => s.label.replace(/\\n/g, '\n')),
       datasets: [{
         data: floatData,
         backgroundColor: bgColors,
-        borderColor: bgColors.map(c => c.replace(/[\d.]+\)$/, '1)')),
+        borderColor: 'rgba(255,255,255,0.25)',
         borderWidth: 1,
-        borderRadius: 4,
+        borderRadius: 3,
         borderSkipped: false,
       }]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
+      layout: { padding: { top: 28 } },
       plugins: {
-        legend: { display: false },
+        legend: {
+          display: true, position: 'top',
+          labels: {
+            generateLabels: () => [
+              { text:'増加', fillStyle:C_GAIN,   strokeStyle:C_GAIN,   lineWidth:0, fontColor:'#334155' },
+              { text:'減少', fillStyle:C_DEDUCT, strokeStyle:C_DEDUCT, lineWidth:0, fontColor:'#334155' },
+              { text:'合計', fillStyle:C_TOTAL,  strokeStyle:C_TOTAL,  lineWidth:0, fontColor:'#334155' },
+            ],
+            font:{ size:11 }, boxWidth:12, padding:16,
+          }
+        },
         tooltip: {
           callbacks: {
             label: ctx => {
               const s = steps[ctx.dataIndex];
-              const abs = Math.abs(s.value);
               const sign = s.type === 'deduct' ? '-' : '';
               const rate = t.revenue > 0 ? (Math.abs(s.value)/t.revenue*100).toFixed(1) : 0;
-              return ` ${sign}¥${fmt(abs)}（売上比 ${rate}%）`;
+              return ` ${sign}¥${fmt(Math.abs(s.value))}（売上比 ${rate}%）`;
             }
           }
         }
       },
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#334155' } },
+        x: { grid:{ display:false }, ticks:{ font:{ size:11 }, color:'#334155' } },
         y: {
-          ticks: { callback: v => '¥'+fmtM(v), font: { size: 11 } },
-          grid: { color: 'rgba(0,0,0,0.05)' }
+          ticks:{ callback: v => '¥'+fmtM(v), font:{ size:11 } },
+          grid:{ color:'rgba(0,0,0,0.05)' }
         }
       }
     }
