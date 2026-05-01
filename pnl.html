@@ -360,8 +360,12 @@ const DEFAULT_DATA = {
 
   total: {
     revenue:148849510, cogs:107116101, gross:41733409, gross_rate:0.2804,
-    sga:36275060, op:5458349, op_rate:0.0367, ord:6183324, ord_rate:0.0415,
-    net:7727260, net_rate:0.0519,
+    sga:36275060, op:5458349, op_rate:0.0367,
+    extra_income:1754000, extra_expense:0,
+    ord:7212000, ord_rate:0.0485,
+    special_profit:1742000, special_loss:0,
+    tax:16000,
+    net:8938000, net_rate:0.0600,
     personnel:19228419, labor_ratio:0.4607,
     ebitda:7883349,
     prev_revenue:161824363, prev_gross:38285202, prev_op:3938954,
@@ -498,22 +502,20 @@ function renderCascade(data) {
   if (charts.cascade) { charts.cascade.destroy(); delete charts.cascade; }
   const t = data.total;
 
-  // Waterfall steps
+  // Waterfall steps（個別フィールドから構築）
   const steps = [
     { label:'売上高',   value: t.revenue, type:'total'   },
     { label:'売上原価', value:-t.cogs,    type:'deduct'  },
     { label:'販管費',   value:-t.sga,     type:'deduct'  },
     { label:'営業利益', value: t.op,      type:'subtotal'},
   ];
-  const extra = t.ord - t.op;   // 営業外損益
-  const taxEtc = t.net - t.ord; // 税金等特別損益
-  if (Math.abs(extra) > 50000) {
-    steps.push({ label: extra >= 0 ? '営業外\n収益等' : '営業外\n費用等', value: extra, type: extra >= 0 ? 'gain' : 'deduct' });
-  }
-  if (Math.abs(taxEtc) > 50000) {
-    steps.push({ label: taxEtc < 0 ? '法人税等' : '特別利益等', value: taxEtc, type: taxEtc < 0 ? 'deduct' : 'gain' });
-  }
-  steps.push({ label:'当期純利益', value: t.net, type:'subtotal' });
+  if ((t.extra_income || 0) > 50000)  steps.push({ label:'営業外収益', value: t.extra_income,     type:'gain'   });
+  if ((t.extra_expense|| 0) > 50000)  steps.push({ label:'営業外費用', value:-(t.extra_expense),  type:'deduct' });
+  steps.push({ label:'経常利益',   value: t.ord,  type:'subtotal' });
+  if ((t.special_profit||0) > 50000)  steps.push({ label:'特別利益',   value: t.special_profit,   type:'gain'   });
+  if ((t.special_loss  ||0) > 50000)  steps.push({ label:'特別損失',   value:-(t.special_loss),   type:'deduct' });
+  if ((t.tax           ||0) > 50000)  steps.push({ label:'法人税等',   value:-(t.tax),            type:'deduct' });
+  steps.push({ label:'当期純利益', value: t.net,  type:'subtotal' });
 
   // Floating bar [min, max] + cumAfter for connectors
   let cum = 0;
