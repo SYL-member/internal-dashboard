@@ -223,7 +223,22 @@
       <div class="chart-container" style="height:300px;"><canvas id="cascadeChart"></canvas></div>
     </div>
 
-    <!-- Monthly Trend -->
+    <!-- 2-Year Revenue Trend -->
+    <div class="section-header">
+      <span class="section-title" id="trendTitle">売上推移　直近2年（月次）</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="charts-grid" style="margin-bottom:32px;">
+      <div class="card chart-wide">
+        <div class="card-title">
+          <span>月次 売上推移（前年同月比較）</span>
+          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">棒＝売上　折れ線＝粗利率</span>
+        </div>
+        <div class="chart-container tall"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Monthly Trend (P&L breakdown) -->
     <div class="section-header">
       <span class="section-title" id="monthlyTitle">月次 損益推移</span>
       <div class="section-line"></div>
@@ -574,6 +589,58 @@ function renderCharts(data) {
 
   const months = data.monthly.map(m => m.month);
 
+  // ── 直近2年 売上推移チャート ──
+  const prevLabels = data.monthly.map(m => `前年${m.month}`);
+  const currLabels = data.monthly.map(m => m.month);
+  const trendLabels = [...prevLabels, ...currLabels];
+
+  const prevRevArr  = data.monthly.map(m => m.prev_rev  || 0);
+  const currRevArr  = data.monthly.map(m => m.revenue);
+  const prevGrRate  = data.monthly.map(m => m.prev_rev  > 0 ? (m.prev_gross||0)/m.prev_rev*100  : null);
+  const currGrRate  = data.monthly.map(m => m.revenue   > 0 ? m.gross/m.revenue*100              : null);
+
+  // Null-pad to align on each half
+  const trendRevPrev  = [...prevRevArr,  ...new Array(currRevArr.length).fill(null)];
+  const trendRevCurr  = [...new Array(prevRevArr.length).fill(null), ...currRevArr];
+  const trendGrPrev   = [...prevGrRate,  ...new Array(currGrRate.length).fill(null)];
+  const trendGrCurr   = [...new Array(prevGrRate.length).fill(null), ...currGrRate];
+
+  charts.trend = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+      labels: trendLabels,
+      datasets: [
+        { label:'前年売上', data:trendRevPrev, backgroundColor:'rgba(148,163,184,0.45)', borderColor:'rgba(148,163,184,0.7)', borderWidth:1, borderRadius:3 },
+        { label:'今期売上', data:trendRevCurr, backgroundColor:'rgba(15,76,117,0.65)',   borderColor:'rgba(15,76,117,0.9)',   borderWidth:1, borderRadius:3 },
+        { label:'前年粗利率', data:trendGrPrev, type:'line', yAxisID:'yR', borderColor:'rgba(148,163,184,0.9)', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[5,4] },
+        { label:'今期粗利率', data:trendGrCurr, type:'line', yAxisID:'yR', borderColor:'#0d9488',               backgroundColor:'transparent', borderWidth:2.5, pointRadius:5, tension:0.3 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins: {
+        legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
+        tooltip:{ callbacks:{ label: ctx => {
+          if (ctx.dataset.yAxisID === 'yR') return ` ${ctx.dataset.label}: ${ctx.parsed.y !== null ? ctx.parsed.y.toFixed(1)+'%' : '—'}`;
+          return ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`;
+        }}},
+        annotation: {
+          annotations: {
+            divider: {
+              type: 'line', xMin: prevLabels.length - 0.5, xMax: prevLabels.length - 0.5,
+              borderColor: 'rgba(15,76,117,0.3)', borderWidth: 1, borderDash: [4,3],
+            }
+          }
+        }
+      },
+      scales: {
+        x:{ grid:{ display:false }, ticks:{ font:{size:11}, maxRotation:45 } },
+        y:{ ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{ color:'rgba(0,0,0,0.05)' } },
+        yR:{ position:'right', grid:{ display:false }, ticks:{ callback:v => v+'%', font:{size:11} }, min:0, max:50 }
+      }
+    }
+  });
+
   // Monthly P&L Chart
   const revData   = data.monthly.map(m => m.revenue);
   const cogsData  = data.monthly.map(m => m.cogs);
@@ -807,6 +874,7 @@ function renderAll(data) {
   document.getElementById('periodBadge').textContent = data.period;
   document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 事業別収支実績xlsx`;
   document.getElementById('cascadeSectionTitle').textContent = `損益ウォーターフォール　${data.period}`;
+  document.getElementById('trendTitle').textContent = `売上推移　直近2年（月次）`;
   document.getElementById('monthlyTitle').textContent = `月次 損益推移　${data.period}`;
   document.getElementById('segTitle').textContent = `事業別 収益構成　${data.period}`;
   document.getElementById('sgaTitle').textContent = `販管費 内訳　${data.period}`;
