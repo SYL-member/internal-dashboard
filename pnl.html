@@ -515,11 +515,14 @@ function renderCascade(data) {
   }
   steps.push({ label:'当期純利益', value: t.net, type:'subtotal' });
 
-  // Floating bar [min, max]
+  // Floating bar [min, max] + cumAfter for connectors
   let cum = 0;
+  const cumAfter = [];
   const floatData = steps.map(s => {
-    if (s.type === 'total' || s.type === 'subtotal') { cum = s.value; return [0, s.value]; }
-    const start = cum; cum += s.value;
+    if (s.type === 'total' || s.type === 'subtotal') {
+      cum = s.value; cumAfter.push(s.value); return [0, s.value];
+    }
+    const start = cum; cum += s.value; cumAfter.push(cum);
     return s.value < 0 ? [cum, start] : [start, cum];
   });
 
@@ -531,13 +534,28 @@ function renderCascade(data) {
     s.type === 'gain' ? C_GAIN : C_DEDUCT
   );
 
-  // Inline plugin: value labels above each bar
+  // Inline plugin: value labels + connector lines
   const wfLabels = {
     id: 'wfLabels',
     afterDatasetsDraw(chart) {
       const { ctx, scales: { y } } = chart;
       const meta = chart.getDatasetMeta(0);
       ctx.save();
+
+      // ── Connector lines ──
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = 'rgba(100,116,139,0.35)';
+      ctx.lineWidth = 1;
+      for (let i = 0; i < meta.data.length - 1; i++) {
+        const b1 = meta.data[i], b2 = meta.data[i + 1];
+        const connY = y.getPixelForValue(cumAfter[i]);
+        const x1 = b1.x + b1.width / 2;
+        const x2 = b2.x - b2.width / 2;
+        ctx.beginPath(); ctx.moveTo(x1, connY); ctx.lineTo(x2, connY); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // ── Value labels ──
       ctx.font = '500 11px "DM Mono",monospace';
       ctx.textAlign = 'center';
       meta.data.forEach((bar, i) => {
@@ -616,12 +634,19 @@ function renderCharts(data) {
 
   // ── 直近2年 売上推移チャート（連続12ヶ月） ──
   const n = data.monthly.length;
-  // ラベル: [['前年','10月'], ..., ['前年','3月'], ['今期','10月'], ..., ['今期','3月']]
+  const fy = parseInt(data.year) || 2025;
+
+  // 月番号取得
+  const mNum = str => parseInt(str.replace('月', ''));
+  // 実暦年: 10月以降は当該年度年、1〜9月は翌年
+  const calYear = (fiscalYr, monthStr) => mNum(monthStr) >= 10 ? fiscalYr : fiscalYr + 1;
+
+  // ラベル: '24/10', '24/11', ... '25/3', '25/10', ... '26/3'
   const trendLabels = [
-    ...data.monthly.map(m => ['前年', m.month]),
-    ...data.monthly.map(m => ['今期', m.month]),
+    ...data.monthly.map(m => `${String(calYear(fy-1, m.month)).slice(2)}/${mNum(m.month)}`),
+    ...data.monthly.map(m => `${String(calYear(fy,   m.month)).slice(2)}/${mNum(m.month)}`),
   ];
-  // 12本連続棒（前年6本 + 今期6本）、色分けは per-bar
+
   const trendRevAll = [
     ...data.monthly.map(m => m.prev_rev || 0),
     ...data.monthly.map(m => m.revenue),
@@ -634,14 +659,43 @@ function renderCharts(data) {
     ...data.monthly.map(() => 'rgba(148,163,184,0.85)'),
     ...data.monthly.map(() => 'rgba(15,76,117,1)'),
   ];
-  // 粗利率ライン: 前年は左6点のみ null-pad、今期は右6点のみ null-pad（境界で繋がらず年を区別）
-  const prevGrRate = data.monthly.map(m => m.prev_rev > 0 ? (m.prev_gross||0)/m.prev_rev*100 : null);
-  const currGrRate = data.monthly.map(m => m.revenue  > 0 ? m.gross/m.revenue*100             : null);
-  const grLinePrev = [...prevGrRate, ...new Array(n).fill(null)];
-  const grLineCurr = [...new Array(n).fill(null), ...currGrRate];
+
+  // 粗利率ライン: 1本で全12ヶ月連続
+  const grLineAll = [
+    ...data.monthly.map(m => m.prev_rev  > 0 ? (m.prev_gross||0)/m.prev_rev*100  : null),
+    ...data.monthly.map(m => m.revenue   > 0 ? m.gross/m.revenue*100              : null),
+  ];
+  // 前年/今期の境界で色を分けるセグメント色 plugin
+  const trendSegColors = {
+    id: 'trendSegColors',
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, scales: { x } } = chart;
+      if (!chartArea) return;
+      const boundX = (x.getPixelForValue(n - 0.5) + x.getPixelForValue(n + 0.5)) / 2;
+      // 前年エリア: 薄グレー背景
+      ctx.save();
+      ctx.fillStyle = 'rgba(0,0,0,0.02)';
+      ctx.fillRect(chartArea.left, chartArea.top, boundX - chartArea.left, chartArea.height);
+      // 境界線
+      ctx.strokeStyle = 'rgba(15,76,117,0.2)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(boundX, chartArea.top); ctx.lineTo(boundX, chartArea.bottom); ctx.stroke();
+      ctx.setLineDash([]);
+      // 年ラベル
+      ctx.font = '500 11px "Noto Sans JP",sans-serif';
+      ctx.fillStyle = 'rgba(100,116,139,0.6)';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${fy-1}年度`, (chartArea.left + boundX) / 2, chartArea.top + 14);
+      ctx.fillStyle = 'rgba(15,76,117,0.55)';
+      ctx.fillText(`${fy}年度`, (boundX + chartArea.right) / 2, chartArea.top + 14);
+      ctx.restore();
+    }
+  };
 
   charts.trend = new Chart(document.getElementById('trendChart'), {
     type: 'bar',
+    plugins: [trendSegColors],
     data: {
       labels: trendLabels,
       datasets: [
@@ -654,33 +708,31 @@ function renderCharts(data) {
           borderRadius: 3,
         },
         {
-          label: '粗利率（前年）',
-          data: grLinePrev, type:'line', yAxisID:'yR',
-          borderColor:'rgba(100,116,139,0.85)', backgroundColor:'transparent',
-          borderWidth:2, pointRadius:4, tension:0.3, borderDash:[5,4],
-          spanGaps: false,
-        },
-        {
-          label: '粗利率（今期）',
-          data: grLineCurr, type:'line', yAxisID:'yR',
+          label: '粗利率',
+          data: grLineAll, type:'line', yAxisID:'yR',
           borderColor:'#0d9488', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:5, tension:0.3,
-          spanGaps: false,
+          borderWidth:2.5, pointRadius:4, tension:0.3,
+          spanGaps: true,
+          segment: {
+            borderColor: ctx => ctx.p0DataIndex < n ? 'rgba(100,116,139,0.75)' : '#0d9488',
+            borderDash:  ctx => ctx.p0DataIndex < n ? [5,4] : [],
+          },
         },
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
+      layout: { padding: { top: 20 } },
       plugins: {
         legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
         tooltip:{ callbacks:{ label: ctx => {
-          if (ctx.dataset.yAxisID === 'yR') return ` ${ctx.dataset.label}: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : '—'}`;
+          if (ctx.dataset.yAxisID === 'yR') return ` 粗利率: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : '—'}`;
           const isCurrentYear = ctx.dataIndex >= n;
           const m = data.monthly[ctx.dataIndex % n];
           const prev_rev = m.prev_rev || 0;
           const yoy = prev_rev > 0 ? ((m.revenue - prev_rev)/prev_rev*100).toFixed(1) : null;
           if (isCurrentYear && yoy !== null) {
-            return ` 売上: ¥${fmt(ctx.parsed.y)}  前年比 ${yoy >= 0 ? '+' : ''}${yoy}%`;
+            return ` 売上: ¥${fmt(ctx.parsed.y)}  前年比 ${parseFloat(yoy) >= 0 ? '+' : ''}${yoy}%`;
           }
           return ` 売上: ¥${fmt(ctx.parsed.y)}`;
         }}}
