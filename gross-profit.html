@@ -1543,14 +1543,32 @@ function renderCharts(data) {
     const stackDepts = Object.keys(aggByDept).filter(k => aggByDept[k].cost + aggByDept[k].gross > 0);
     stackDepts.sort((a,b) => (aggByDept[b].cost+aggByDept[b].gross) - (aggByDept[a].cost+aggByDept[a].gross));
 
+    const marginLine = stackDepts.map(k => {
+      const rev = aggByDept[k].cost + aggByDept[k].gross;
+      return rev > 0 ? +(aggByDept[k].gross / rev * 100).toFixed(1) : null;
+    });
+
     if (charts.stacked) charts.stacked.destroy();
     charts.stacked = new Chart(stackCtx, {
       type: 'bar',
       data: {
         labels: stackDepts,
         datasets: [
-          { label: '原価', data: stackDepts.map(k => aggByDept[k].cost),  backgroundColor: 'rgba(180,180,180,0.5)', borderRadius: 0 },
-          { label: '粗利', data: stackDepts.map(k => aggByDept[k].gross), backgroundColor: 'rgba(18,65,197,0.8)',    borderRadius: 4, borderSkipped: false },
+          { label: '原価', data: stackDepts.map(k => aggByDept[k].cost),  backgroundColor: 'rgba(180,180,180,0.5)', borderRadius: 0, stack: 's', yAxisID: 'y' },
+          { label: '粗利', data: stackDepts.map(k => aggByDept[k].gross), backgroundColor: 'rgba(18,65,197,0.8)',    borderRadius: 4, borderSkipped: false, stack: 's', yAxisID: 'y' },
+          {
+            type: 'line',
+            label: '粗利率',
+            data: marginLine,
+            borderColor: '#e05c00',
+            backgroundColor: 'rgba(224,92,0,0.12)',
+            borderWidth: 2.5,
+            pointRadius: 5,
+            pointBackgroundColor: '#e05c00',
+            tension: 0.3,
+            yAxisID: 'yRate',
+            order: 0,
+          }
         ]
       },
       options: {
@@ -1559,21 +1577,23 @@ function renderCharts(data) {
           legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
           tooltip: {
             callbacks: {
-              label: ctx => ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`,
+              label: ctx => {
+                if (ctx.dataset.label === '粗利率') return ` 粗利率: ${ctx.parsed.y}%`;
+                return ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`;
+              },
               afterBody: (items) => {
                 const dept = items[0]?.label;
                 const agg = aggByDept[dept];
                 if (!agg) return [];
-                const rev = agg.cost + agg.gross;
-                const margin = rev > 0 ? (agg.gross / rev * 100).toFixed(1) : 0;
-                return [`売上: ¥${fmt(rev)}`, `粗利率: ${margin}%`];
+                return [`売上合計: ¥${fmt(agg.cost + agg.gross)}`];
               }
             }
           }
         },
         scales: {
           x: { stacked: true, ticks: { color:'#64748b', font:{ family:'Noto Sans JP', size:11 } }, grid:{ color:'rgba(0,0,0,0.05)' } },
-          y: { stacked: true, ticks: { color:'#64748b', font:{ family:'DM Mono', size:11 }, callback: v => '¥'+fmt(v) }, grid:{ color:'rgba(0,0,0,0.06)' } }
+          y: { stacked: true, position: 'left', ticks: { color:'#64748b', font:{ family:'DM Mono', size:11 }, callback: v => '¥'+fmt(v) }, grid:{ color:'rgba(0,0,0,0.06)' } },
+          yRate: { position: 'right', min: 0, max: 110, ticks: { color:'#e05c00', font:{ family:'DM Mono', size:11 }, callback: v => v+'%' }, grid:{ drawOnChartArea: false } }
         }
       }
     });
