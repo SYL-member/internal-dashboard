@@ -99,24 +99,8 @@
   .chart-container.tall { height:400px; }
   .chart-container.medium { height:260px; }
 
-  /* P&L Cascade */
-  .cascade-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:0; margin-bottom:32px; }
-  .cascade-item { padding:20px 16px; text-align:center; position:relative; }
-  .cascade-item:not(:last-child)::after {
-    content:'→'; position:absolute; right:-8px; top:50%; transform:translateY(-50%);
-    font-size:18px; color:var(--text-muted); z-index:1;
-  }
-  .cascade-label { font-size:10px; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px; }
-  .cascade-value { font-family:'DM Mono',monospace; font-size:20px; font-weight:600; line-height:1.1; margin-bottom:4px; }
-  .cascade-rate { font-size:12px; color:var(--text-muted); font-family:'DM Mono',monospace; }
-  .cascade-target { font-size:10px; color:#94a3b8; font-family:'DM Mono',monospace; margin-top:2px; }
-  .cascade-bar-outer { height:6px; border-radius:3px; background:rgba(0,0,0,0.08); margin-top:12px; overflow:hidden; }
-  .cascade-bar { height:100%; border-radius:3px; min-width:4px; transition:width 0.4s ease; }
-  .cb-rev   { background:var(--accent2); }
-  .cb-gross { background:#0d9488; }
-  .cb-op    { background:var(--positive); }
-  .cb-ord   { background:#2563eb; }
-  .cb-net   { background:#7c3aed; }
+  /* P&L Cascade — chart area */
+  /* (old card-grid CSS removed; now using Chart.js waterfall) */
 
   /* Segment table */
   .seg-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -235,8 +219,8 @@
       <span class="section-title" id="cascadeSectionTitle">損益ウォーターフォール　累計</span>
       <div class="section-line"></div>
     </div>
-    <div class="card" style="padding:20px 0 16px;margin-bottom:32px;">
-      <div id="cascadeWrap" class="cascade-grid"></div>
+    <div class="card" style="margin-bottom:32px;">
+      <div class="chart-container" style="height:300px;"><canvas id="cascadeChart"></canvas></div>
     </div>
 
     <!-- Monthly Trend -->
@@ -493,41 +477,92 @@ function renderKPI(data) {
 }
 
 // =============================================
-// RENDER CASCADE
+// RENDER CASCADE (waterfall chart)
 // =============================================
 function renderCascade(data) {
+  if (charts.cascade) { charts.cascade.destroy(); delete charts.cascade; }
   const t = data.total;
-  const tgt = data.targets;
-  // barW = 目標比（目標率を100%として何%達成か）→ 視認性の高いバー幅に変換
-  const ratioBar = (rate, maxRate) => t.op < 0 && maxRate === tgt.op_rate_target ? 0
-    : Math.min(100, Math.round(Math.max(0, rate) / maxRate * 100));
-  const items = [
-    { label:'売上高',     value:t.revenue, rate:null,         color:'cb-rev',   barW:100, targetNote:null },
-    { label:'粗利',       value:t.gross,   rate:t.gross_rate, color:'cb-gross',
-      barW: ratioBar(t.gross_rate, tgt.gross_rate_target),
-      targetNote:`目標 ${pct(tgt.gross_rate_target)}` },
-    { label:'営業利益',   value:t.op,      rate:t.op_rate,    color:'cb-op',
-      barW: ratioBar(t.op_rate, tgt.op_rate_target),
-      targetNote:`目標 ${pct(tgt.op_rate_target)}` },
-    { label:'経常利益',   value:t.ord,     rate:t.ord_rate,   color:'cb-ord',
-      barW: ratioBar(t.ord_rate, 0.08),
-      targetNote:null },
-    { label:'当期純利益', value:t.net,     rate:t.net_rate,   color:'cb-net',
-      barW: ratioBar(t.net_rate, 0.08),
-      targetNote:null },
+
+  // Waterfall steps: type = 'total' | 'deduct' | 'gain' | 'subtotal'
+  const steps = [
+    { label:'売上高',     value: t.revenue, type:'total'   },
+    { label:'売上原価',   value:-t.cogs,    type:'deduct'  },
+    { label:'粗利',       value: t.gross,   type:'subtotal'},
+    { label:'販管費',     value:-t.sga,     type:'deduct'  },
+    { label:'営業利益',   value: t.op,      type:'subtotal'},
   ];
-  document.getElementById('cascadeWrap').innerHTML = items.map(item => `
-    <div class="cascade-item">
-      <div class="cascade-label">${item.label}</div>
-      <div class="cascade-value ${pl(item.value)}">¥${fmtM(item.value)}</div>
-      ${item.rate !== null
-        ? `<div class="cascade-rate">${pct(item.rate)}</div>`
-        : '<div class="cascade-rate" style="height:18px;"></div>'}
-      ${item.targetNote ? `<div class="cascade-target">${item.targetNote}</div>` : '<div class="cascade-target" style="height:15px;"></div>'}
-      <div class="cascade-bar-outer">
-        <div class="cascade-bar ${item.color}" style="width:${item.barW}%;"></div>
-      </div>
-    </div>`).join('');
+  const extra = t.ord - t.op;
+  if (Math.abs(extra) > 50000) {
+    steps.push({ label: extra >= 0 ? '営業外収益' : '営業外費用', value: extra, type: extra >= 0 ? 'gain' : 'deduct' });
+  }
+  steps.push({ label:'当期純利益', value: t.net, type:'subtotal' });
+
+  // Convert to floating bar [min, max]
+  let cum = 0;
+  const floatData = steps.map(s => {
+    if (s.type === 'total' || s.type === 'subtotal') {
+      cum = s.value;
+      return [0, s.value];
+    }
+    const start = cum;
+    cum += s.value;
+    return s.value < 0 ? [cum, start] : [start, cum];
+  });
+
+  const colTotal   = 'rgba(15,76,117,0.85)';
+  const colDeduct  = 'rgba(220,38,38,0.65)';
+  const colGain    = 'rgba(37,99,235,0.65)';
+  const colGross   = 'rgba(13,148,136,0.80)';
+  const colOp      = t.op >= 0 ? 'rgba(5,150,105,0.80)' : 'rgba(220,38,38,0.80)';
+  const colNet     = 'rgba(124,58,237,0.80)';
+
+  const bgColors = steps.map(s => {
+    if (s.label === '売上高')   return colTotal;
+    if (s.label === '粗利')     return colGross;
+    if (s.label === '営業利益') return colOp;
+    if (s.label === '当期純利益') return colNet;
+    if (s.type === 'gain')      return colGain;
+    return colDeduct;
+  });
+
+  charts.cascade = new Chart(document.getElementById('cascadeChart'), {
+    type: 'bar',
+    data: {
+      labels: steps.map(s => s.label),
+      datasets: [{
+        data: floatData,
+        backgroundColor: bgColors,
+        borderColor: bgColors.map(c => c.replace(/[\d.]+\)$/, '1)')),
+        borderWidth: 1,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const s = steps[ctx.dataIndex];
+              const abs = Math.abs(s.value);
+              const sign = s.type === 'deduct' ? '-' : '';
+              const rate = t.revenue > 0 ? (Math.abs(s.value)/t.revenue*100).toFixed(1) : 0;
+              return ` ${sign}¥${fmt(abs)}（売上比 ${rate}%）`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 12 }, color: '#334155' } },
+        y: {
+          ticks: { callback: v => '¥'+fmtM(v), font: { size: 11 } },
+          grid: { color: 'rgba(0,0,0,0.05)' }
+        }
+      }
+    }
+  });
 }
 
 // =============================================
