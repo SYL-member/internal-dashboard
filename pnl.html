@@ -128,12 +128,27 @@
 
   /* Monthly table */
   .monthly-table { width:100%; border-collapse:collapse; font-size:12px; }
-  .monthly-table th { padding:8px 10px; font-size:10px; font-weight:600; letter-spacing:0.05em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
-  .monthly-table th:first-child { text-align:left; padding-left:16px; }
-  .monthly-table td { padding:10px 10px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.6); white-space:nowrap; }
-  .monthly-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:13px; font-weight:600; color:var(--text); padding-left:16px; }
-  .monthly-table tr.total-row td { font-weight:700; background:rgba(15,76,117,0.04); border-top:2px solid rgba(15,76,117,0.2); color:var(--accent); }
-  .monthly-table tr.rate-row td { font-size:11px; color:var(--text-muted); background:rgba(0,0,0,0.01); }
+  .monthly-table th { padding:9px 12px; font-size:10px; font-weight:600; letter-spacing:0.05em; text-align:right; color:var(--text-muted); border-bottom:2px solid var(--border); background:var(--surface2); white-space:nowrap; }
+  .monthly-table th:first-child { text-align:left; padding-left:20px; min-width:130px; }
+  .monthly-table td { padding:9px 12px; text-align:right; font-family:'DM Mono',monospace; font-size:12px; color:var(--text-dim); border-bottom:1px solid rgba(221,227,237,0.5); white-space:nowrap; }
+  .monthly-table td:first-child { text-align:left; font-family:'Noto Sans JP',sans-serif; font-size:12px; font-weight:500; color:var(--text-dim); padding-left:20px; }
+  /* 行タイプ別スタイル */
+  .monthly-table tr.row-key td { background:rgba(15,76,117,0.04); border-top:1px solid rgba(15,76,117,0.15); border-bottom:1px solid rgba(15,76,117,0.1); }
+  .monthly-table tr.row-key td:first-child { font-weight:700; font-size:13px; color:var(--text); }
+  .monthly-table tr.row-net td { background:rgba(15,76,117,0.07); border-top:2px solid rgba(15,76,117,0.25); }
+  .monthly-table tr.row-net td:first-child { font-weight:700; font-size:13px; color:var(--accent); }
+  .monthly-table tr.row-rate td { padding:4px 12px; font-size:11px; color:var(--text-muted); background:rgba(0,0,0,0.01); border-bottom:1px solid rgba(221,227,237,0.3); }
+  .monthly-table tr.row-rate td:first-child { padding-left:28px; font-size:11px; color:var(--text-muted); font-weight:400; font-family:'DM Mono',monospace; }
+  .monthly-table tr.row-cost td:first-child { color:var(--text-muted); padding-left:28px; font-size:12px; }
+  .monthly-table tr.row-section td { padding:6px 12px; background:var(--surface2); font-size:9px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); border-bottom:1px solid var(--border); border-top:1px solid var(--border); font-family:'DM Mono',monospace; }
+  .monthly-table tr.row-section td:first-child { padding-left:20px; }
+  .monthly-table td.total-col { font-weight:700; color:var(--accent); border-left:2px solid rgba(15,76,117,0.2); background:rgba(15,76,117,0.03); }
+  /* セル値カラーリング */
+  .monthly-table td.cell-pos { color:var(--positive) !important; }
+  .monthly-table td.cell-neg { color:var(--negative) !important; background:rgba(220,38,38,0.04) !important; }
+  .monthly-table td.cell-rate-pos { color:var(--positive) !important; font-weight:600; }
+  .monthly-table td.cell-rate-neg { color:var(--negative) !important; font-weight:600; }
+  .monthly-table td.cell-rate-ok  { color:#0d9488 !important; }
 
   /* Category labels */
   .seg-label { font-size:10px; padding:2px 7px; border-radius:4px; margin-right:6px; font-family:'DM Mono',monospace; font-weight:600; display:inline-block; white-space:nowrap; }
@@ -975,54 +990,82 @@ function renderSgaTable(data) {
 // =============================================
 function renderMonthlyTable(data) {
   const months = data.monthly.map(m => m.month);
-  const totals = data.total;
-  const rows = [
-    { label:'売上高',    key:'revenue', isRate:false },
-    { label:'売上原価',  key:'cogs',    isRate:false },
-    { label:'粗利',      key:'gross',   isRate:false },
-    { label:'粗利率',    key:'gross_rate_calc', isRate:true  },
-    { label:'販管費',    key:'sga',     isRate:false },
-    { label:'営業利益',  key:'op',      isRate:false },
-    { label:'営業利益率',key:'op_rate_calc',    isRate:true  },
-    { label:'経常利益',  key:'ord',     isRate:false },
-    { label:'当期純利益',key:'net',     isRate:false },
-  ];
-  const totalMap = { revenue:totals.revenue, cogs:totals.cogs, gross:totals.gross, sga:totals.sga, op:totals.op, ord:totals.ord, net:totals.net };
+  const T = data.total;
+  // 単位：千円表示
+  const fmtK = n => {
+    if (n == null) return '—';
+    const k = Math.round(n / 1000);
+    return (k >= 0 ? '' : '▲') + Math.abs(k).toLocaleString();
+  };
+  const rateCls = v => v > 0.20 ? 'cell-rate-ok' : v >= 0 ? 'cell-rate-pos' : 'cell-rate-neg';
+  const valCls  = v => v < 0 ? 'cell-neg' : '';
+  const opCls   = v => v < 0 ? 'cell-neg' : v > 0 ? 'cell-pos' : '';
 
-  let html = `<table class="monthly-table"><thead><tr>
-    <th style="text-align:left;padding-left:16px;">項目</th>
+  // セクションヘッダー行
+  const secRow = label => `<tr class="row-section"><td colspan="${months.length + 2}">${label}</td></tr>`;
+  // 数値行
+  const row = (label, vals, totalVal, cls='', cellClsFn=valCls) => {
+    const cells = vals.map(v => `<td class="${cellClsFn(v)}">${fmtK(v)}</td>`).join('');
+    const totalCls = valCls(totalVal);
+    return `<tr class="${cls}"><td>${label}</td>${cells}<td class="total-col ${totalCls}">${fmtK(totalVal)}</td></tr>`;
+  };
+  // Rate行（%表示）
+  const rateRow = (label, vals, totalVal) => {
+    const cells = vals.map(v => `<td class="${rateCls(v)}">${pct(v)}</td>`).join('');
+    return `<tr class="row-rate"><td>${label}</td>${cells}<td class="total-col ${rateCls(totalVal)}">${pct(totalVal)}</td></tr>`;
+  };
+  // 前年比行
+  const yoyRow = (label, currVals, prevVals) => {
+    const cells = currVals.map((cv, i) => {
+      const pv = prevVals[i];
+      if (!pv || pv === 0) return '<td>—</td>';
+      const r = (cv - pv) / Math.abs(pv);
+      const cls = r >= 0 ? 'cell-rate-pos' : 'cell-rate-neg';
+      return `<td class="${cls}">${r >= 0 ? '+' : ''}${(r*100).toFixed(1)}%</td>`;
+    }).join('');
+    return `<tr class="row-rate"><td>${label}</td>${cells}<td class="total-col"></td></tr>`;
+  };
+
+  const revVals   = data.monthly.map(m => m.revenue);
+  const cogsVals  = data.monthly.map(m => m.cogs);
+  const grossVals = data.monthly.map(m => m.gross);
+  const grRates   = data.monthly.map(m => m.revenue > 0 ? m.gross/m.revenue : 0);
+  const sgaVals   = data.monthly.map(m => m.sga);
+  const opVals    = data.monthly.map(m => m.op);
+  const opRates   = data.monthly.map(m => m.revenue > 0 ? m.op/m.revenue : 0);
+  const ordVals   = data.monthly.map(m => m.ord);
+  const netVals   = data.monthly.map(m => m.net);
+  const netRates  = data.monthly.map(m => m.revenue > 0 ? m.net/m.revenue : 0);
+  const prevRevs  = data.monthly.map(m => m.prev_rev || null);
+  const prevGross = data.monthly.map(m => m.prev_gross || null);
+  const prevOp    = data.monthly.map(m => m.prev_op !== undefined ? m.prev_op : null);
+
+  let html = `<table class="monthly-table">
+  <thead><tr>
+    <th>項目 <span style="font-weight:400;color:#94a3b8;font-size:9px;">（単位：千円）</span></th>
     ${months.map(m => `<th>${m}</th>`).join('')}
-    <th>累計</th>
+    <th style="border-left:2px solid rgba(15,76,117,0.2);">累計</th>
   </tr></thead><tbody>`;
 
-  rows.forEach(r => {
-    const isR = r.isRate;
-    const cls = isR ? ' class="rate-row"' : '';
-    html += `<tr${cls}><td>${r.label}</td>`;
-    data.monthly.forEach(m => {
-      let val;
-      if (r.key === 'gross_rate_calc') val = m.revenue > 0 ? m.gross/m.revenue : 0;
-      else if (r.key === 'op_rate_calc') val = m.revenue > 0 ? m.op/m.revenue : 0;
-      else val = m[r.key];
+  html += secRow('売上総利益の部');
+  html += row('売上高', revVals, T.revenue, '', () => '');
+  html += yoyRow('└ 前年比', revVals, prevRevs);
+  html += row('売上原価', cogsVals, T.cogs, 'row-cost', () => '');
+  html += row('売上総利益（粗利）', grossVals, T.gross, 'row-key', v => v < 0 ? 'cell-neg' : 'cell-pos');
+  html += rateRow('└ 粗利率', grRates, T.gross_rate);
+  html += yoyRow('└ 前年比', grossVals, prevGross);
 
-      if (isR) {
-        const cls2 = val >= 0 ? 'positive' : 'negative';
-        html += `<td class="${cls2}">${pct(val)}</td>`;
-      } else {
-        const cls2 = val >= 0 ? '' : ' class="negative"';
-        html += `<td${cls2}>¥${fmt(val)}</td>`;
-      }
-    });
-    // Total column
-    if (isR) {
-      const tv = r.key === 'gross_rate_calc' ? totals.gross_rate : totals.op_rate;
-      html += `<td class="${tv >= 0 ? 'positive' : 'negative'}">${pct(tv)}</td>`;
-    } else {
-      const tv = totalMap[r.key] ?? 0;
-      html += `<td class="total-row" style="font-weight:700;">¥${fmt(tv)}</td>`;
-    }
-    html += '</tr>';
-  });
+  html += secRow('営業利益の部');
+  html += row('販管費', sgaVals, T.sga, 'row-cost', () => '');
+  html += row('営業利益', opVals, T.op, 'row-key', opCls);
+  html += rateRow('└ 営業利益率', opRates, T.op_rate);
+  html += yoyRow('└ 前年比', opVals, prevOp);
+
+  html += secRow('経常利益・当期純利益の部');
+  html += row('経常利益', ordVals, T.ord, 'row-key', opCls);
+  html += row('当期純利益', netVals, T.net, 'row-net', opCls);
+  html += rateRow('└ 純利益率', netRates, T.net_rate);
+
   html += '</tbody></table>';
   document.getElementById('monthlyTableWrap').innerHTML = html;
 }
