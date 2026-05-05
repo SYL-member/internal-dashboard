@@ -283,6 +283,10 @@
       <span class="nav-icon">3PL</span>
       3PL損益
     </a>
+    <a href="pnl.html" class="nav-link">
+      <span class="nav-icon">収支</span>
+      収支実績
+    </a>
   </div>
 </nav>
 
@@ -628,24 +632,40 @@ function renderCharts(data) {
   });
 
   // --- Margin Line Chart ---
+  const MARGIN_FLOOR = 10; // 粗利率 最低ライン（%）
   const mCtx = document.getElementById('marginChart').getContext('2d');
   charts.margin = new Chart(mCtx, {
     type: 'line',
     data: {
       labels: months,
-      datasets: ['白銅', 'ムトウユニパック'].map(c => ({
-        label: c,
-        data: months.map(m => +(monthly[m].clients[c]?.margin * 100 || 0).toFixed(2)),
-        borderColor: CLIENT_COLORS[c].line,
-        backgroundColor: CLIENT_COLORS[c].faint,
-        tension: 0.3, fill: false, pointRadius: 4,
-      }))
+      datasets: [
+        ...['白銅', 'ムトウユニパック'].map(c => ({
+          label: c,
+          data: months.map(m => +(monthly[m].clients[c]?.margin * 100 || 0).toFixed(2)),
+          borderColor: CLIENT_COLORS[c].line,
+          backgroundColor: CLIENT_COLORS[c].faint,
+          tension: 0.3, fill: false, pointRadius: 4,
+        })),
+        {
+          label: '最低粗利率ライン',
+          data: months.map(() => MARGIN_FLOOR),
+          borderColor: 'rgba(220,38,38,0.65)',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 0,
+        }
+      ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 11 }, boxWidth: 12 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } }
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label === '最低粗利率ライン'
+          ? ` 最低粗利率ライン: ${ctx.parsed.y}%`
+          : ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } }
       },
       scales: {
         x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(0,0,0,0.06)' } },

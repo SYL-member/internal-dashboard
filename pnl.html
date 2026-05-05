@@ -143,6 +143,37 @@
   .sl-biz  { background:rgba(124,58,237,0.12); color:#7c3aed; }
   .sl-oth  { background:rgba(100,116,139,0.1); color:#64748b; }
 
+  /* 予実対比ゲージ */
+  .target-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:32px; }
+  .target-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .target-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
+  .target-values { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+  .target-actual { font-family:'DM Mono',monospace; font-size:22px; font-weight:500; }
+  .target-sep { font-size:12px; color:var(--text-muted); }
+  .target-tgt { font-family:'DM Mono',monospace; font-size:13px; color:var(--text-muted); }
+  .target-bar-track { height:6px; background:var(--border); border-radius:3px; position:relative; margin-bottom:8px; overflow:visible; }
+  .target-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+  .target-bar-mark { position:absolute; top:-3px; width:2px; height:12px; background:#0f172a; border-radius:1px; }
+  .target-footer { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+  .target-badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; font-family:'DM Mono',monospace; }
+  .tb-ok   { background:rgba(5,150,105,0.12); color:#059669; }
+  .tb-warn { background:rgba(217,119,6,0.12); color:#d97706; }
+  .tb-ng   { background:rgba(220,38,38,0.12); color:#dc2626; }
+
+  /* インサイトストリップ */
+  .insight-wrap { margin-bottom:32px; }
+  .ic-strip { display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+  .ic { display:flex; align-items:flex-start; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; flex-shrink:0; min-width:200px; transition:border-color 0.15s; }
+  .ic:hover { border-color:rgba(15,76,117,0.3); }
+  .ic-icon { font-size:20px; line-height:1; flex-shrink:0; }
+  .ic-head { font-size:10px; color:var(--text-muted); letter-spacing:0.06em; margin-bottom:2px; font-family:'DM Mono',monospace; }
+  .ic-main { font-size:16px; font-weight:600; color:var(--text); line-height:1.2; }
+  .ic-sub  { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .ic-pos { border-left:3px solid var(--positive); }
+  .ic-neg { border-left:3px solid var(--negative); }
+  .ic-neu { border-left:3px solid #94a3b8; }
+  .ic-warn { border-left:3px solid var(--accent3); }
+
   /* Modal */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
   .modal-overlay.open { display:flex; }
@@ -214,6 +245,24 @@
     <!-- KPI Cards -->
     <div class="kpi-grid" id="kpiGrid"></div>
 
+    <!-- インサイト -->
+    <div class="insight-wrap">
+      <div class="section-header" style="margin-bottom:12px;">
+        <span class="section-title">自動インサイト</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="ic-strip" id="insightStrip">
+        <div style="font-size:12px;color:var(--text-muted);padding:8px 0;">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- 予実対比 -->
+    <div class="section-header">
+      <span class="section-title">予実対比</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="target-grid" id="targetGrid" style="margin-bottom:32px;"></div>
+
     <!-- P&L Cascade -->
     <div class="section-header">
       <span class="section-title" id="cascadeSectionTitle">損益ウォーターフォール　累計</span>
@@ -221,21 +270,6 @@
     </div>
     <div class="card" style="margin-bottom:32px;">
       <div class="chart-container" style="height:300px;"><canvas id="cascadeChart"></canvas></div>
-    </div>
-
-    <!-- 2-Year Revenue Trend -->
-    <div class="section-header">
-      <span class="section-title" id="trendTitle">売上推移　直近2年（月次）</span>
-      <div class="section-line"></div>
-    </div>
-    <div class="charts-grid" style="margin-bottom:32px;">
-      <div class="card chart-wide">
-        <div class="card-title">
-          <span>月次 売上推移（前年同月比較）</span>
-          <span style="font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;">棒＝売上　折れ線＝粗利率</span>
-        </div>
-        <div class="chart-container tall"><canvas id="trendChart"></canvas></div>
-      </div>
     </div>
 
     <!-- Monthly Trend (P&L breakdown) -->
@@ -496,6 +530,128 @@ function renderKPI(data) {
 }
 
 // =============================================
+// RENDER INSIGHTS
+// =============================================
+function renderInsights(data) {
+  const strip = document.getElementById('insightStrip');
+  if (!strip) return;
+  const t = data.total;
+  const chips = [];
+
+  // 1. 売上 前年同期比
+  if (t.prev_revenue > 0) {
+    const yoy = (t.revenue - t.prev_revenue) / t.prev_revenue;
+    const cls  = yoy >= 0 ? 'ic-pos' : 'ic-neg';
+    const icon = yoy >= 0 ? '📈' : '📉';
+    chips.push({ icon, head:'売上　前年同期比', main:`${yoy >= 0 ? '+' : ''}${(yoy*100).toFixed(1)}%`,
+      sub:`当期 ¥${fmtM(t.revenue)} ／ 前年 ¥${fmtM(t.prev_revenue)}`, cls });
+  }
+
+  // 2. 粗利率 vs 目標
+  const grTarget = data.targets.gross_rate_target;
+  const grDiff   = t.gross_rate - grTarget;
+  {
+    const cls  = grDiff >= -0.02 ? (grDiff >= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = grDiff >= 0 ? '✅' : '⚠️';
+    chips.push({ icon, head:'粗利率　目標対比', main:`${(t.gross_rate*100).toFixed(1)}%　目標 ${(grTarget*100).toFixed(1)}%`,
+      sub:`差異 ${grDiff >= 0 ? '+' : ''}${(grDiff*100).toFixed(1)}pp`, cls });
+  }
+
+  // 3. 営業利益率 vs 目標
+  const opTarget = data.targets.op_rate_target;
+  const opDiff   = t.op_rate - opTarget;
+  {
+    const cls  = opDiff >= -0.01 ? (opDiff >= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = opDiff >= 0 ? '✅' : (opDiff >= -0.01 ? '⚡' : '🔴');
+    chips.push({ icon, head:'営業利益率　目標対比', main:`${(t.op_rate*100).toFixed(1)}%　目標 ${(opTarget*100).toFixed(1)}%`,
+      sub:`差異 ${opDiff >= 0 ? '+' : ''}${(opDiff*100).toFixed(1)}pp　営業利益 ¥${fmtM(t.op)}`, cls });
+  }
+
+  // 4. 労働分配率 vs 目標（低いほど良い）
+  const lrTarget = data.targets.labor_ratio_target;
+  const lrDiff   = t.labor_ratio - lrTarget;
+  {
+    const cls  = lrDiff <= 0.02 ? (lrDiff <= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = lrDiff <= 0 ? '👍' : (lrDiff <= 0.05 ? '⚠️' : '🔴');
+    chips.push({ icon, head:'労働分配率　目標対比', main:`${(t.labor_ratio*100).toFixed(1)}%　目標 ${(lrTarget*100).toFixed(1)}%以下`,
+      sub:`差異 ${lrDiff >= 0 ? '+' : ''}${(lrDiff*100).toFixed(1)}pp　人件費 ¥${fmtM(t.personnel)}`, cls });
+  }
+
+  // 5. 粗利 前年同期比
+  if (t.prev_gross > 0) {
+    const yoy = (t.gross - t.prev_gross) / t.prev_gross;
+    const cls  = yoy >= 0 ? 'ic-pos' : 'ic-neg';
+    chips.push({ icon: yoy >= 0 ? '📊' : '📉', head:'粗利　前年同期比',
+      main:`${yoy >= 0 ? '+' : ''}${(yoy*100).toFixed(1)}%`,
+      sub:`当期 ¥${fmtM(t.gross)} ／ 前年 ¥${fmtM(t.prev_gross)}　粗利率前年差 ${grDiff >= 0 ? '+' : ''}${((t.gross_rate - (t.prev_gross/t.prev_revenue))*100).toFixed(1)}pp`, cls });
+  }
+
+  strip.innerHTML = chips.map(c => `
+    <div class="ic ${c.cls || ''}">
+      <div class="ic-icon">${c.icon}</div>
+      <div>
+        <div class="ic-head">${c.head}</div>
+        <div class="ic-main">${c.main}</div>
+        <div class="ic-sub">${c.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// RENDER TARGET GAUGES (予実対比)
+// =============================================
+function renderTargetGauges(data) {
+  const el = document.getElementById('targetGrid');
+  if (!el) return;
+  const t = data.total;
+  const tgt = data.targets;
+
+  const gauge = (label, actual, target, invert, unit, decimals) => {
+    // invert=true means lower is better (e.g. labor ratio)
+    const actualPct = (actual * 100).toFixed(decimals || 1) + unit;
+    const targetPct = (target * 100).toFixed(decimals || 1) + unit;
+    const ratio     = invert
+      ? Math.max(0, Math.min(1, target / actual))         // fill shrinks if over target
+      : Math.max(0, Math.min(1, actual / target));
+    const achieved  = invert ? actual <= target : actual >= target * 0.9;
+    const warn      = invert ? (actual > target && actual <= target * 1.1) : (actual >= target * 0.8 && actual < target * 0.9);
+    const bad       = invert ? actual > target * 1.1 : actual < target * 0.8;
+    const barColor  = bad ? '#dc2626' : warn ? '#d97706' : '#059669';
+    const badgeText = bad ? '未達' : warn ? '要注意' : '達成';
+    const badgeCls  = bad ? 'tb-ng' : warn ? 'tb-warn' : 'tb-ok';
+    const markPct   = Math.min(100, 100) + '%';  // target marker always at end
+    const fillW     = (ratio * 100).toFixed(1) + '%';
+    const diff      = invert
+      ? ((target - actual)*100).toFixed(1) + unit + (target-actual >= 0 ? '（余裕）' : '（超過）')
+      : ((actual - target)*100).toFixed(1) + unit + (actual-target >= 0 ? '（超過達成）' : '（未達）');
+    return `
+      <div class="target-card">
+        <div class="target-label">${label}</div>
+        <div class="target-values">
+          <span class="target-actual" style="color:${barColor}">${actualPct}</span>
+          <span class="target-sep">/</span>
+          <span class="target-tgt">目標 ${targetPct}${invert ? '以下' : ''}</span>
+        </div>
+        <div class="target-bar-track">
+          <div class="target-bar-fill" style="width:${fillW};background:${barColor}"></div>
+          <div class="target-bar-mark" style="right:0;left:auto;"></div>
+        </div>
+        <div class="target-footer">
+          <span class="target-badge ${badgeCls}">${badgeText}</span>
+          <span>${diff}</span>
+        </div>
+      </div>`;
+  };
+
+  el.innerHTML = [
+    gauge('粗利率',       t.gross_rate,    tgt.gross_rate_target, false, '%'),
+    gauge('営業利益率',   t.op_rate,       tgt.op_rate_target,    false, '%'),
+    gauge('労働分配率',   t.labor_ratio,   tgt.labor_ratio_target, true,  '%'),
+  ].join('');
+}
+
+// =============================================
 // RENDER CASCADE (waterfall chart)
 // =============================================
 function renderCascade(data) {
@@ -628,130 +784,18 @@ function renderCascade(data) {
 // =============================================
 function renderCharts(data) {
   // cascade は renderCascade が個別管理するので触らない
-  ['trend','monthly','seg','yearly','sga'].forEach(k => {
+  ['monthly','seg','yearly','sga'].forEach(k => {
     if (charts[k]) { charts[k].destroy(); delete charts[k]; }
   });
 
   const months = data.monthly.map(m => m.month);
 
-  // ── 直近2年 売上推移チャート（連続12ヶ月） ──
-  const n = data.monthly.length;
-  const fy = parseInt(data.year) || 2025;
-
-  // 月番号取得
-  const mNum = str => parseInt(str.replace('月', ''));
-  // 実暦年: 10月以降は当該年度年、1〜9月は翌年
-  const calYear = (fiscalYr, monthStr) => mNum(monthStr) >= 10 ? fiscalYr : fiscalYr + 1;
-
-  // ラベル: '24/10', '24/11', ... '25/3', '25/10', ... '26/3'
-  const trendLabels = [
-    ...data.monthly.map(m => `${String(calYear(fy-1, m.month)).slice(2)}/${mNum(m.month)}`),
-    ...data.monthly.map(m => `${String(calYear(fy,   m.month)).slice(2)}/${mNum(m.month)}`),
-  ];
-
-  const trendRevAll = [
-    ...data.monthly.map(m => m.prev_rev || 0),
-    ...data.monthly.map(m => m.revenue),
-  ];
-  const trendBarColors = [
-    ...data.monthly.map(() => 'rgba(148,163,184,0.50)'),
-    ...data.monthly.map(() => 'rgba(15,76,117,0.70)'),
-  ];
-  const trendBarBorder = [
-    ...data.monthly.map(() => 'rgba(148,163,184,0.85)'),
-    ...data.monthly.map(() => 'rgba(15,76,117,1)'),
-  ];
-
-  // 粗利率ライン: 1本で全12ヶ月連続
-  const grLineAll = [
-    ...data.monthly.map(m => m.prev_rev  > 0 ? (m.prev_gross||0)/m.prev_rev*100  : null),
-    ...data.monthly.map(m => m.revenue   > 0 ? m.gross/m.revenue*100              : null),
-  ];
-  // 前年/今期の境界で色を分けるセグメント色 plugin
-  const trendSegColors = {
-    id: 'trendSegColors',
-    beforeDatasetsDraw(chart) {
-      const { ctx, chartArea, scales: { x } } = chart;
-      if (!chartArea) return;
-      const boundX = (x.getPixelForValue(n - 0.5) + x.getPixelForValue(n + 0.5)) / 2;
-      // 前年エリア: 薄グレー背景
-      ctx.save();
-      ctx.fillStyle = 'rgba(0,0,0,0.02)';
-      ctx.fillRect(chartArea.left, chartArea.top, boundX - chartArea.left, chartArea.height);
-      // 境界線
-      ctx.strokeStyle = 'rgba(15,76,117,0.2)';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4,3]);
-      ctx.beginPath(); ctx.moveTo(boundX, chartArea.top); ctx.lineTo(boundX, chartArea.bottom); ctx.stroke();
-      ctx.setLineDash([]);
-      // 年ラベル
-      ctx.font = '500 11px "Noto Sans JP",sans-serif';
-      ctx.fillStyle = 'rgba(100,116,139,0.6)';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${fy-1}年度`, (chartArea.left + boundX) / 2, chartArea.top + 14);
-      ctx.fillStyle = 'rgba(15,76,117,0.55)';
-      ctx.fillText(`${fy}年度`, (boundX + chartArea.right) / 2, chartArea.top + 14);
-      ctx.restore();
-    }
-  };
-
-  charts.trend = new Chart(document.getElementById('trendChart'), {
-    type: 'bar',
-    plugins: [trendSegColors],
-    data: {
-      labels: trendLabels,
-      datasets: [
-        {
-          label: '売上',
-          data: trendRevAll,
-          backgroundColor: trendBarColors,
-          borderColor: trendBarBorder,
-          borderWidth: 1,
-          borderRadius: 3,
-        },
-        {
-          label: '粗利率',
-          data: grLineAll, type:'line', yAxisID:'yR',
-          borderColor:'#0d9488', backgroundColor:'transparent',
-          borderWidth:2.5, pointRadius:4, tension:0.3,
-          spanGaps: true,
-          segment: {
-            borderColor: ctx => ctx.p0DataIndex < n ? 'rgba(100,116,139,0.75)' : '#0d9488',
-            borderDash:  ctx => ctx.p0DataIndex < n ? [5,4] : [],
-          },
-        },
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      layout: { padding: { top: 20 } },
-      plugins: {
-        legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
-        tooltip:{ callbacks:{ label: ctx => {
-          if (ctx.dataset.yAxisID === 'yR') return ` 粗利率: ${ctx.parsed.y != null ? ctx.parsed.y.toFixed(1)+'%' : '—'}`;
-          const isCurrentYear = ctx.dataIndex >= n;
-          const m = data.monthly[ctx.dataIndex % n];
-          const prev_rev = m.prev_rev || 0;
-          const yoy = prev_rev > 0 ? ((m.revenue - prev_rev)/prev_rev*100).toFixed(1) : null;
-          if (isCurrentYear && yoy !== null) {
-            return ` 売上: ¥${fmt(ctx.parsed.y)}  前年比 ${parseFloat(yoy) >= 0 ? '+' : ''}${yoy}%`;
-          }
-          return ` 売上: ¥${fmt(ctx.parsed.y)}`;
-        }}}
-      },
-      scales: {
-        x:{ grid:{ display:false }, ticks:{ font:{size:11} } },
-        y:{ ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{ color:'rgba(0,0,0,0.05)' } },
-        yR:{ position:'right', grid:{ display:false }, ticks:{ callback:v => v+'%', font:{size:11} }, min:0, max:50 }
-      }
-    }
-  });
-
-  // Monthly P&L Chart
-  const revData   = data.monthly.map(m => m.revenue);
-  const cogsData  = data.monthly.map(m => m.cogs);
-  const sgaData   = data.monthly.map(m => m.sga);
-  const opData    = data.monthly.map(m => m.op);
+  // Monthly P&L Chart（前年売上ラインを追加）
+  const revData    = data.monthly.map(m => m.revenue);
+  const cogsData   = data.monthly.map(m => m.cogs);
+  const sgaData    = data.monthly.map(m => m.sga);
+  const opData     = data.monthly.map(m => m.op);
+  const prevRevData= data.monthly.map(m => m.prev_rev || null);
   const grRateData = data.monthly.map(m => m.revenue > 0 ? (m.gross/m.revenue*100) : 0);
   const opRateData = data.monthly.map(m => m.revenue > 0 ? (m.op/m.revenue*100) : 0);
 
@@ -760,12 +804,17 @@ function renderCharts(data) {
     data: {
       labels: months,
       datasets: [
-        { label:'売上原価', data:cogsData, backgroundColor:'rgba(148,163,184,0.5)', stack:'s' },
-        { label:'販管費',   data:sgaData,  backgroundColor:'rgba(96,165,250,0.45)', stack:'s' },
-        { label:'営業利益', data:opData.map(v => v >= 0 ? v : 0), backgroundColor:'rgba(5,150,105,0.7)', stack:'s' },
-        { label:'営業損失', data:opData.map(v => v <  0 ? v : 0), backgroundColor:'rgba(220,38,38,0.6)',  stack:'s' },
-        { label:'粗利率',      data:grRateData, type:'line', yAxisID:'yR', borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3 },
-        { label:'営業利益率',  data:opRateData, type:'line', yAxisID:'yR', borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
+        { label:'売上原価',   data:cogsData, backgroundColor:'rgba(148,163,184,0.5)', stack:'s' },
+        { label:'販管費',     data:sgaData,  backgroundColor:'rgba(96,165,250,0.45)', stack:'s' },
+        { label:'営業利益',   data:opData.map(v => v >= 0 ? v : 0), backgroundColor:'rgba(5,150,105,0.7)', stack:'s' },
+        { label:'営業損失',   data:opData.map(v => v <  0 ? v : 0), backgroundColor:'rgba(220,38,38,0.6)', stack:'s' },
+        { label:'前年売上',   data:prevRevData, type:'line', yAxisID:'y',
+          borderColor:'rgba(148,163,184,0.75)', backgroundColor:'transparent',
+          borderWidth:2, pointRadius:4, tension:0.3, borderDash:[5,4], stack:undefined },
+        { label:'粗利率',     data:grRateData, type:'line', yAxisID:'yR',
+          borderColor:'#0d9488', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3 },
+        { label:'営業利益率', data:opRateData, type:'line', yAxisID:'yR',
+          borderColor:'#d97706', backgroundColor:'transparent', borderWidth:2, pointRadius:4, tension:0.3, borderDash:[4,3] },
       ]
     },
     options: {
@@ -774,12 +823,17 @@ function renderCharts(data) {
         legend:{ position:'top', labels:{ font:{size:11}, boxWidth:12, padding:16 } },
         tooltip:{ callbacks:{ label: ctx => {
           if (ctx.dataset.yAxisID === 'yR') return ` ${ctx.dataset.label}: ${ctx.parsed.y.toFixed(1)}%`;
+          if (ctx.dataset.label === '前年売上') {
+            const m = data.monthly[ctx.dataIndex];
+            const yoy = m.prev_rev > 0 ? ((m.revenue - m.prev_rev)/m.prev_rev*100).toFixed(1) : null;
+            return ` 前年売上: ¥${fmt(ctx.parsed.y)}${yoy !== null ? `  (今期比 ${parseFloat(yoy)>=0?'+':''}${yoy}%)` : ''}`;
+          }
           return ` ${ctx.dataset.label}: ¥${fmt(ctx.parsed.y)}`;
         }}}
       },
       scales: {
         x:{ stacked:true, grid:{display:false} },
-        y:{ stacked:true, ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)' } },
+        y:{ stacked:true, ticks:{ callback:v => '¥'+fmtM(v), font:{size:11} }, grid:{color:'rgba(0,0,0,0.05)'} },
         yR:{ position:'right', grid:{display:false}, ticks:{ callback:v => v+'%', font:{size:11} }, min:-5 }
       }
     }
@@ -980,12 +1034,13 @@ function renderAll(data) {
   document.getElementById('periodBadge').textContent = data.period;
   document.getElementById('footerText').textContent = `最終更新: ${data.updatedAt} | データソース: 事業別収支実績xlsx`;
   document.getElementById('cascadeSectionTitle').textContent = `損益ウォーターフォール　${data.period}`;
-  document.getElementById('trendTitle').textContent = `売上推移　直近2年（月次）`;
   document.getElementById('monthlyTitle').textContent = `月次 損益推移　${data.period}`;
   document.getElementById('segTitle').textContent = `事業別 収益構成　${data.period}`;
   document.getElementById('sgaTitle').textContent = `販管費 内訳　${data.period}`;
   document.getElementById('tableTitle').textContent = `月次 損益明細　${data.period}`;
   renderKPI(data);
+  renderInsights(data);
+  renderTargetGauges(data);
   renderCascade(data);
   renderCharts(data);
   renderSegTable(data);
