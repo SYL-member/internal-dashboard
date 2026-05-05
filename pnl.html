@@ -143,6 +143,37 @@
   .sl-biz  { background:rgba(124,58,237,0.12); color:#7c3aed; }
   .sl-oth  { background:rgba(100,116,139,0.1); color:#64748b; }
 
+  /* 予実対比ゲージ */
+  .target-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:32px; }
+  .target-card { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .target-label { font-size:10px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); margin-bottom:12px; }
+  .target-values { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
+  .target-actual { font-family:'DM Mono',monospace; font-size:22px; font-weight:500; }
+  .target-sep { font-size:12px; color:var(--text-muted); }
+  .target-tgt { font-family:'DM Mono',monospace; font-size:13px; color:var(--text-muted); }
+  .target-bar-track { height:6px; background:var(--border); border-radius:3px; position:relative; margin-bottom:8px; overflow:visible; }
+  .target-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+  .target-bar-mark { position:absolute; top:-3px; width:2px; height:12px; background:#0f172a; border-radius:1px; }
+  .target-footer { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+  .target-badge { display:inline-block; padding:2px 7px; border-radius:4px; font-size:10px; font-weight:700; font-family:'DM Mono',monospace; }
+  .tb-ok   { background:rgba(5,150,105,0.12); color:#059669; }
+  .tb-warn { background:rgba(217,119,6,0.12); color:#d97706; }
+  .tb-ng   { background:rgba(220,38,38,0.12); color:#dc2626; }
+
+  /* インサイトストリップ */
+  .insight-wrap { margin-bottom:32px; }
+  .ic-strip { display:flex; gap:12px; overflow-x:auto; padding-bottom:4px; scrollbar-width:thin; }
+  .ic { display:flex; align-items:flex-start; gap:10px; background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; flex-shrink:0; min-width:200px; transition:border-color 0.15s; }
+  .ic:hover { border-color:rgba(15,76,117,0.3); }
+  .ic-icon { font-size:20px; line-height:1; flex-shrink:0; }
+  .ic-head { font-size:10px; color:var(--text-muted); letter-spacing:0.06em; margin-bottom:2px; font-family:'DM Mono',monospace; }
+  .ic-main { font-size:16px; font-weight:600; color:var(--text); line-height:1.2; }
+  .ic-sub  { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .ic-pos { border-left:3px solid var(--positive); }
+  .ic-neg { border-left:3px solid var(--negative); }
+  .ic-neu { border-left:3px solid #94a3b8; }
+  .ic-warn { border-left:3px solid var(--accent3); }
+
   /* Modal */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
   .modal-overlay.open { display:flex; }
@@ -213,6 +244,24 @@
 
     <!-- KPI Cards -->
     <div class="kpi-grid" id="kpiGrid"></div>
+
+    <!-- インサイト -->
+    <div class="insight-wrap">
+      <div class="section-header" style="margin-bottom:12px;">
+        <span class="section-title">自動インサイト</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="ic-strip" id="insightStrip">
+        <div style="font-size:12px;color:var(--text-muted);padding:8px 0;">読み込み中...</div>
+      </div>
+    </div>
+
+    <!-- 予実対比 -->
+    <div class="section-header">
+      <span class="section-title">予実対比</span>
+      <div class="section-line"></div>
+    </div>
+    <div class="target-grid" id="targetGrid" style="margin-bottom:32px;"></div>
 
     <!-- P&L Cascade -->
     <div class="section-header">
@@ -478,6 +527,128 @@ function renderKPI(data) {
       </div>
       <div class="kpi-row kpi-row-2">${subCards.join('')}</div>
     </div>`;
+}
+
+// =============================================
+// RENDER INSIGHTS
+// =============================================
+function renderInsights(data) {
+  const strip = document.getElementById('insightStrip');
+  if (!strip) return;
+  const t = data.total;
+  const chips = [];
+
+  // 1. 売上 前年同期比
+  if (t.prev_revenue > 0) {
+    const yoy = (t.revenue - t.prev_revenue) / t.prev_revenue;
+    const cls  = yoy >= 0 ? 'ic-pos' : 'ic-neg';
+    const icon = yoy >= 0 ? '📈' : '📉';
+    chips.push({ icon, head:'売上　前年同期比', main:`${yoy >= 0 ? '+' : ''}${(yoy*100).toFixed(1)}%`,
+      sub:`当期 ¥${fmtM(t.revenue)} ／ 前年 ¥${fmtM(t.prev_revenue)}`, cls });
+  }
+
+  // 2. 粗利率 vs 目標
+  const grTarget = data.targets.gross_rate_target;
+  const grDiff   = t.gross_rate - grTarget;
+  {
+    const cls  = grDiff >= -0.02 ? (grDiff >= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = grDiff >= 0 ? '✅' : '⚠️';
+    chips.push({ icon, head:'粗利率　目標対比', main:`${(t.gross_rate*100).toFixed(1)}%　目標 ${(grTarget*100).toFixed(1)}%`,
+      sub:`差異 ${grDiff >= 0 ? '+' : ''}${(grDiff*100).toFixed(1)}pp`, cls });
+  }
+
+  // 3. 営業利益率 vs 目標
+  const opTarget = data.targets.op_rate_target;
+  const opDiff   = t.op_rate - opTarget;
+  {
+    const cls  = opDiff >= -0.01 ? (opDiff >= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = opDiff >= 0 ? '✅' : (opDiff >= -0.01 ? '⚡' : '🔴');
+    chips.push({ icon, head:'営業利益率　目標対比', main:`${(t.op_rate*100).toFixed(1)}%　目標 ${(opTarget*100).toFixed(1)}%`,
+      sub:`差異 ${opDiff >= 0 ? '+' : ''}${(opDiff*100).toFixed(1)}pp　営業利益 ¥${fmtM(t.op)}`, cls });
+  }
+
+  // 4. 労働分配率 vs 目標（低いほど良い）
+  const lrTarget = data.targets.labor_ratio_target;
+  const lrDiff   = t.labor_ratio - lrTarget;
+  {
+    const cls  = lrDiff <= 0.02 ? (lrDiff <= 0 ? 'ic-pos' : 'ic-warn') : 'ic-neg';
+    const icon = lrDiff <= 0 ? '👍' : (lrDiff <= 0.05 ? '⚠️' : '🔴');
+    chips.push({ icon, head:'労働分配率　目標対比', main:`${(t.labor_ratio*100).toFixed(1)}%　目標 ${(lrTarget*100).toFixed(1)}%以下`,
+      sub:`差異 ${lrDiff >= 0 ? '+' : ''}${(lrDiff*100).toFixed(1)}pp　人件費 ¥${fmtM(t.personnel)}`, cls });
+  }
+
+  // 5. 粗利 前年同期比
+  if (t.prev_gross > 0) {
+    const yoy = (t.gross - t.prev_gross) / t.prev_gross;
+    const cls  = yoy >= 0 ? 'ic-pos' : 'ic-neg';
+    chips.push({ icon: yoy >= 0 ? '📊' : '📉', head:'粗利　前年同期比',
+      main:`${yoy >= 0 ? '+' : ''}${(yoy*100).toFixed(1)}%`,
+      sub:`当期 ¥${fmtM(t.gross)} ／ 前年 ¥${fmtM(t.prev_gross)}　粗利率前年差 ${grDiff >= 0 ? '+' : ''}${((t.gross_rate - (t.prev_gross/t.prev_revenue))*100).toFixed(1)}pp`, cls });
+  }
+
+  strip.innerHTML = chips.map(c => `
+    <div class="ic ${c.cls || ''}">
+      <div class="ic-icon">${c.icon}</div>
+      <div>
+        <div class="ic-head">${c.head}</div>
+        <div class="ic-main">${c.main}</div>
+        <div class="ic-sub">${c.sub}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =============================================
+// RENDER TARGET GAUGES (予実対比)
+// =============================================
+function renderTargetGauges(data) {
+  const el = document.getElementById('targetGrid');
+  if (!el) return;
+  const t = data.total;
+  const tgt = data.targets;
+
+  const gauge = (label, actual, target, invert, unit, decimals) => {
+    // invert=true means lower is better (e.g. labor ratio)
+    const actualPct = (actual * 100).toFixed(decimals || 1) + unit;
+    const targetPct = (target * 100).toFixed(decimals || 1) + unit;
+    const ratio     = invert
+      ? Math.max(0, Math.min(1, target / actual))         // fill shrinks if over target
+      : Math.max(0, Math.min(1, actual / target));
+    const achieved  = invert ? actual <= target : actual >= target * 0.9;
+    const warn      = invert ? (actual > target && actual <= target * 1.1) : (actual >= target * 0.8 && actual < target * 0.9);
+    const bad       = invert ? actual > target * 1.1 : actual < target * 0.8;
+    const barColor  = bad ? '#dc2626' : warn ? '#d97706' : '#059669';
+    const badgeText = bad ? '未達' : warn ? '要注意' : '達成';
+    const badgeCls  = bad ? 'tb-ng' : warn ? 'tb-warn' : 'tb-ok';
+    const markPct   = Math.min(100, 100) + '%';  // target marker always at end
+    const fillW     = (ratio * 100).toFixed(1) + '%';
+    const diff      = invert
+      ? ((target - actual)*100).toFixed(1) + unit + (target-actual >= 0 ? '（余裕）' : '（超過）')
+      : ((actual - target)*100).toFixed(1) + unit + (actual-target >= 0 ? '（超過達成）' : '（未達）');
+    return `
+      <div class="target-card">
+        <div class="target-label">${label}</div>
+        <div class="target-values">
+          <span class="target-actual" style="color:${barColor}">${actualPct}</span>
+          <span class="target-sep">/</span>
+          <span class="target-tgt">目標 ${targetPct}${invert ? '以下' : ''}</span>
+        </div>
+        <div class="target-bar-track">
+          <div class="target-bar-fill" style="width:${fillW};background:${barColor}"></div>
+          <div class="target-bar-mark" style="right:0;left:auto;"></div>
+        </div>
+        <div class="target-footer">
+          <span class="target-badge ${badgeCls}">${badgeText}</span>
+          <span>${diff}</span>
+        </div>
+      </div>`;
+  };
+
+  el.innerHTML = [
+    gauge('粗利率',       t.gross_rate,    tgt.gross_rate_target, false, '%'),
+    gauge('営業利益率',   t.op_rate,       tgt.op_rate_target,    false, '%'),
+    gauge('労働分配率',   t.labor_ratio,   tgt.labor_ratio_target, true,  '%'),
+  ].join('');
 }
 
 // =============================================
@@ -868,6 +1039,8 @@ function renderAll(data) {
   document.getElementById('sgaTitle').textContent = `販管費 内訳　${data.period}`;
   document.getElementById('tableTitle').textContent = `月次 損益明細　${data.period}`;
   renderKPI(data);
+  renderInsights(data);
+  renderTargetGauges(data);
   renderCascade(data);
   renderCharts(data);
   renderSegTable(data);

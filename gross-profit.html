@@ -659,6 +659,10 @@
       <span class="nav-icon">3PL</span>
       3PL損益
     </a>
+    <a href="pnl.html" class="nav-link">
+      <span class="nav-icon">収支</span>
+      収支実績
+    </a>
   </div>
 </nav>
 
@@ -1483,6 +1487,18 @@ function renderCharts(data) {
           backgroundColor: 'rgba(18,65,197,0.82)',
           borderWidth: 0,
           borderRadius: 3,
+        },
+        {
+          type: 'line',
+          label: '目標粗利率',
+          data: marginDepts.map(() => parseFloat(document.getElementById('targetMargin')?.value || 20)),
+          borderColor: 'rgba(220,38,38,0.7)',
+          borderWidth: 2,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0,
+          order: 0,
         }
       ]
     },
@@ -1491,7 +1507,9 @@ function renderCharts(data) {
       maintainAspectRatio: false,
       plugins: {
         legend: { labels: { color: '#475569', font: { family: 'DM Mono', size: 10 }, boxWidth: 10 } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } }
+        tooltip: { callbacks: { label: ctx => ctx.dataset.label === '目標粗利率'
+          ? ` 目標粗利率: ${ctx.parsed.y}%`
+          : ` ${ctx.dataset.label}: ${ctx.parsed.y}%` } }
       },
       scales: {
         x: { ticks: { color: '#64748b', font: { family: 'Noto Sans JP', size: 11 } }, grid: { display: false } },
