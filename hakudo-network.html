@@ -582,6 +582,35 @@ tbody tr:last-child td { border-bottom: none; }
 .chart-card-sub { font-size: 11px; color: var(--ink-muted); margin-bottom: 18px; }
 @media (max-width: 900px) { .chart-overview { grid-template-columns: 1fr; } }
 
+/* NEGOTIATION PANEL */
+.negotiation-panel { background: #fffbeb; border: 1px solid #fcd34d; border-left: 4px solid #d97706; padding: 20px 24px; margin-bottom: 28px; border-radius: 0; }
+.neg-panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.neg-panel-title { font-size: 13px; font-weight: 700; color: #92400e; }
+.deadline-chip { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 700; padding: 3px 10px; background: #dc2626; color: white; letter-spacing: .06em; margin-left: auto; }
+.neg-panel-note { font-size: 11px; color: #78350f; line-height: 1.7; margin-bottom: 14px; }
+.pattern-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pattern-table th { padding: 8px 14px; font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; background: #1a1a17; color: white; }
+.pattern-table th:not(:first-child) { text-align: center; }
+.pattern-table td { padding: 10px 14px; border-bottom: 1px solid #fde68a; vertical-align: middle; }
+.pattern-table td:not(:first-child) { text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; }
+.pattern-table .route-label { font-weight: 700; font-size: 12px; }
+.pattern-table .route-sub-label { font-size: 10px; color: #78350f; margin-top: 1px; }
+.p-current { color: var(--ink-muted); }
+.p-keep { color: #16a34a; }
+.p-change { color: #d97706; }
+.p-drop { background: rgba(220,38,38,.08); color: #dc2626; font-size: 11px; padding: 1px 8px; display: inline-block; }
+.p-note-sm { font-size: 9px; color: var(--ink-muted); display: block; margin-top: 2px; }
+.pattern-table tr:hover { background: rgba(253,230,138,.2); }
+.pattern-table tr.focus-row { background: rgba(253,230,138,.15); }
+
+/* BIN CARD PATTERN STATUS */
+.bin-pattern-status { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+.bps-tag { font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; letter-spacing: .04em; padding: 2px 7px; border-radius: 2px; }
+.bps-drop { background: rgba(220,38,38,.1); color: #dc2626; border: 1px solid rgba(220,38,38,.3); }
+.bps-change { background: rgba(217,119,6,.1); color: #b45309; border: 1px solid rgba(217,119,6,.3); }
+.bps-check { background: rgba(79,70,229,.1); color: #4f46e5; border: 1px solid rgba(79,70,229,.3); }
+.bps-keep { background: rgba(22,163,74,.1); color: #16a34a; border: 1px solid rgba(22,163,74,.3); }
+
 /* TOPNAV */
 .topnav { background: #0f172a; padding: 0 32px; display: flex; align-items: center; gap: 0; margin-bottom: 0; position: sticky; top: 0; z-index: 100; }
 .topnav a { display: flex; align-items: center; gap: 6px; padding: 11px 14px; font-size: 12px; font-weight: 500; color: #94a3b8; text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -2px; white-space: nowrap; transition: color .15s; }
@@ -817,6 +846,57 @@ tbody tr:last-child td { border-bottom: none; }
     <span class="section-meta">TRUNK LINE · 埼玉 / 福島 / 千葉</span>
   </div>
 
+  <!-- 埼玉工場閉鎖に伴う削減検討パネル -->
+  <div class="negotiation-panel">
+    <div class="neg-panel-header">
+      <span style="font-size:16px;">⚠️</span>
+      <span class="neg-panel-title">埼玉工場閉鎖に伴う幹線便 削減検討中（白銅㈱ 宮﨑様 交渉）</span>
+      <span class="deadline-chip">回答期限 5/15</span>
+    </div>
+    <div class="neg-panel-note">
+      白銅㈱の埼玉工場閉鎖に伴い、以下3パターンの見直し案を提示中。最新連絡（2026/5/8）：P3について<strong>厚木近辺発の千葉幹線</strong>（千葉通商以外も含め）を探してほしいとの依頼あり。5/15（金）までに回答要。
+    </div>
+    <table class="pattern-table">
+      <thead><tr>
+        <th>便</th>
+        <th>現単価（加須）</th>
+        <th>P1 — 両便スライド</th>
+        <th>P2 — 1便のみ継続</th>
+        <th>P3 — 千葉横持ちのみ</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><div class="route-label">埼玉1便（往路）</div><div class="route-sub-label">熊谷→神奈川</div></td>
+          <td class="p-current">¥38,500</td>
+          <td class="p-change">¥46,500</td>
+          <td class="p-change">¥50,000</td>
+          <td><span class="p-drop">廃止</span></td>
+        </tr>
+        <tr class="focus-row">
+          <td><div class="route-label">千葉幹線（横持ち）</div><div class="route-sub-label">厚木→葛西→千葉デポ</div></td>
+          <td class="p-current">¥20,000</td>
+          <td class="p-keep">¥20,000<span class="p-note-sm">*現契約通り</span></td>
+          <td class="p-keep">¥20,000<span class="p-note-sm">*現契約通り</span></td>
+          <td class="p-check" style="color:#4f46e5;font-weight:700;">¥56,500<span class="p-note-sm">参考価格 / 厚木発で要確認</span></td>
+        </tr>
+        <tr>
+          <td><div class="route-label">埼玉2便（往路）</div><div class="route-sub-label">熊谷→神奈川</div></td>
+          <td class="p-current">¥38,500</td>
+          <td class="p-change">¥46,500</td>
+          <td><span class="p-drop">廃止</span></td>
+          <td><span class="p-drop">廃止</span></td>
+        </tr>
+        <tr>
+          <td><div class="route-label">埼玉2便（復路）</div><div class="route-sub-label">神奈川→熊谷</div></td>
+          <td class="p-current">¥28,500</td>
+          <td class="p-change">¥34,500</td>
+          <td><span class="p-drop">廃止</span></td>
+          <td><span class="p-drop">廃止</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
   <!-- PAIR 01 -->
   <div class="pair-group">
     <div class="pair-label">PAIR · 01</div>
@@ -850,6 +930,11 @@ tbody tr:last-child td { border-bottom: none; }
         <div class="bin-vendor">
           <div class="bin-vendor-name">千葉通商（埼玉東営業所）</div>
           <div class="bin-vendor-sub">TEL 048-940-3701</div>
+        </div>
+        <div class="bin-pattern-status">
+          <span class="bps-change">P1 ¥46,500</span>
+          <span class="bps-change">P2 ¥50,000</span>
+          <span class="bps-drop">P3 廃止</span>
         </div>
       </div>
 
@@ -902,6 +987,11 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="bin-vendor-name">千葉通商（成田営業所）</div>
           <div class="bin-vendor-sub">運用実態に応じて単価系統が切り替わる</div>
         </div>
+        <div class="bin-pattern-status">
+          <span class="bps-keep">P1 ¥20,000</span>
+          <span class="bps-keep">P2 ¥20,000</span>
+          <span class="bps-check">P3 要確認 ¥56,500参考 / 厚木発を検討</span>
+        </div>
       </div>
     </div>
 
@@ -945,6 +1035,11 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="bin-vendor-name">千葉通商（埼玉東営業所）</div>
           <div class="bin-vendor-sub">同左</div>
         </div>
+        <div class="bin-pattern-status">
+          <span class="bps-change">P1 ¥46,500</span>
+          <span class="bps-drop">P2 廃止</span>
+          <span class="bps-drop">P3 廃止</span>
+        </div>
       </div>
 
       <div class="bin-card">
@@ -971,6 +1066,11 @@ tbody tr:last-child td { border-bottom: none; }
         <div class="bin-vendor">
           <div class="bin-vendor-name">千葉通商（同車両）</div>
           <div class="bin-vendor-sub">復路は積載少なめ・単価減</div>
+        </div>
+        <div class="bin-pattern-status">
+          <span class="bps-change">P1 ¥34,500</span>
+          <span class="bps-drop">P2 廃止</span>
+          <span class="bps-drop">P3 廃止</span>
         </div>
       </div>
     </div>
