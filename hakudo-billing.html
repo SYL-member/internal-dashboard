@@ -279,6 +279,9 @@ tbody tr.grand-total td.num { color: #9fe86e; }
     <div class="chart-title">月次推移 — 請求 / 仕入 / 粗利</div>
     <div class="chart-sub">2025年10月〜2026年4月（税抜・円）</div>
     <canvas id="trendChart" height="100"></canvas>
+    <div style="font-size:10px;color:var(--ink-muted);text-align:right;margin-top:4px;">
+      ※ 点線バーはデータ未入力 — 上記「過去月データ入力」パネルから登録
+    </div>
   </div>
   <div class="chart-card">
     <div class="chart-title">カテゴリ別 請求構成（当月）</div>
@@ -404,14 +407,14 @@ const SP_OUT_BASE = 'https://sylink.sharepoint.com/sites/head-office/Shared%20Do
 // 【YYYYMM】ご請求書　神奈川工場様.pdf パターン
 const SP_OUT_FOLDER = SP_OUT_BASE;
 const INVOICE_LINKS = {
-  out: [  // SY-Link → 白銅（神奈川工場様宛）
-    { month: '10月', url: SP_OUT_BASE + '%E3%80%90202510%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '11月', url: SP_OUT_BASE + '%E3%80%90202511%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '12月', url: SP_OUT_BASE + '%E3%80%90202512%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '1月',  url: SP_OUT_BASE + '%E3%80%90202601%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '2月',  url: SP_OUT_BASE + '%E3%80%90202602%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '3月',  url: SP_OUT_BASE + '%E3%80%90202603%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
-    { month: '4月',  url: SP_OUT_BASE + '%E3%80%90202604%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+  out: [  // SY-Link → 白銅（神奈川工場様宛）— フォルダURLを使用（ファイル名は命名規則通りに検索）
+    { month: '10月', url: SP_OUT_FOLDER, filename: '【202510】ご請求書　神奈川工場様.pdf' },
+    { month: '11月', url: SP_OUT_FOLDER, filename: '【202511】ご請求書　神奈川工場様.pdf' },
+    { month: '12月', url: SP_OUT_FOLDER, filename: '【202512】ご請求書　神奈川工場様.pdf' },
+    { month: '1月',  url: SP_OUT_FOLDER, filename: '【202601】ご請求書　神奈川工場様.pdf' },
+    { month: '2月',  url: SP_OUT_FOLDER, filename: '【202602】ご請求書　神奈川工場様.pdf' },
+    { month: '3月',  url: SP_OUT_FOLDER, filename: '【202603】ご請求書　神奈川工場様.pdf' },
+    { month: '4月',  url: SP_OUT_FOLDER, filename: '【202604】ご請求書　神奈川工場様.pdf' },
   ],
   in: [   // 業者 → SY-Link（仕入請求書 — URLは受領後に更新）
     { month: '10月', url: null },
@@ -620,6 +623,36 @@ function renderTrendChart() {
     (b !== null && costByMonth[i] !== null) ? b - costByMonth[i] : null
   );
 
+  // ヌル月のプレースホルダーバーを描画するプラグイン
+  const nullBarPlugin = {
+    id: 'nullBarPlaceholder',
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { y } } = chart;
+      const ds0 = chart.data.datasets[0]; // 請求額
+      const meta0 = chart.getDatasetMeta(0);
+      ds0.data.forEach((val, i) => {
+        if (val !== null) return;
+        const bar = meta0.data[i];
+        if (!bar) return;
+        const bw = (bar.width || 24) * 0.75;
+        const bx = bar.x;
+        const yMax = y.max || 1;
+        const top = y.getPixelForValue(yMax * 0.13);
+        const bottom = y.getPixelForValue(0);
+        ctx.save();
+        ctx.fillStyle = 'rgba(180,180,180,0.10)';
+        ctx.strokeStyle = 'rgba(180,180,180,0.35)';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 3]);
+        ctx.beginPath();
+        ctx.rect(bx - bw / 2, top, bw, bottom - top);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      });
+    }
+  };
+
   if (window.trendChartInst) window.trendChartInst.destroy();
   window.trendChartInst = new Chart(document.getElementById('trendChart'), {
     type: 'bar',
@@ -628,7 +661,7 @@ function renderTrendChart() {
       datasets: [
         { label: '請求額', data: billingByMonth, backgroundColor: 'rgba(143,195,31,.5)', borderColor: '#8fc31f', borderWidth: 1.5, stack: 'a', order: 2 },
         { label: '仕入額', data: costByMonth, backgroundColor: 'rgba(168,69,69,.35)', borderColor: '#a84545', borderWidth: 1.5, stack: 'b', order: 2 },
-        { type: 'line', label: '粗利', data: gpByMonth, borderColor: '#4d7a0a', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#4d7a0a', tension: 0.2, yAxisID: 'y', order: 1 },
+        { type: 'line', label: '粗利', data: gpByMonth, borderColor: '#4d7a0a', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#4d7a0a', tension: 0.2, yAxisID: 'y', order: 1, spanGaps: false },
       ]
     },
     options: {
@@ -640,7 +673,7 @@ function renderTrendChart() {
           callbacks: {
             label: ctx => {
               const v = ctx.parsed.y;
-              if (v === null) return ctx.dataset.label + ': —';
+              if (v === null || v === undefined) return ctx.dataset.label + ': —（未入力）';
               return ctx.dataset.label + ': ¥' + (v * 1000).toLocaleString() + '円';
             }
           }
@@ -653,7 +686,8 @@ function renderTrendChart() {
         },
         x: { ticks: { font: { size: 11 } } }
       }
-    }
+    },
+    plugins: [nullBarPlugin]
   });
 }
 
@@ -757,10 +791,11 @@ function buildInvoiceGrid(containerId, links) {
   if (!container) return;
   container.innerHTML = links.map(item => {
     if (item.url) {
-      return `<a class="invoice-card" href="${item.url}" target="_blank" rel="noopener">
+      const title = item.filename ? `SharePointフォルダを開く\n${item.filename}` : 'SharePointで開く';
+      return `<a class="invoice-card" href="${item.url}" target="_blank" rel="noopener" title="${title}">
         <div class="invoice-m">${item.month}</div>
-        <div class="invoice-icon-wrap">📄</div>
-        <span class="invoice-badge ready">確定</span>
+        <div class="invoice-icon-wrap">📁</div>
+        <span class="invoice-badge ready">フォルダ</span>
       </a>`;
     } else {
       return `<div class="invoice-card no-link">
