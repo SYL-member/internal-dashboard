@@ -3,260 +3,263 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>社内ダッシュボード</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>社内ダッシュボード — SY-Link</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f5f7fa;
-    --surface: #ffffff;
-    --surface2: #eef2f7;
-    --border: #dde3ed;
-    --accent: #1241C5;
-    --accent2: #4060D4;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --text-dim: #334155;
-  }
+:root {
+  --bg: #f5f7fa;
+  --surface: #ffffff;
+  --surface2: #eef2f7;
+  --border: #dde3ed;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --ink-muted: #64748b;
+  --accent: #1241C5;
+  --green: #4d7a0a;
+  --green-light: #8fc31f;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image:
+    linear-gradient(rgba(18,65,197,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(18,65,197,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none; z-index: 0;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 28px; position: relative; z-index: 1; }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+/* ── HEADER ── */
+header { background: #0f172a; border-bottom: 1px solid #1e293b; }
+.header-inner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 28px; max-width: 1100px; margin: 0 auto;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-mark {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--accent), #4060D4);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #fff;
+}
+.logo-text { font-size: 16px; font-weight: 600; color: #fff; }
+.logo-sub { font-size: 10px; color: #475569; font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.header-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #475569; }
 
-  body {
-    font-family: 'Noto Sans JP', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
+/* ── SECTION HEADER ── */
+.section-block { padding: 40px 0 0; }
+.section-label {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px;
+}
+.section-label-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+.section-label-line { flex: 1; height: 1px; background: var(--border); }
 
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image:
-      linear-gradient(rgba(18,65,197,0.04) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(18,65,197,0.04) 1px, transparent 1px);
-    background-size: 40px 40px;
-    pointer-events: none; z-index: 0;
-  }
+/* ── TREE LAYOUT ── */
+.tree-root { margin-bottom: 12px; }
 
-  .container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 24px;
-    position: relative; z-index: 1;
-  }
+/* L0: 収支実績 — 横幅広めのフィーチャーカード */
+.card-l0 {
+  display: flex; align-items: center; gap: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  border-radius: 12px;
+  padding: 20px 24px;
+  text-decoration: none; color: inherit;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  transition: box-shadow .15s, transform .15s;
+  margin-bottom: 4px;
+}
+.card-l0:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(18,65,197,.1); }
+.card-l0-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--accent), #4060D4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: #fff;
+}
+.card-l0-body { flex: 1; }
+.card-l0-name { font-size: 15px; font-weight: 700; margin-bottom: 3px; }
+.card-l0-desc { font-size: 12px; color: var(--ink-muted); }
+.card-l0-arrow {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  background: rgba(18,65,197,.06); border: 1px solid rgba(18,65,197,.15);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.card-l0:hover .card-l0-arrow { background: var(--accent); border-color: var(--accent); }
+.card-l0:hover .card-l0-arrow svg { stroke: #fff; }
 
-  /* ===== HEADER ===== */
-  header {
-    background: #0f172a;
-    border-bottom: 1px solid #1e293b;
-    padding: 0;
-  }
+/* ツリー接続線 */
+.tree-children {
+  margin-left: 22px;
+  padding-left: 22px;
+  border-left: 2px solid var(--border);
+  padding-top: 8px;
+  padding-bottom: 4px;
+  margin-bottom: 8px;
+}
+.tree-children-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ink-muted); margin-bottom: 10px; padding-left: 2px;
+}
 
-  .header-inner {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 20px 24px;
-    max-width: 1100px; margin: 0 auto;
-  }
+/* L1 グリッド */
+.cards-l1 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.cards-l1.two-col { grid-template-columns: repeat(2, 1fr); }
 
-  .logo { display: flex; align-items: center; gap: 14px; }
+/* L1 カード */
+.card-l1 {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+  position: relative; overflow: hidden;
+}
+.card-l1::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+}
+.card-l1:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.09); border-color: var(--c1); }
+.card-l1-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.card-l1-icon {
+  width: 32px; height: 32px; border-radius: 7px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: #fff;
+}
+.card-l1-name { font-size: 13px; font-weight: 700; flex: 1; }
+.card-l1-badge {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  padding: 2px 6px; border-radius: 4px;
+  background: rgba(14,168,138,.1); color: #0ea88a; border: 1px solid rgba(14,168,138,.25);
+  white-space: nowrap;
+}
+.card-l1-badge.coming {
+  background: rgba(100,116,139,.08); color: #94a3b8; border-color: rgba(100,116,139,.2);
+}
+.card-l1-desc { font-size: 11px; color: var(--ink-muted); line-height: 1.7; flex: 1; }
+.card-l1.disabled { opacity: .55; cursor: default; pointer-events: none; }
+.card-l1.disabled::before { background: #cbd5e1; }
+.card-l1.has-children { border-bottom-color: #bfdbfe; }
 
-  .logo-mark {
-    width: 44px; height: 44px;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600; color: #fff;
-    letter-spacing: 0.02em;
-  }
+/* L2: 物流DXの子カード */
+.tree-children-l2 {
+  margin-left: 16px;
+  padding-left: 16px;
+  border-left: 2px dashed var(--border);
+  padding-top: 8px;
+  margin-bottom: 6px;
+}
+.cards-l2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.card-l2 {
+  background: var(--surface);
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 12px 14px;
+  text-decoration: none; color: inherit;
+  display: flex; align-items: center; gap: 10px;
+  opacity: .6;
+  cursor: default; pointer-events: none;
+}
+.card-l2-icon {
+  width: 26px; height: 26px; border-radius: 5px; flex-shrink: 0;
+  background: #e2e8f0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+.card-l2-name { font-size: 12px; font-weight: 600; color: var(--ink-soft); }
+.card-l2-badge {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+  padding: 1px 5px; border-radius: 3px;
+  background: rgba(100,116,139,.08); color: #94a3b8; border: 1px solid rgba(100,116,139,.2);
+  margin-left: auto;
+}
 
-  .logo-text { font-size: 18px; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
-  .logo-sub { font-size: 11px; color: #475569; font-family: 'DM Mono', monospace; margin-top: 2px; }
+/* ── 業務用DB ── */
+.ops-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 52px;
+}
+.card-ops {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  text-decoration: none; color: inherit;
+  display: flex; flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  transition: box-shadow .15s, transform .15s, border-color .15s;
+  position: relative; overflow: hidden;
+}
+.card-ops::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, var(--c1), var(--c2));
+}
+.card-ops:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,.09); border-color: var(--c1); }
+.card-ops-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.card-ops-icon {
+  width: 32px; height: 32px; border-radius: 7px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--c1), var(--c2));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; font-weight: 700; color: #fff;
+}
+.card-ops-name { font-size: 13px; font-weight: 700; }
+.card-ops-desc { font-size: 11px; color: var(--ink-muted); line-height: 1.7; flex: 1; }
+.card-ops-tag {
+  display: inline-block; margin-top: 12px;
+  font-size: 9px; font-family: 'JetBrains Mono', monospace;
+  padding: 2px 7px; border-radius: 4px;
+  background: var(--surface2); color: var(--ink-muted); border: 1px solid var(--border);
+}
 
-  .header-right {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px; color: #475569;
-  }
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 0;
+  text-align: center;
+  font-size: 11px; color: var(--ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+  margin-top: 12px;
+}
 
-  /* ===== HERO ===== */
-  .hero {
-    padding: 52px 0 40px;
-    text-align: center;
-  }
-
-  .hero-title {
-    font-size: 28px; font-weight: 700;
-    color: var(--text); margin-bottom: 10px;
-    letter-spacing: -0.01em;
-  }
-
-  .hero-sub {
-    font-size: 14px; color: var(--text-muted); line-height: 1.7;
-  }
-
-  /* ===== SECTION ===== */
-  .section-header {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .section-title {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
-    text-transform: uppercase; color: var(--text-muted);
-    white-space: nowrap;
-  }
-
-  .section-line { flex: 1; height: 1px; background: var(--border); }
-
-  /* ===== CARDS ===== */
-  .cards-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-    margin-bottom: 52px;
-  }
-
-  .db-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 24px;
-    text-decoration: none;
-    color: inherit;
-    display: flex; flex-direction: column;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-    position: relative; overflow: hidden;
-  }
-
-  .db-card::before {
-    content: '';
-    position: absolute; top: 0; left: 0; right: 0; height: 3px;
-    background: linear-gradient(90deg, var(--card-color1), var(--card-color2));
-  }
-
-  .db-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-    border-color: var(--card-color1);
-  }
-
-  .card-icon {
-    width: 44px; height: 44px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 700;
-    color: #fff; margin-bottom: 18px;
-    background: linear-gradient(135deg, var(--card-color1), var(--card-color2));
-  }
-
-  .card-name {
-    font-size: 15px; font-weight: 600; margin-bottom: 8px;
-    color: var(--text);
-  }
-
-  .card-desc {
-    font-size: 12px; color: var(--text-muted);
-    line-height: 1.7; flex: 1; margin-bottom: 20px;
-  }
-
-  .card-footer {
-    display: flex; align-items: center; justify-content: space-between;
-    padding-top: 16px; border-top: 1px solid var(--border);
-  }
-
-  .card-tag {
-    font-size: 10px; font-family: 'DM Mono', monospace;
-    padding: 3px 9px; border-radius: 20px;
-    background: var(--surface2); color: var(--text-muted);
-    border: 1px solid var(--border);
-  }
-
-  .card-arrow {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--surface2); border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.15s;
-  }
-
-  .db-card:hover .card-arrow {
-    background: var(--card-color1);
-    border-color: var(--card-color1);
-  }
-
-  .db-card:hover .card-arrow svg { stroke: #fff; }
-
-  /* ===== ADD CARD ===== */
-  .db-card.add-card {
-    border-style: dashed;
-    border-color: #cbd5e1;
-    background: transparent;
-    box-shadow: none;
-    align-items: center; justify-content: center;
-    text-align: center;
-    cursor: default;
-    min-height: 200px;
-  }
-
-  .db-card.add-card::before { display: none; }
-  .db-card.add-card:hover {
-    transform: none; box-shadow: none; border-color: #94a3b8;
-  }
-
-  .add-icon {
-    width: 44px; height: 44px; border-radius: 50%;
-    background: var(--surface2); border: 1px dashed #94a3b8;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 22px; color: #94a3b8;
-    margin: 0 auto 12px;
-  }
-
-  .add-text { font-size: 13px; color: var(--text-muted); }
-  .add-hint { font-size: 11px; color: #94a3b8; margin-top: 4px; font-family: 'DM Mono', monospace; }
-
-  /* ===== HOW TO ADD ===== */
-  .howto {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 28px 32px;
-    margin-bottom: 52px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  }
-
-  .howto-title {
-    font-size: 13px; font-weight: 600; margin-bottom: 20px;
-    color: var(--text-dim);
-  }
-
-  .steps {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 24px;
-  }
-
-  .step { display: flex; gap: 14px; }
-
-  .step-num {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700; flex-shrink: 0;
-  }
-
-  .step-text { font-size: 12px; color: var(--text-muted); line-height: 1.7; }
-  .step-text strong { color: var(--text); font-weight: 600; display: block; margin-bottom: 2px; }
-
-  /* ===== FOOTER ===== */
-  footer {
-    border-top: 1px solid var(--border);
-    padding: 20px 0;
-    text-align: center;
-    font-size: 11px; color: var(--text-muted);
-    font-family: 'DM Mono', monospace;
-  }
-
-  @media (max-width: 800px) {
-    .cards-grid { grid-template-columns: 1fr; }
-    .steps { grid-template-columns: 1fr; }
-    .hero-title { font-size: 22px; }
-  }
+@media (max-width: 800px) {
+  .cards-l1 { grid-template-columns: 1fr; }
+  .cards-l1.two-col { grid-template-columns: 1fr; }
+  .cards-l2 { grid-template-columns: 1fr; }
+  .ops-grid { grid-template-columns: 1fr; }
+}
 </style>
 </head>
 <body>
@@ -267,164 +270,184 @@
       <div class="logo-mark">SY</div>
       <div>
         <div class="logo-text">社内ダッシュボード</div>
-        <div class="logo-sub">INTERNAL ANALYTICS PORTAL</div>
+        <div class="logo-sub">SY-LINK INTERNAL PORTAL</div>
       </div>
     </div>
-    <div class="header-right" id="lastUpdated"></div>
+    <div class="header-date" id="hdate"></div>
   </div>
 </header>
 
 <main>
-  <div class="container">
+<div class="container">
 
-    <div class="section-header">
-      <span class="section-title">ダッシュボード</span>
-      <div class="section-line"></div>
+  <!-- =============================================
+       事業 P&L
+  ============================================= -->
+  <div class="section-block">
+    <div class="section-label">
+      <span class="section-label-text">事業 P&L</span>
+      <div class="section-label-line"></div>
     </div>
 
-    <!-- =============================================
-         ダッシュボードカード一覧
-         新しいDBを追加するときはここにコピペ
-    ============================================= -->
-    <div class="cards-grid">
+    <div class="tree-root">
 
-      <!-- 白銅定例 -->
-      <a href="hakudo.html" class="db-card" style="--card-color1:#1241C5;--card-color2:#4060D4;">
-        <div class="card-icon">白銅</div>
-        <div class="card-name">白銅 定例ダッシュボード</div>
-        <div class="card-desc">白銅向け定例報告用ダッシュボード。月次スライド形式でKPI・グラフ・コメントを管理。</div>
-        <div class="card-footer">
-          <span class="card-tag">月次更新</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+      <!-- L0: 収支実績 -->
+      <a href="pnl.html" class="card-l0">
+        <div class="card-l0-icon">収支</div>
+        <div class="card-l0-body">
+          <div class="card-l0-name">収支実績ダッシュボード</div>
+          <div class="card-l0-desc">事業全体のP&L — 売上・粗利・営業利益・販管費。月次・年次トレンド。</div>
+        </div>
+        <div class="card-l0-arrow">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1241C5" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </div>
       </a>
 
-      <!-- 粗利分析（Mgr用） -->
-      <a href="gross-profit.html" class="db-card" style="--card-color1:#1241C5;--card-color2:#4060D4;">
-        <div class="card-icon">粗利</div>
-        <div class="card-name">粗利分析ダッシュボード 🔒</div>
-        <div class="card-desc">部門別（3PL・SaaS・受託開発・コンサルティング）の粗利を前年同期比で分析。大家さん・佐々木さんコミッション計算つき。</div>
-        <div class="card-footer">
-          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+      <!-- L1 children -->
+      <div class="tree-children">
+        <div class="tree-children-label">部門別内訳</div>
+
+        <div class="cards-l1">
+
+          <!-- 全部門粗利分析 -->
+          <a href="gross-profit.html" class="card-l1" style="--c1:#1241C5;--c2:#4060D4;">
+            <div class="card-l1-head">
+              <div class="card-l1-icon">粗利</div>
+              <div class="card-l1-name">全部門粗利分析</div>
+              <span class="card-l1-badge">Mgr</span>
+            </div>
+            <div class="card-l1-desc">部門別粗利を前年同期比で比較。コミッション計算つき。</div>
+          </a>
+
+          <!-- 3PL損益 -->
+          <a href="3pl-pnl.html" class="card-l1" style="--c1:#1241C5;--c2:#4060D4;">
+            <div class="card-l1-head">
+              <div class="card-l1-icon">3PL</div>
+              <div class="card-l1-name">3PL損益</div>
+              <span class="card-l1-badge">Mgr</span>
+            </div>
+            <div class="card-l1-desc">取引先別（白銅・ムトウユニパック・吉川紙商事）の月次P&L。</div>
+          </a>
+
+          <!-- 物流DX（旧ソフトウェア） -->
+          <a href="https://akakura-t.github.io/sw-dashboard/software.html" class="card-l1 has-children" style="--c1:#059669;--c2:#0284c7;" target="_blank">
+            <div class="card-l1-head">
+              <div class="card-l1-icon">DX</div>
+              <div class="card-l1-name">物流DX</div>
+              <span class="card-l1-badge">Mgr</span>
+            </div>
+            <div class="card-l1-desc">trackerr・配録・受託開発の売上・粗利・LTV・チャーン率。</div>
+          </a>
+
         </div>
-      </a>
 
-      <!-- 3PL損益（Mgr用） -->
-      <a href="3pl-pnl.html" class="db-card" style="--card-color1:#1241C5;--card-color2:#4060D4;">
-        <div class="card-icon">3PL</div>
-        <div class="card-name">3PL損益ダッシュボード 🔒</div>
-        <div class="card-desc">取引先別（白銅・ムトウユニパック・吉川紙商事）の月次P&L。ルート別内訳と粗利率推移を可視化。</div>
-        <div class="card-footer">
-          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+        <!-- L2: 物流DXの子（準備中） -->
+        <div class="tree-children-l2">
+          <div class="cards-l2">
+            <div class="card-l2">
+              <div class="card-l2-icon">💰</div>
+              <div class="card-l2-name">SaaS損益</div>
+              <span class="card-l2-badge">準備中</span>
+            </div>
+            <div class="card-l2">
+              <div class="card-l2-icon">🛠</div>
+              <div class="card-l2-name">システム開発</div>
+              <span class="card-l2-badge">準備中</span>
+            </div>
+          </div>
         </div>
-      </a>
 
-      <!-- ↓ 新しいDBを追加する時はここからコピペ ↓
-
-      <a href="新ファイル名.html" class="db-card" style="--card-color1:#059669;--card-color2:#0284c7;">
-        <div class="card-icon">略称</div>
-        <div class="card-name">ダッシュボード名</div>
-        <div class="card-desc">説明文をここに書く。</div>
-        <div class="card-footer">
-          <span class="card-tag">月次更新</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+        <!-- コンサルティング・不動産（準備中） -->
+        <div class="cards-l1 two-col" style="margin-top:12px;">
+          <div class="card-l1 disabled" style="--c1:#94a3b8;--c2:#cbd5e1;">
+            <div class="card-l1-head">
+              <div class="card-l1-icon" style="background:#94a3b8;">コン</div>
+              <div class="card-l1-name">コンサルティング</div>
+              <span class="card-l1-badge coming">準備中</span>
+            </div>
+            <div class="card-l1-desc">コンサルティング事業のP&L。</div>
+          </div>
+          <div class="card-l1 disabled" style="--c1:#94a3b8;--c2:#cbd5e1;">
+            <div class="card-l1-head">
+              <div class="card-l1-icon" style="background:#94a3b8;">不動</div>
+              <div class="card-l1-name">不動産</div>
+              <span class="card-l1-badge coming">準備中</span>
+            </div>
+            <div class="card-l1-desc">不動産事業のP&L。</div>
+          </div>
         </div>
-      </a>
 
-      ↑ ここまでコピペ ↑ -->
+      </div><!-- /tree-children -->
+    </div><!-- /tree-root -->
+  </div><!-- /section-block -->
 
-      <!-- 収支実績（Mgr用） -->
-      <a href="pnl.html" class="db-card" style="--card-color1:#0f4c75;--card-color2:#1a6fa0;">
-        <div class="card-icon">収支</div>
-        <div class="card-name">収支実績ダッシュボード 🔒</div>
-        <div class="card-desc">事業全体のP&L（月次・セグメント・年次トレンド）。売上・粗利・営業利益・販管費内訳を一覧。</div>
-        <div class="card-footer">
-          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+
+  <!-- =============================================
+       業務用DB
+  ============================================= -->
+  <div class="section-block">
+    <div class="section-label">
+      <span class="section-label-text">業務用DB</span>
+      <div class="section-label-line"></div>
+    </div>
+
+    <div class="ops-grid">
+
+      <!-- 白銅 定例 -->
+      <a href="hakudo.html" class="card-ops" style="--c1:#1241C5;--c2:#4060D4;">
+        <div class="card-ops-head">
+          <div class="card-ops-icon">白銅</div>
+          <div class="card-ops-name">白銅 定例ダッシュボード</div>
         </div>
+        <div class="card-ops-desc">白銅向け月次定例スライド。KPI・グラフ・コメントを管理。</div>
+        <span class="card-ops-tag">月次更新</span>
       </a>
 
       <!-- 白銅 請求管理 -->
-      <a href="hakudo-billing.html" class="db-card" style="--card-color1:#4d7a0a;--card-color2:#8fc31f;">
-        <div class="card-icon">請求</div>
-        <div class="card-name">白銅 請求管理ダッシュボード 🔒</div>
-        <div class="card-desc">SY-Link→白銅の請求額・業者→SY-Linkの仕入額・月次粗利を一覧。便別粗利率・月次推移グラフつき。</div>
-        <div class="card-footer">
-          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+      <a href="hakudo-billing.html" class="card-ops" style="--c1:#4d7a0a;--c2:#8fc31f;">
+        <div class="card-ops-head">
+          <div class="card-ops-icon">請求</div>
+          <div class="card-ops-name">白銅 請求管理</div>
         </div>
+        <div class="card-ops-desc">月次請求額・仕入額・粗利の一覧と推移グラフ。請求書インデックスつき。</div>
+        <span class="card-ops-tag">月次更新</span>
       </a>
 
-      <!-- 白銅ネットワーク便別管理 -->
-      <a href="hakudo-network.html" class="db-card" style="--card-color1:#6fa015;--card-color2:#8fc31f;">
-        <div class="card-icon">白銅N</div>
-        <div class="card-name">白銅 ネットワーク便別管理</div>
-        <div class="card-desc">幹線・配送・千葉・静岡・チャーター全便の請求/仕入/粗利と見積書インデックス。運用メモつき。</div>
-        <div class="card-footer">
-          <span class="card-tag">月次更新</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+      <!-- 白銅 ネットワーク便別管理 -->
+      <a href="hakudo-network.html" class="card-ops" style="--c1:#6fa015;--c2:#8fc31f;">
+        <div class="card-ops-head">
+          <div class="card-ops-icon">便別</div>
+          <div class="card-ops-name">白銅 便別管理</div>
         </div>
-      </a>
-
-      <!-- ソフトウェア部門（赤倉） -->
-      <a href="https://akakura-t.github.io/sw-dashboard/software.html" class="db-card" style="--card-color1:#059669;--card-color2:#0284c7;" target="_blank">
-        <div class="card-icon">SW</div>
-        <div class="card-name">ソフトウェア部門ダッシュボード 🔒</div>
-        <div class="card-desc">trackerr・配録・千葉通商など製品別の売上・粗利・LTV・チャーン率を可視化。赤倉さん管理。</div>
-        <div class="card-footer">
-          <span class="card-tag" style="background:rgba(14,168,138,0.1);color:#0ea88a;border-color:rgba(14,168,138,0.3);">Mgr用</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
-        </div>
+        <div class="card-ops-desc">全便の請求/仕入/粗利・見積書インデックス。埼玉閉鎖P1〜P3検討パネルつき。</div>
+        <span class="card-ops-tag">随時更新</span>
       </a>
 
       <!-- システム構成図 -->
-      <a href="system-diagram.html" class="db-card" style="--card-color1:#475569;--card-color2:#64748b;">
-        <div class="card-icon">構成</div>
-        <div class="card-name">システム構成図</div>
-        <div class="card-desc">ダッシュボード全体のアーキテクチャ・データフロー・権限管理・ファイル構成・技術スタックをまとめた社内展開ガイド。</div>
-        <div class="card-footer">
-          <span class="card-tag">リファレンス</span>
-          <span class="card-arrow">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </span>
+      <a href="system-diagram.html" class="card-ops" style="--c1:#475569;--c2:#64748b;">
+        <div class="card-ops-head">
+          <div class="card-ops-icon">構成</div>
+          <div class="card-ops-name">システム構成図</div>
         </div>
+        <div class="card-ops-desc">ダッシュボード全体のアーキテクチャ・権限・ファイル構成。</div>
+        <span class="card-ops-tag">リファレンス</span>
       </a>
 
     </div>
-    <!-- ============================================= -->
-
-
-
   </div>
+
+</div>
 </main>
 
 <footer>
   <div class="container">
-    INTERNAL ANALYTICS PORTAL — GitHub Pages
+    SY-LINK INTERNAL PORTAL — GitHub Pages
   </div>
 </footer>
 
 <script>
-  document.getElementById('lastUpdated').textContent =
-    new Date().toLocaleDateString('ja-JP', { year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('hdate').textContent =
+    new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 </script>
 </body>
 </html>
