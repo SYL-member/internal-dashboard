@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>白銅 請求管理ダッシュボード</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --green: #8fc31f; --green-deep: #6fa015; --green-darker: #4d7a0a;
+  --green-50: #f4faea; --green-100: #e7f3d2; --green-200: #d0e7a8;
+  --bg: #fafaf7; --bg-card: #ffffff; --bg-soft: #f4f3ee;
+  --ink: #1a1a17; --ink-soft: #4a4a45; --ink-muted: #8a8a82;
+  --line: #e8e6df; --line-strong: #d4d2ca;
+  --pos: #4d7a0a; --neg: #a84545; --amber: #d97706;
+  --blue: #1241C5;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--ink); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+.container { max-width: 1300px; margin: 0 auto; padding: 32px 40px; }
+
+/* HEADER */
+.header { border-bottom: 3px solid var(--ink); padding-bottom: 24px; margin-bottom: 40px; position: relative; }
+.header::after { content: ""; position: absolute; bottom: -3px; left: 0; width: 120px; height: 3px; background: var(--green); }
+.eyebrow { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500; letter-spacing: .15em; color: var(--green-deep); text-transform: uppercase; margin-bottom: 8px; }
+h1 { font-size: 32px; font-weight: 900; letter-spacing: -.02em; line-height: 1.1; margin-bottom: 12px; }
+.subtitle { font-size: 13px; color: var(--ink-soft); display: flex; flex-wrap: wrap; gap: 20px; margin-top: 16px; }
+.subtitle span { display: flex; align-items: center; gap: 8px; }
+.subtitle span::before { content: ""; width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+.tax-notice { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; background: var(--ink); color: white; padding: 4px 10px; margin-top: 12px; letter-spacing: .05em; }
+
+/* MONTH SELECTOR */
+.month-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap; }
+.month-btn { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; padding: 6px 16px; border: 2px solid var(--line-strong); background: var(--bg-card); cursor: pointer; color: var(--ink-soft); transition: all .15s; }
+.month-btn.active { border-color: var(--green); background: var(--green-50); color: var(--green-darker); }
+.month-btn:hover:not(.active) { border-color: var(--ink-muted); color: var(--ink); }
+.month-label { font-size: 11px; color: var(--ink-muted); font-family: 'JetBrains Mono', monospace; }
+
+/* KPI */
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 40px; }
+.kpi { background: var(--bg-card); border: 1px solid var(--line); border-left: 4px solid var(--green); padding: 18px 20px; }
+.kpi.recv { border-left-color: var(--neg); }
+.kpi.profit { border-left-color: var(--pos); }
+.kpi.rate { border-left-color: var(--amber); }
+.kpi.dark { border-left-color: var(--ink); }
+.kpi-label { font-size: 10px; font-weight: 700; color: var(--ink-muted); letter-spacing: .05em; margin-bottom: 5px; text-transform: uppercase; }
+.kpi-value { font-family: 'JetBrains Mono', monospace; font-size: 24px; font-weight: 700; color: var(--ink); letter-spacing: -.02em; line-height: 1.1; }
+.kpi-unit { font-size: 12px; font-weight: 500; color: var(--ink-muted); margin-left: 3px; }
+.kpi-sub { font-size: 10px; color: var(--ink-muted); margin-top: 5px; }
+.kpi-sub.pos { color: var(--pos); font-weight: 600; }
+.kpi-sub.neg { color: var(--neg); font-weight: 600; }
+
+/* SECTION */
+.section { margin-bottom: 48px; }
+.section-header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid var(--ink); }
+.section-num { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--green-deep); }
+.section-title { font-size: 20px; font-weight: 700; }
+.section-meta { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); }
+
+/* DIRECTION BADGE */
+.dir-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 3px; font-size: 11px; font-weight: 700; letter-spacing: .04em; margin-bottom: 16px; }
+.dir-out { background: rgba(18,65,197,.08); border: 1px solid rgba(18,65,197,.25); color: var(--blue); }
+.dir-in  { background: rgba(168,69,69,.08); border: 1px solid rgba(168,69,69,.25); color: var(--neg); }
+
+/* TABLE */
+.table-wrap { background: var(--bg-card); border: 1px solid var(--line); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: var(--ink); color: white; }
+thead th { padding: 11px 14px; text-align: left; font-size: 10px; font-weight: 600; letter-spacing: .05em; white-space: nowrap; }
+thead th.num { text-align: right; }
+tbody td { padding: 13px 14px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tbody td.num { font-family: 'JetBrains Mono', monospace; text-align: right; font-weight: 500; }
+tbody tr:hover { background: var(--bg-soft); }
+tbody tr:last-child td { border-bottom: none; }
+tbody tr.subtotal td { background: var(--green-50); font-weight: 700; border-top: 2px solid var(--green-200); }
+tbody tr.subtotal td.num { color: var(--green-darker); }
+tbody tr.grand-total td { background: var(--ink); color: white; font-weight: 700; }
+tbody tr.grand-total td.num { color: #9fe86e; }
+
+.route-name { font-weight: 700; color: var(--ink); margin-bottom: 2px; }
+.route-sub { font-size: 11px; color: var(--ink-muted); }
+.bin-code { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--green-deep); }
+
+.tag { display: inline-block; font-size: 10px; font-weight: 500; padding: 1px 6px; border-radius: 3px; background: var(--bg-soft); color: var(--ink-soft); border: 1px solid var(--line); margin-left: 4px; }
+.tag.sbs { background: rgba(232,93,4,.08); color: #c44c00; border-color: rgba(232,93,4,.25); }
+
+.profit-cell { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+.profit-cell.pos { color: var(--pos); }
+.profit-cell.neg { color: var(--neg); }
+
+.rate-bar-wrap { display: flex; align-items: center; gap: 8px; }
+.rate-bar { height: 6px; border-radius: 3px; background: var(--green); min-width: 4px; flex-shrink: 0; }
+.rate-val { font-family: 'JetBrains Mono', monospace; font-size: 12px; white-space: nowrap; }
+
+/* CHART */
+.chart-card { background: var(--bg-card); border: 1px solid var(--line); padding: 24px; margin-bottom: 32px; }
+.chart-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+.chart-sub { font-size: 11px; color: var(--ink-muted); margin-bottom: 20px; }
+.charts-row { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+
+/* NOTES */
+.notes { background: var(--bg-card); border: 1px solid var(--line); border-left: 4px solid var(--ink); padding: 16px 20px; margin-top: 16px; }
+.notes-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--ink); margin-bottom: 10px; }
+.notes ul { list-style: none; }
+.notes li { font-size: 12px; padding: 4px 0 4px 16px; position: relative; color: var(--ink-soft); line-height: 1.7; }
+.notes li::before { content: "→"; position: absolute; left: 0; color: var(--green-deep); font-weight: 700; }
+
+/* FOOTER */
+.footer { margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; align-items: baseline; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--ink-muted); }
+
+@media (max-width: 1000px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="header">
+  <div class="eyebrow">SY-LINK × HAKUDO · Billing Dashboard</div>
+  <h1>白銅 請求管理ダッシュボード</h1>
+  <div class="subtitle">
+    <span>請求する（SY-Link → 白銅）</span>
+    <span>請求される（業者 → SY-Link）</span>
+    <span>月次粗利の可視化</span>
+  </div>
+  <div class="tax-notice">ALL PRICES · 税抜表示</div>
+</header>
+
+<!-- MONTH SELECTOR -->
+<div class="month-bar">
+  <span class="month-label">表示月：</span>
+  <button class="month-btn" onclick="setMonth(0)">10月</button>
+  <button class="month-btn" onclick="setMonth(1)">11月</button>
+  <button class="month-btn" onclick="setMonth(2)">12月</button>
+  <button class="month-btn" onclick="setMonth(3)">1月</button>
+  <button class="month-btn" onclick="setMonth(4)">2月</button>
+  <button class="month-btn active" onclick="setMonth(5)">3月</button>
+  <button class="month-btn" onclick="setMonth(6)">4月</button>
+</div>
+
+<!-- KPI -->
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="kpi-label">請求額（対白銅）</div>
+    <div class="kpi-value" id="kpi-billing">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-sub" id="kpi-billing-sub">—</div>
+  </div>
+  <div class="kpi recv">
+    <div class="kpi-label">仕入額（対業者）</div>
+    <div class="kpi-value" id="kpi-cost">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-sub" id="kpi-cost-sub">—</div>
+  </div>
+  <div class="kpi profit">
+    <div class="kpi-label">粗利額</div>
+    <div class="kpi-value" id="kpi-profit">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-sub" id="kpi-profit-sub"></div>
+  </div>
+  <div class="kpi rate">
+    <div class="kpi-label">粗利率</div>
+    <div class="kpi-value" id="kpi-rate">—<span class="kpi-unit">%</span></div>
+    <div class="kpi-sub" id="kpi-rate-sub">目標 15%</div>
+  </div>
+  <div class="kpi dark">
+    <div class="kpi-label">請求件数</div>
+    <div class="kpi-value" id="kpi-count">—<span class="kpi-unit">件</span></div>
+    <div class="kpi-sub" id="kpi-count-sub">—</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">月次推移 — 請求 / 仕入 / 粗利</div>
+    <div class="chart-sub">2025年10月〜2026年4月（税抜・千円）</div>
+    <canvas id="trendChart" height="100"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">カテゴリ別 請求構成（当月）</div>
+    <div class="chart-sub">エリア別内訳</div>
+    <canvas id="pieChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- SECTION 1: 請求する -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">01</span>
+    <h2 class="section-title">請求する — SY-Link → 白銅</h2>
+    <span class="section-meta">OUTBOUND BILLING</span>
+  </div>
+  <div class="dir-badge dir-out">↑ SY-Link が白銅に請求する金額</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>カテゴリ / 便</th>
+        <th>エリア・内容</th>
+        <th class="num">請求単価</th>
+        <th class="num" id="hd-month-out">— 月 請求額</th>
+        <th class="num">前月比</th>
+        <th>備考</th>
+      </tr></thead>
+      <tbody id="billing-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;font-size:12px;">データを読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SECTION 2: 請求される -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">02</span>
+    <h2 class="section-title">請求される — 業者 → SY-Link</h2>
+    <span class="section-meta">INBOUND COST</span>
+  </div>
+  <div class="dir-badge dir-in">↓ 協力業者から SY-Link が受け取る請求（仕入）</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>業者 / 便</th>
+        <th>内容</th>
+        <th class="num">仕入単価</th>
+        <th class="num" id="hd-month-in">— 月 仕入額</th>
+        <th class="num">粗利</th>
+        <th class="num">粗利率</th>
+      </tr></thead>
+      <tbody id="cost-tbody">
+        <tr><td colspan="6" style="text-align:center;padding:32px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;font-size:12px;">データを読み込み中...</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="notes">
+    <div class="notes-title">仕入構造の注意点</div>
+    <ul>
+      <li>東京・神奈川配送便（SBS経由）の仕入は専用便単価 + 高速実費。高速代は仕入の方が請求より高く、実質マイナスになる場合あり（特に静岡便）。</li>
+      <li>千葉便の仕入はkg単価 × 実重量で月次変動する。最低運賃（¥17,000/日）適用ケースあり。</li>
+      <li>福島便は平日¥38,000・土曜¥42,000（税抜）。高速代は別途実費精算。</li>
+      <li>仕入が税込で入っている可能性があるため、静岡便の高速代（¥12,710）は要確認。</li>
+    </ul>
+  </div>
+</div>
+
+<footer class="footer">
+  <div>SY-LINK Internal Dashboard / Hakudo Billing</div>
+  <div id="footer-date">data: —</div>
+</footer>
+
+</div><!-- /container -->
+
+<script>
+// =============================================
+// DATA — 月次データ（税抜・千円）
+// 月順: 10月, 11月, 12月, 1月, 2月, 3月, 4月
+// =============================================
+const MONTHS = ['10月','11月','12月','1月','2月','3月','4月'];
+const MONTH_LABELS = ['2025/10','2025/11','2025/12','2026/1','2026/2','2026/3','2026/4'];
+
+// 請求ルート定義
+const BILLING_ROUTES = [
+  // カテゴリ, 便名, エリア, 単価メモ, タグ, 月次請求額[7ヶ月]
+  { cat:'東京・神奈川配送', bin:'002便', area:'横浜・綾瀬・大和・座間・海老名 / 藤沢・横須賀・寒川・金沢', unit:'¥39,900〜/日(専用便)+¥61/kg', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,2211] },
+  { cat:'東京・神奈川配送', bin:'035便', area:'相模原・小田原・愛川町・厚木・伊勢原・平塚 / 日軽秦野', unit:'¥39,900〜/日+¥20,000(軽)', tags:['配送'], billing:[null,null,null,null,null,null,2177] },
+  { cat:'東京・神奈川配送', bin:'045便', area:'横浜・川崎・町田', unit:'¥39,900/日(3t平)', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,1625] },
+  { cat:'東京・神奈川配送', bin:'801便', area:'大田区', unit:'¥36,900/日(2t平)', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,2236] },
+  { cat:'東京・神奈川配送', bin:'041便', area:'墨田・江東・江戸川・葛飾・中央・千代田・新宿', unit:'¥36,900/日(2t平)', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,838] },
+  { cat:'東京・神奈川配送', bin:'042便', area:'足立・練馬・板橋・北・新宿・荒川・台東', unit:'¥36,900/日+¥44/kg', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,1163] },
+  { cat:'東京・神奈川配送', bin:'023便', area:'八王子・町田・23区外', unit:'¥36,900/日+¥48/kg', tags:['配送','SBS経由'], billing:[null,null,null,null,null,null,829] },
+  { cat:'千葉', bin:'千葉幹線', area:'神奈川→葛西→千葉デポ展開', unit:'¥22,000固定+¥15/kg+最低¥20,000', tags:['幹線'], billing:[null,null,null,null,null,null,496] },
+  { cat:'千葉', bin:'450〜455便', area:'成田・千葉市・柏・香取・君津・東金ほか', unit:'¥21〜¥24/kg', tags:['小口'], billing:[null,null,null,null,null,null,679] },
+  { cat:'埼玉幹線', bin:'埼玉1便', area:'熊谷→神奈川（往路）', unit:'¥38,500/日', tags:['幹線'], billing:[null,null,null,null,null,null,809] },
+  { cat:'埼玉幹線', bin:'埼玉2便', area:'熊谷→神奈川（往路）', unit:'¥38,500/日', tags:['幹線'], billing:[null,null,null,null,null,null,809] },
+  { cat:'埼玉幹線', bin:'埼玉2便 復路', area:'神奈川→熊谷（空コン・返品）', unit:'¥28,500/日', tags:['幹線'], billing:[null,null,null,null,null,null,599] },
+  { cat:'福島幹線', bin:'福島幹線', area:'福島→神奈川', unit:'¥44,000(平)・¥55,000(土)/日', tags:['幹線'], billing:[null,null,null,null,null,null,968] },
+  { cat:'静岡', bin:'806便', area:'浜松・掛川・磐田・焼津ほか', unit:'¥48,500/日+高速実費', tags:['配送'], billing:[null,null,null,null,null,null,977] },
+  { cat:'静岡', bin:'809便・静浜ロジ', area:'焼津バラマキ・月曜分', unit:'¥25,000/回', tags:['特便'], billing:[null,null,null,null,null,null,125] },
+];
+
+// 仕入ルート定義
+const COST_ROUTES = [
+  { vendor:'スタンダード運輸 / カーレントサービス', bin:'002/035/045/801/041/042/023便', unit:'¥36,900〜39,900/日', cost:[null,null,null,null,null,null,10000], billing:[null,null,null,null,null,null,10879] },
+  { vendor:'千葉通商（成田）', bin:'千葉幹線+450〜455便', unit:'¥12〜¥24/kg + 固定', cost:[null,null,null,null,null,null,967], billing:[null,null,null,null,null,null,1175] },
+  { vendor:'千葉通商（埼玉東）', bin:'埼玉1・2便（往路）', unit:'¥34,000/日×2便', cost:[null,null,null,null,null,null,1428], billing:[null,null,null,null,null,null,1617] },
+  { vendor:'千葉通商（同車両）', bin:'埼玉2便 復路', unit:'¥24,000/日', cost:[null,null,null,null,null,null,504], billing:[null,null,null,null,null,null,599] },
+  { vendor:'（株）ジャス', bin:'福島幹線', unit:'¥38,000(平)・¥42,000(土)/日', cost:[null,null,null,null,null,null,814], billing:[null,null,null,null,null,null,968] },
+  { vendor:'カーレントサービス', bin:'806便（静岡）', unit:'¥45,000/日+高速実費', cost:[null,null,null,null,null,null,1115], billing:[null,null,null,null,null,null,1144] },
+  { vendor:'トレードトラスト / U-NET', bin:'809便・静浜ロジ', unit:'¥25,000/回ほか', cost:[null,null,null,null,null,null,125], billing:[null,null,null,null,null,null,125] },
+];
+
+// 4月実績の合計
+// 請求 ¥15,334千（KPI値）
+// 仕入 ≈ 集計値（ルートから算出）
+
+let currentMonth = 6; // 4月（index=6）
+
+function fmt(v) {
+  if (v === null || v === undefined) return '<span style="color:#bbb">—</span>';
+  return '¥' + v.toLocaleString();
+}
+function fmtK(v) {
+  if (v === null || v === undefined) return '—';
+  return (v >= 0 ? '' : '') + v.toLocaleString();
+}
+
+function setMonth(idx) {
+  currentMonth = idx;
+  document.querySelectorAll('.month-btn').forEach((b,i) => b.classList.toggle('active', i===idx));
+  render();
+}
+
+function render() {
+  const mi = currentMonth;
+  const mLabel = MONTHS[mi];
+
+  document.getElementById('hd-month-out').textContent = mLabel + ' 請求額（千円）';
+  document.getElementById('hd-month-in').textContent  = mLabel + ' 仕入額（千円）';
+  document.getElementById('footer-date').textContent = 'data: 2026年4月実績ベース';
+
+  // ── 請求テーブル ──
+  let totalBilling = 0;
+  let billingRows = '';
+  let lastCat = '';
+  let catTotal = 0;
+  let catName = '';
+  const catTotals = {};
+
+  BILLING_ROUTES.forEach((r, i) => {
+    const b = r.billing[mi];
+    if (r.cat !== lastCat) {
+      if (lastCat !== '') {
+        billingRows += `<tr class="subtotal"><td colspan="3">${lastCat} 小計</td><td class="num">${catTotal !== null ? fmtK(catTotal) : '—'}</td><td class="num">—</td><td></td></tr>`;
+        catTotals[lastCat] = catTotal;
+        catTotal = 0;
+      }
+      lastCat = r.cat;
+    }
+    if (b !== null) catTotal += b;
+    if (b !== null) totalBilling += b;
+
+    const tagHtml = r.tags.map(t => `<span class="tag${t==='SBS経由'?' sbs':''}">${t}</span>`).join('');
+    billingRows += `<tr>
+      <td><span class="bin-code">${r.bin}</span>${tagHtml}<div class="route-sub">${r.cat}</div></td>
+      <td><div style="font-size:12px;color:var(--ink-soft)">${r.area}</div></td>
+      <td class="num" style="font-size:11px;color:var(--ink-muted)">${r.unit}</td>
+      <td class="num">${b !== null ? fmtK(b) : '<span style="color:#bbb">—</span>'}</td>
+      <td class="num" style="color:var(--ink-muted)">—</td>
+      <td style="font-size:11px;color:var(--ink-muted)"></td>
+    </tr>`;
+  });
+  // 最後のカテゴリ小計
+  if (lastCat !== '') {
+    billingRows += `<tr class="subtotal"><td colspan="3">${lastCat} 小計</td><td class="num">${fmtK(catTotal)}</td><td class="num">—</td><td></td></tr>`;
+    catTotals[lastCat] = catTotal;
+  }
+  billingRows += `<tr class="grand-total"><td colspan="3">合計（${mLabel}）</td><td class="num">${fmtK(totalBilling)}</td><td class="num">—</td><td></td></tr>`;
+
+  document.getElementById('billing-tbody').innerHTML = billingRows;
+
+  // ── 仕入テーブル ──
+  let totalCost = 0;
+  let costRows = '';
+  COST_ROUTES.forEach(r => {
+    const c = r.cost[mi];
+    const b = r.billing[mi];
+    if (c !== null) totalCost += c;
+    const gp = (b !== null && c !== null) ? b - c : null;
+    const gpRate = (b !== null && c !== null && b > 0) ? ((b - c) / b * 100).toFixed(1) : null;
+    const barW = gpRate !== null ? Math.max(0, Math.min(100, parseFloat(gpRate))) : 0;
+    costRows += `<tr>
+      <td><div class="route-name">${r.vendor}</div><div class="route-sub">${r.bin}</div></td>
+      <td style="font-size:11px;color:var(--ink-muted)">${r.unit}</td>
+      <td class="num">${c !== null ? fmtK(c) : '<span style="color:#bbb">—</span>'}</td>
+      <td class="num">${b !== null ? fmtK(b) : '<span style="color:#bbb">—</span>'}</td>
+      <td class="num"><span class="profit-cell ${gp !== null && gp >= 0 ? 'pos':'neg'}">${gp !== null ? (gp >= 0 ? '+' : '') + fmtK(gp) : '—'}</span></td>
+      <td class="num">
+        <div class="rate-bar-wrap">
+          <div class="rate-bar" style="width:${barW * 0.8}px;background:${barW < 10 ? 'var(--neg)': barW < 15 ? 'var(--amber)' : 'var(--pos)'}"></div>
+          <span class="rate-val" style="color:${barW < 10 ? 'var(--neg)': barW < 15 ? 'var(--amber)' : 'var(--pos)'}">${gpRate !== null ? gpRate + '%' : '—'}</span>
+        </div>
+      </td>
+    </tr>`;
+  });
+  const totalGP = totalBilling - totalCost;
+  const totalRate = totalBilling > 0 ? (totalGP / totalBilling * 100).toFixed(1) : null;
+  costRows += `<tr class="grand-total">
+    <td colspan="2">合計（${mLabel}）</td>
+    <td class="num">${fmtK(totalCost)}</td>
+    <td class="num">${fmtK(totalBilling)}</td>
+    <td class="num" style="color:#9fe86e">+${fmtK(totalGP)}</td>
+    <td class="num" style="color:#9fe86e">${totalRate}%</td>
+  </tr>`;
+  document.getElementById('cost-tbody').innerHTML = costRows;
+
+  // ── KPI ──
+  document.getElementById('kpi-billing').innerHTML = fmtK(totalBilling) + '<span class="kpi-unit">千円</span>';
+  document.getElementById('kpi-cost').innerHTML    = fmtK(totalCost)    + '<span class="kpi-unit">千円</span>';
+  document.getElementById('kpi-profit').innerHTML  = (totalGP >= 0 ? '+' : '') + fmtK(totalGP) + '<span class="kpi-unit">千円</span>';
+  document.getElementById('kpi-rate').innerHTML    = (totalRate || '—') + '<span class="kpi-unit">%</span>';
+  document.getElementById('kpi-count').innerHTML   = BILLING_ROUTES.filter(r => r.billing[mi] !== null).length + '<span class="kpi-unit">件</span>';
+
+  const rateSub = document.getElementById('kpi-rate-sub');
+  if (totalRate !== null) {
+    const r = parseFloat(totalRate);
+    rateSub.textContent = r >= 15 ? '✓ 目標達成' : r >= 10 ? '△ 目標未達（目標15%）' : '✗ 要改善（目標15%）';
+    rateSub.className = 'kpi-sub ' + (r >= 15 ? 'pos' : r >= 10 ? '' : 'neg');
+  }
+
+  // ── Pie Chart ──
+  const catNames = [...new Set(BILLING_ROUTES.map(r => r.cat))];
+  const catVals = catNames.map(cat =>
+    BILLING_ROUTES.filter(r => r.cat === cat).reduce((s, r) => s + (r.billing[mi] || 0), 0)
+  );
+  const pieColors = ['#8fc31f','#6fa015','#4d7a0a','#d4e5a0','#b8d96e','#a0c94e','#1241C5'];
+  if (window.pieChartInst) window.pieChartInst.destroy();
+  window.pieChartInst = new Chart(document.getElementById('pieChart'), {
+    type: 'doughnut',
+    data: { labels: catNames, datasets: [{ data: catVals, backgroundColor: pieColors, borderWidth: 2, borderColor: '#fff' }] },
+    options: { plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 8 } } }, cutout: '55%' }
+  });
+
+  renderTrendChart();
+}
+
+function renderTrendChart() {
+  const billingByMonth = MONTHS.map((_, mi) =>
+    BILLING_ROUTES.reduce((s, r) => s + (r.billing[mi] || 0), 0)
+  );
+  const costByMonth = MONTHS.map((_, mi) =>
+    COST_ROUTES.reduce((s, r) => s + (r.cost[mi] || 0), 0)
+  );
+  const gpByMonth = billingByMonth.map((b, i) => b - costByMonth[i]);
+
+  if (window.trendChartInst) window.trendChartInst.destroy();
+  window.trendChartInst = new Chart(document.getElementById('trendChart'), {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label: '請求額', data: billingByMonth, backgroundColor: 'rgba(143,195,31,.5)', borderColor: '#8fc31f', borderWidth: 1.5, stack: 'a', order: 2 },
+        { label: '仕入額', data: costByMonth, backgroundColor: 'rgba(168,69,69,.35)', borderColor: '#a84545', borderWidth: 1.5, stack: 'b', order: 2 },
+        { type: 'line', label: '粗利', data: gpByMonth, borderColor: '#4d7a0a', borderWidth: 2.5, pointRadius: 5, pointBackgroundColor: '#4d7a0a', tension: 0.2, yAxisID: 'y', order: 1 },
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: { legend: { labels: { font: { size: 11 }, padding: 12 } } },
+      scales: {
+        y: { ticks: { callback: v => '¥' + v.toLocaleString() + '千', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
+        x: { ticks: { font: { size: 11 } } }
+      }
+    }
+  });
+}
+
+// 初期表示
+render();
+</script>
+</body>
+</html>

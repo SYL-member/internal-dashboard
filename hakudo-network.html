@@ -488,6 +488,67 @@ tbody tr:last-child td { border-bottom: none; }
   font-weight: 700;
 }
 
+/* SBS PANEL */
+.sbs-panel {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top: 4px solid #e85d04;
+  padding: 20px 24px;
+  margin-bottom: 48px;
+}
+.sbs-panel-title {
+  font-size: 12px; font-weight: 700; letter-spacing: .08em;
+  text-transform: uppercase; color: #e85d04; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.sbs-flow {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 20px; flex-wrap: wrap;
+}
+.sbs-flow-node {
+  background: var(--bg-soft); border: 1px solid var(--line-strong);
+  padding: 10px 16px; border-radius: 3px;
+  font-size: 12px; font-weight: 600; color: var(--ink);
+  text-align: center; min-width: 120px;
+}
+.sbs-flow-node.highlight {
+  background: rgba(232,93,4,.08); border-color: rgba(232,93,4,.3);
+  color: #c44c00;
+}
+.sbs-flow-arr {
+  padding: 0 10px; color: var(--line-strong); font-size: 18px; flex-shrink: 0;
+}
+.sbs-depots {
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+}
+.sbs-depot {
+  border: 1px solid rgba(232,93,4,.2);
+  background: rgba(232,93,4,.04);
+  border-radius: 3px; padding: 10px 12px;
+}
+.sbs-depot-name {
+  font-size: 11px; font-weight: 700; color: #c44c00; margin-bottom: 3px;
+}
+.sbs-depot-bin {
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
+  color: var(--ink-muted); margin-bottom: 3px;
+}
+.sbs-depot-area { font-size: 10px; color: var(--ink-soft); line-height: 1.5; }
+
+/* SBS badge in tables */
+.sbs-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 700; letter-spacing: .04em;
+  padding: 1px 5px; border-radius: 2px;
+  background: rgba(232,93,4,.1); color: #c44c00;
+  border: 1px solid rgba(232,93,4,.25);
+  margin-top: 3px;
+}
+@media (max-width: 1000px) {
+  .sbs-depots { grid-template-columns: repeat(2, 1fr); }
+  .sbs-flow { gap: 4px; }
+}
+
 /* FOOTER */
 .footer {
   margin-top: 64px;
@@ -549,6 +610,52 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="kpi-label">協力運送会社数</div>
     <div class="kpi-value">12<span class="kpi-unit">社</span></div>
     <div class="kpi-sub">直送便5 + 千葉通商 + SBS系3 + その他</div>
+  </div>
+</div>
+
+<!-- SBS NETWORK EXPLANATION -->
+<div class="sbs-panel">
+  <div class="sbs-panel-title">🔶 SBS即配ネットワーク — 持込配送の仕組み</div>
+
+  <div class="sbs-flow">
+    <div class="sbs-flow-node">神奈川工場<br><small style="font-weight:400;font-size:10px;color:var(--ink-muted)">出荷元（厚木）</small></div>
+    <div class="sbs-flow-arr">→</div>
+    <div class="sbs-flow-node">SY-LINK 車両<br><small style="font-weight:400;font-size:10px;color:var(--ink-muted)">801/041/042/023/002/045便</small></div>
+    <div class="sbs-flow-arr">→</div>
+    <div class="sbs-flow-node highlight">SBS デポ（持込）<br><small style="font-weight:400;font-size:10px;color:#c44c00">各エリアの中継拠点</small></div>
+    <div class="sbs-flow-arr">→</div>
+    <div class="sbs-flow-node">SBS 車両<br><small style="font-weight:400;font-size:10px;color:var(--ink-muted)">最終配送（SBS負担）</small></div>
+    <div class="sbs-flow-arr">→</div>
+    <div class="sbs-flow-node">白銅 顧客<br><small style="font-weight:400;font-size:10px;color:var(--ink-muted)">エンドユーザー</small></div>
+  </div>
+
+  <div style="font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">SBS デポ一覧 — 持込先と対応便</div>
+  <div class="sbs-depots">
+    <div class="sbs-depot">
+      <div class="sbs-depot-name">SBS東京① 本店</div>
+      <div class="sbs-depot-bin">041便 持込</div>
+      <div class="sbs-depot-area">墨田・江東・江戸川・葛飾・中央・千代田</div>
+    </div>
+    <div class="sbs-depot">
+      <div class="sbs-depot-name">SBS東京③ 平和島</div>
+      <div class="sbs-depot-bin">801便 持込</div>
+      <div class="sbs-depot-area">大田区</div>
+    </div>
+    <div class="sbs-depot">
+      <div class="sbs-depot-name">SBS城北 北区</div>
+      <div class="sbs-depot-bin">042便 持込</div>
+      <div class="sbs-depot-area">足立・練馬・板橋・北・荒川・台東</div>
+    </div>
+    <div class="sbs-depot">
+      <div class="sbs-depot-name">SBS東京多摩</div>
+      <div class="sbs-depot-bin">023便 持込</div>
+      <div class="sbs-depot-area">世田谷・杉並・八王子・町田・23区外</div>
+    </div>
+    <div class="sbs-depot">
+      <div class="sbs-depot-name">SBS神奈川</div>
+      <div class="sbs-depot-bin">002便・045便 持込</div>
+      <div class="sbs-depot-area">横浜・川崎・町田（045便の23便SBS町田分も含む）</div>
+    </div>
   </div>
 </div>
 
@@ -910,7 +1017,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">EXP02-01：横浜・綾瀬・大和・座間・海老名</div>
-            <div class="bin-area-tbl">EXP02-02：藤沢・横須賀・寒川・金沢　／　SBS02便：横浜・川崎・町田</div>
+            <div class="bin-area-tbl">EXP02-02：藤沢・横須賀・寒川・金沢　／　横浜・川崎・町田 → <span class="sbs-badge">SBS神奈川 持込</span></div>
           </td>
           <td>
             <div class="vendor">スタンダード運輸（4台）</div>
@@ -952,7 +1059,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">横浜・川崎・町田</div>
-            <div class="bin-area-tbl">SBS神奈川（町田）持込便。23便のSBS町田分は45便が運ぶ</div>
+            <div class="bin-area-tbl">横浜・川崎・町田 → <span class="sbs-badge">SBS神奈川 持込</span>（23便のSBS町田分も045便が代行）</div>
           </td>
           <td>
             <div class="vendor">スタンダード運輸</div>
@@ -1012,7 +1119,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">大田区</div>
-            <div class="bin-area-tbl">SBS東京③（平和島）への持込便も含む</div>
+            <div class="bin-area-tbl">大田区 → <span class="sbs-badge">SBS東京③ 平和島 持込</span></div>
           </td>
           <td>
             <div class="vendor">カーレントサービス</div>
@@ -1033,7 +1140,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">墨田・江東・江戸川・葛飾・中央・千代田・新宿</div>
-            <div class="bin-area-tbl">SBS東京①（本店）への持込便対応</div>
+            <div class="bin-area-tbl">墨田・江東・江戸川・葛飾・中央・千代田・新宿 → <span class="sbs-badge">SBS東京① 本店 持込</span></div>
           </td>
           <td>
             <div class="vendor">カーレントサービス</div>
@@ -1054,7 +1161,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">足立・練馬・板橋・北・新宿・荒川・台東</div>
-            <div class="bin-area-tbl">SBS城北（北区）への持込便。アバンティが新砂・新木場まで配達</div>
+            <div class="bin-area-tbl">足立・練馬・板橋・北・新宿・荒川・台東 → <span class="sbs-badge">SBS城北 北区 持込</span>（アバンティが新砂・新木場配達）</div>
           </td>
           <td>
             <div class="vendor">ディーノプロジェクト</div>
@@ -1076,7 +1183,7 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="bin-name-tbl">八王子・町田・東京都23区外</div>
-            <div class="bin-area-tbl">SBS東京多摩（世田谷・杉並・23区外）への持込</div>
+            <div class="bin-area-tbl">八王子・町田・東京都23区外 → <span class="sbs-badge">SBS東京多摩 持込</span>（世田谷・杉並・23区外）</div>
           </td>
           <td>
             <div class="vendor">スタンダード運輸</div>
