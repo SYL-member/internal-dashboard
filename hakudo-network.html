@@ -520,21 +520,28 @@ tbody tr:last-child td { border-bottom: none; }
   padding: 0 10px; color: var(--line-strong); font-size: 18px; flex-shrink: 0;
 }
 .sbs-depots {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 12px;
 }
 .sbs-depot {
-  border: 1px solid rgba(232,93,4,.2);
-  background: rgba(232,93,4,.04);
-  border-radius: 3px; padding: 10px 12px;
+  border: 1px solid rgba(232,93,4,.25);
+  border-top: 3px solid #e85d04;
+  background: #fff; padding: 14px 16px;
 }
 .sbs-depot-name {
-  font-size: 11px; font-weight: 700; color: #c44c00; margin-bottom: 3px;
+  font-size: 13px; font-weight: 700; color: #c44c00; margin-bottom: 2px; line-height: 1.3;
 }
-.sbs-depot-bin {
-  font-family: 'JetBrains Mono', monospace; font-size: 10px;
-  color: var(--ink-muted); margin-bottom: 3px;
+.sbs-depot-loc {
+  font-size: 10px; color: var(--ink-muted); margin-bottom: 10px; font-family: 'JetBrains Mono', monospace;
 }
-.sbs-depot-area { font-size: 10px; color: var(--ink-soft); line-height: 1.5; }
+.sbs-depot-divider { border: none; border-top: 1px solid rgba(232,93,4,.15); margin: 0 0 10px; }
+.sbs-depot-bin-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.sbs-depot-bin-label { font-size: 9px; font-weight: 700; color: var(--ink-muted); letter-spacing: .08em; text-transform: uppercase; flex-shrink: 0; }
+.sbs-depot-bin-val { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--green-darker); }
+.sbs-depot-vendor { font-size: 10px; color: var(--ink-muted); margin-bottom: 8px; }
+.sbs-depot-area-label { font-size: 9px; font-weight: 700; color: var(--ink-muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 5px; }
+.sbs-depot-area-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.sbs-depot-tag { font-size: 10px; padding: 2px 8px; background: var(--bg-soft); border: 1px solid var(--line); color: var(--ink-soft); }
+.sbs-depot-note { margin-top: 8px; font-size: 10px; color: #c44c00; background: rgba(232,93,4,.06); padding: 5px 8px; border-left: 2px solid #e85d04; line-height: 1.5; }
 
 /* SBS badge in tables */
 .sbs-badge {
@@ -547,6 +554,7 @@ tbody tr:last-child td { border-bottom: none; }
 }
 @media (max-width: 1000px) {
   .sbs-depots { grid-template-columns: repeat(2, 1fr); }
+  .sbs-depots .sbs-depot:last-child { grid-column: span 2; }
   .sbs-flow { gap: 4px; }
 }
 
@@ -701,33 +709,113 @@ tbody tr:last-child td { border-bottom: none; }
     <div class="sbs-flow-node">白銅 顧客<br><small style="font-weight:400;font-size:10px;color:var(--ink-muted)">エンドユーザー</small></div>
   </div>
 
-  <div style="font-size:11px;font-weight:700;color:var(--ink-muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px;">SBS デポ一覧 — 持込先と対応便</div>
+  <div style="font-size:11px;font-weight:700;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;">SBS デポ詳細 — 持込先・対応便・配送エリア</div>
   <div class="sbs-depots">
+
+    <!-- デポ① -->
     <div class="sbs-depot">
       <div class="sbs-depot-name">SBS東京① 本店</div>
-      <div class="sbs-depot-bin">041便 持込</div>
-      <div class="sbs-depot-area">墨田・江東・江戸川・葛飾・中央・千代田</div>
+      <div class="sbs-depot-loc">東京都 東部（江東区近辺）</div>
+      <hr class="sbs-depot-divider">
+      <div class="sbs-depot-bin-row">
+        <span class="sbs-depot-bin-label">持込便</span>
+        <span class="sbs-depot-bin-val">041便</span>
+      </div>
+      <div class="sbs-depot-vendor">運行：カーレントサービス / ドライバー：鈴木こうじ</div>
+      <div class="sbs-depot-area-label">配送エリア</div>
+      <div class="sbs-depot-area-tags">
+        <span class="sbs-depot-tag">墨田区</span>
+        <span class="sbs-depot-tag">江東区</span>
+        <span class="sbs-depot-tag">江戸川区</span>
+        <span class="sbs-depot-tag">葛飾区</span>
+        <span class="sbs-depot-tag">中央区</span>
+        <span class="sbs-depot-tag">千代田区</span>
+        <span class="sbs-depot-tag">新宿区</span>
+      </div>
     </div>
+
+    <!-- デポ② -->
     <div class="sbs-depot">
       <div class="sbs-depot-name">SBS東京③ 平和島</div>
-      <div class="sbs-depot-bin">801便 持込</div>
-      <div class="sbs-depot-area">大田区</div>
+      <div class="sbs-depot-loc">東京都大田区 平和島</div>
+      <hr class="sbs-depot-divider">
+      <div class="sbs-depot-bin-row">
+        <span class="sbs-depot-bin-label">持込便</span>
+        <span class="sbs-depot-bin-val">801便</span>
+      </div>
+      <div class="sbs-depot-vendor">運行：カーレントサービス / ドライバー：鈴木幸太</div>
+      <div class="sbs-depot-area-label">配送エリア</div>
+      <div class="sbs-depot-area-tags">
+        <span class="sbs-depot-tag">大田区（全域）</span>
+      </div>
+      <div class="sbs-depot-note">2t平車で持込。大田区集中のためエリアは限定的だが件数多め。</div>
     </div>
+
+    <!-- デポ③ -->
     <div class="sbs-depot">
       <div class="sbs-depot-name">SBS城北 北区</div>
-      <div class="sbs-depot-bin">042便 持込</div>
-      <div class="sbs-depot-area">足立・練馬・板橋・北・荒川・台東</div>
+      <div class="sbs-depot-loc">東京都北区 近辺</div>
+      <hr class="sbs-depot-divider">
+      <div class="sbs-depot-bin-row">
+        <span class="sbs-depot-bin-label">持込便</span>
+        <span class="sbs-depot-bin-val">042便</span>
+      </div>
+      <div class="sbs-depot-vendor">運行：ディーノプロジェクト / 2t平車</div>
+      <div class="sbs-depot-area-label">配送エリア</div>
+      <div class="sbs-depot-area-tags">
+        <span class="sbs-depot-tag">足立区</span>
+        <span class="sbs-depot-tag">練馬区</span>
+        <span class="sbs-depot-tag">板橋区</span>
+        <span class="sbs-depot-tag">北区</span>
+        <span class="sbs-depot-tag">荒川区</span>
+        <span class="sbs-depot-tag">台東区</span>
+      </div>
+      <div class="sbs-depot-note">042便は¥36,900/日+¥44/kgのkg加算型。北・城北エリアを中心にカバー。</div>
     </div>
+
+    <!-- デポ④ -->
     <div class="sbs-depot">
       <div class="sbs-depot-name">SBS東京多摩</div>
-      <div class="sbs-depot-bin">023便 持込</div>
-      <div class="sbs-depot-area">世田谷・杉並・八王子・町田・23区外</div>
+      <div class="sbs-depot-loc">東京都多摩地区（八王子・町田近辺）</div>
+      <hr class="sbs-depot-divider">
+      <div class="sbs-depot-bin-row">
+        <span class="sbs-depot-bin-label">持込便</span>
+        <span class="sbs-depot-bin-val">023便</span>
+      </div>
+      <div class="sbs-depot-vendor">運行：スタンダード運輸 / 2t平車</div>
+      <div class="sbs-depot-area-label">配送エリア</div>
+      <div class="sbs-depot-area-tags">
+        <span class="sbs-depot-tag">世田谷区</span>
+        <span class="sbs-depot-tag">杉並区</span>
+        <span class="sbs-depot-tag">八王子市</span>
+        <span class="sbs-depot-tag">町田市</span>
+        <span class="sbs-depot-tag">23区外全般</span>
+      </div>
+      <div class="sbs-depot-note">023便は¥36,900/日+¥48/kgのkg加算型。町田は045便と一部重複（SBS町田分）。</div>
     </div>
+
+    <!-- デポ⑤ -->
     <div class="sbs-depot">
       <div class="sbs-depot-name">SBS神奈川</div>
-      <div class="sbs-depot-bin">002便・045便 持込</div>
-      <div class="sbs-depot-area">横浜・川崎・町田（045便の23便SBS町田分も含む）</div>
+      <div class="sbs-depot-loc">神奈川県（横浜・川崎近辺）</div>
+      <hr class="sbs-depot-divider">
+      <div class="sbs-depot-bin-row">
+        <span class="sbs-depot-bin-label">持込便</span>
+        <span class="sbs-depot-bin-val">002便 / 045便</span>
+      </div>
+      <div class="sbs-depot-vendor">運行：スタンダード運輸 / 002便=3t平・045便=3t平</div>
+      <div class="sbs-depot-area-label">配送エリア</div>
+      <div class="sbs-depot-area-tags">
+        <span class="sbs-depot-tag">横浜市</span>
+        <span class="sbs-depot-tag">川崎市</span>
+        <span class="sbs-depot-tag">綾瀬・大和・座間</span>
+        <span class="sbs-depot-tag">藤沢・横須賀</span>
+        <span class="sbs-depot-tag">金沢・寒川</span>
+        <span class="sbs-depot-tag">町田（SBS分）</span>
+      </div>
+      <div class="sbs-depot-note">002便は¥39,900〜+¥61/kg、045便は¥39,900/日。神奈川全域をカバーする最大エリア。</div>
     </div>
+
   </div>
 </div>
 
