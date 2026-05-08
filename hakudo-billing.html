@@ -119,7 +119,42 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 @media (max-width: 1000px) {
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .charts-row { grid-template-columns: 1fr; }
+  .invoice-month-grid { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* MONTHLY INPUT PANEL */
+.input-panel { background: var(--bg-card); border: 1px solid var(--line); border-top: 4px solid var(--amber); margin-bottom: 32px; }
+.input-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; cursor: pointer; user-select: none; }
+.input-panel-title { font-size: 13px; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 8px; }
+.input-panel-body { padding: 0 20px 20px; display: none; }
+.input-grid-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.input-grid-table th { padding: 8px 10px; font-size: 10px; font-weight: 600; letter-spacing: .05em; color: var(--ink-muted); text-align: center; border-bottom: 2px solid var(--line); background: var(--bg-soft); }
+.input-grid-table th:first-child { text-align: left; }
+.input-grid-table td { padding: 6px 6px; text-align: center; border-bottom: 1px solid var(--line); }
+.input-grid-table td:first-child { text-align: left; font-size: 11px; font-weight: 700; color: var(--ink-soft); padding-left: 4px; white-space: nowrap; }
+.month-input { width: 76px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; padding: 5px 6px; border: 1px solid var(--line-strong); background: var(--bg-soft); color: var(--ink); text-align: right; transition: border-color .15s, background .15s; }
+.month-input:focus { outline: none; border-color: var(--green); background: #fff; }
+.month-input.has-data { background: var(--green-50); border-color: var(--green-200); }
+.month-input[disabled] { background: #eff4e8; color: var(--green-darker); font-weight: 700; cursor: default; border-color: var(--green-200); }
+.input-save-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 7px 18px; border: 2px solid var(--green-deep); background: var(--green); color: white; cursor: pointer; letter-spacing: .05em; transition: background .15s; }
+.input-save-btn:hover { background: var(--green-deep); }
+.input-reset-btn { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600; padding: 7px 16px; border: 2px solid var(--line-strong); background: transparent; color: var(--ink-soft); cursor: pointer; transition: border-color .15s; }
+.input-reset-btn:hover { border-color: var(--ink-muted); color: var(--ink); }
+
+/* INVOICE INDEX */
+.invoice-dir-block { margin-bottom: 24px; }
+.invoice-dir-label { font-size: 11px; font-weight: 700; color: var(--ink-soft); margin-bottom: 10px; padding: 6px 12px 6px 10px; border-left: 3px solid var(--ink); background: var(--bg-soft); display: inline-flex; align-items: center; gap: 8px; }
+.invoice-dir-label.out { border-left-color: var(--blue); color: var(--blue); background: rgba(18,65,197,.05); }
+.invoice-dir-label.in  { border-left-color: var(--neg); color: var(--neg); background: rgba(168,69,69,.05); }
+.invoice-month-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+.invoice-card { background: var(--bg-card); border: 1px solid var(--line); padding: 14px 8px 12px; text-align: center; text-decoration: none; display: block; transition: border-color .15s, box-shadow .15s; }
+.invoice-card:not(.no-link):hover { border-color: var(--green); box-shadow: 0 2px 8px rgba(0,0,0,.07); }
+.invoice-card.no-link { opacity: .5; cursor: default; }
+.invoice-m { font-family: 'JetBrains Mono', monospace; font-size: 14px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+.invoice-icon-wrap { font-size: 18px; margin-bottom: 6px; line-height: 1; }
+.invoice-badge { font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 2px 7px; border-radius: 2px; display: inline-block; }
+.invoice-badge.ready { background: var(--green-100); color: var(--green-darker); }
+.invoice-badge.pending { background: var(--bg-soft); color: var(--ink-muted); border: 1px solid var(--line-strong); }
 </style>
 </head>
 <body>
@@ -189,6 +224,55 @@ tbody tr.grand-total td.num { color: #9fe86e; }
   </div>
 </div>
 
+<!-- MONTHLY DATA INPUT PANEL -->
+<div class="input-panel">
+  <div class="input-panel-header" onclick="toggleInputPanel()">
+    <div class="input-panel-title">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      過去月データ入力
+      <span style="font-size:10px;font-weight:500;color:var(--ink-muted);margin-left:4px;">入力するとトレンドチャートに反映されます</span>
+    </div>
+    <svg id="input-panel-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="transition:transform .2s;flex-shrink:0"><polyline points="6 9 12 15 18 9"/></svg>
+  </div>
+  <div class="input-panel-body" id="input-panel-body">
+    <table class="input-grid-table">
+      <thead><tr>
+        <th>項目</th>
+        <th>10月</th><th>11月</th><th>12月</th><th>1月</th><th>2月</th><th>3月</th>
+        <th style="color:var(--green-deep)">4月（確定）</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td>請求額（千円）</td>
+          <td><input class="month-input" id="inp-b-0" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-1" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-2" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-3" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-4" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-5" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-6" type="number" disabled></td>
+        </tr>
+        <tr>
+          <td>仕入額（千円）</td>
+          <td><input class="month-input" id="inp-c-0" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-1" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-2" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-3" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-4" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-5" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-6" type="number" disabled></td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:14px;flex-wrap:wrap;">
+      <button class="input-save-btn" onclick="saveMonthlyData()">保存してグラフ更新</button>
+      <button class="input-reset-btn" onclick="clearMonthlyData()">リセット</button>
+      <span id="save-hint" style="font-size:11px;font-family:'JetBrains Mono',monospace;"></span>
+    </div>
+    <div style="font-size:11px;color:var(--ink-muted);margin-top:10px;">※ データはブラウザのローカルストレージに保存されます。4月のデータはルート定義から自動計算。</div>
+  </div>
+</div>
+
 <!-- CHARTS -->
 <div class="charts-row">
   <div class="chart-card">
@@ -200,6 +284,36 @@ tbody tr.grand-total td.num { color: #9fe86e; }
     <div class="chart-title">カテゴリ別 請求構成（当月）</div>
     <div class="chart-sub">エリア別内訳</div>
     <canvas id="pieChart" height="200"></canvas>
+  </div>
+</div>
+
+<!-- SECTION 0: 請求書インデックス -->
+<div class="section">
+  <div class="section-header">
+    <span class="section-num">00</span>
+    <h2 class="section-title">請求書インデックス</h2>
+    <span class="section-meta">DOCUMENT INDEX</span>
+  </div>
+
+  <!-- 対白銅 -->
+  <div class="invoice-dir-block">
+    <div class="invoice-dir-label out">↑ SY-Link → 白銅　月次請求書</div>
+    <div class="invoice-month-grid" id="inv-out-grid"></div>
+  </div>
+
+  <!-- 対業者 -->
+  <div class="invoice-dir-block">
+    <div class="invoice-dir-label in">↓ 業者 → SY-Link　月次請求書（仕入）</div>
+    <div class="invoice-month-grid" id="inv-in-grid"></div>
+  </div>
+
+  <div class="notes" style="margin-top:0">
+    <div class="notes-title">請求書の管理について</div>
+    <ul>
+      <li>リンクは SharePoint の対象ファイルURL に差し替えてください。URLは <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">hakudo-billing.html</code> の <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">INVOICE_LINKS</code> 定数を編集します。</li>
+      <li>対白銅請求書：月末締め翌月15日払い。締め後に請求書を SharePoint の <strong>白銅案件 &gt; 請求書</strong> フォルダへアップロード。</li>
+      <li>対業者請求書：各業者から翌月10日前後に届く。受領後 SharePoint の <strong>白銅案件 &gt; 仕入請求書</strong> フォルダへ保存。</li>
+    </ul>
   </div>
 </div>
 
@@ -278,6 +392,29 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 // =============================================
 const MONTHS = ['10月','11月','12月','1月','2月','3月','4月'];
 const MONTH_LABELS = ['2025/10','2025/11','2025/12','2026/1','2026/2','2026/3','2026/4'];
+
+// 請求書リンク定義（SharePointのURLに差し替え）
+// url: null = 準備中（グレー表示）
+const INVOICE_LINKS = {
+  out: [  // SY-Link → 白銅
+    { month: '10月', url: null },
+    { month: '11月', url: null },
+    { month: '12月', url: null },
+    { month: '1月',  url: null },
+    { month: '2月',  url: null },
+    { month: '3月',  url: null },
+    { month: '4月',  url: null },
+  ],
+  in: [   // 業者 → SY-Link
+    { month: '10月', url: null },
+    { month: '11月', url: null },
+    { month: '12月', url: null },
+    { month: '1月',  url: null },
+    { month: '2月',  url: null },
+    { month: '3月',  url: null },
+    { month: '4月',  url: null },
+  ]
+};
 
 // 請求ルート定義
 const BILLING_ROUTES = [
@@ -456,13 +593,20 @@ function render() {
 }
 
 function renderTrendChart() {
-  const billingByMonth = MONTHS.map((_, mi) =>
-    BILLING_ROUTES.reduce((s, r) => s + (r.billing[mi] || 0), 0)
+  const saved = getSavedData();
+  const billingByMonth = MONTHS.map((_, mi) => {
+    const fromRoutes = BILLING_ROUTES.reduce((s, r) => s + (r.billing[mi] || 0), 0);
+    if (fromRoutes > 0) return fromRoutes;
+    return saved.billing[mi] !== null ? saved.billing[mi] : null;
+  });
+  const costByMonth = MONTHS.map((_, mi) => {
+    const fromRoutes = COST_ROUTES.reduce((s, r) => s + (r.cost[mi] || 0), 0);
+    if (fromRoutes > 0) return fromRoutes;
+    return saved.cost[mi] !== null ? saved.cost[mi] : null;
+  });
+  const gpByMonth = billingByMonth.map((b, i) =>
+    (b !== null && costByMonth[i] !== null) ? b - costByMonth[i] : null
   );
-  const costByMonth = MONTHS.map((_, mi) =>
-    COST_ROUTES.reduce((s, r) => s + (r.cost[mi] || 0), 0)
-  );
-  const gpByMonth = billingByMonth.map((b, i) => b - costByMonth[i]);
 
   if (window.trendChartInst) window.trendChartInst.destroy();
   window.trendChartInst = new Chart(document.getElementById('trendChart'), {
@@ -487,8 +631,124 @@ function renderTrendChart() {
   });
 }
 
+// =============================================
+// LOCAL STORAGE — 過去月データ
+// =============================================
+const LS_KEY = 'hakudo_billing_monthly_v1';
+
+function getSavedData() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return { billing: Array(7).fill(null), cost: Array(7).fill(null) };
+}
+
+function saveMonthlyData() {
+  const billing = [];
+  const cost = [];
+  for (let i = 0; i < 7; i++) {
+    const bEl = document.getElementById('inp-b-' + i);
+    const cEl = document.getElementById('inp-c-' + i);
+    const bv = bEl && !bEl.disabled && bEl.value !== '' ? parseFloat(bEl.value) : null;
+    const cv = cEl && !cEl.disabled && cEl.value !== '' ? parseFloat(cEl.value) : null;
+    billing.push(bv);
+    cost.push(cv);
+  }
+  localStorage.setItem(LS_KEY, JSON.stringify({ billing, cost }));
+  const hint = document.getElementById('save-hint');
+  hint.textContent = '✓ 保存しました';
+  hint.style.color = 'var(--pos)';
+  setTimeout(() => { hint.textContent = ''; }, 3000);
+  updateInputStyles();
+  renderTrendChart();
+}
+
+function clearMonthlyData() {
+  localStorage.removeItem(LS_KEY);
+  for (let i = 0; i < 6; i++) {
+    const bEl = document.getElementById('inp-b-' + i);
+    const cEl = document.getElementById('inp-c-' + i);
+    if (bEl) { bEl.value = ''; bEl.classList.remove('has-data'); }
+    if (cEl) { cEl.value = ''; cEl.classList.remove('has-data'); }
+  }
+  const hint = document.getElementById('save-hint');
+  hint.textContent = 'リセットしました';
+  hint.style.color = 'var(--ink-muted)';
+  setTimeout(() => { hint.textContent = ''; }, 2000);
+  renderTrendChart();
+}
+
+function markChanged() {
+  const hint = document.getElementById('save-hint');
+  hint.textContent = '未保存の変更があります';
+  hint.style.color = 'var(--amber)';
+  updateInputStyles();
+}
+
+function updateInputStyles() {
+  for (let i = 0; i < 6; i++) {
+    const bEl = document.getElementById('inp-b-' + i);
+    const cEl = document.getElementById('inp-c-' + i);
+    if (bEl) bEl.classList.toggle('has-data', bEl.value !== '');
+    if (cEl) cEl.classList.toggle('has-data', cEl.value !== '');
+  }
+}
+
+function toggleInputPanel() {
+  const body = document.getElementById('input-panel-body');
+  const chevron = document.getElementById('input-panel-chevron');
+  const isHidden = body.style.display === 'none' || body.style.display === '';
+  body.style.display = isHidden ? 'block' : 'none';
+  chevron.style.transform = isHidden ? 'rotate(180deg)' : '';
+}
+
+function initInputPanel() {
+  const saved = getSavedData();
+  for (let i = 0; i < 6; i++) {
+    const bEl = document.getElementById('inp-b-' + i);
+    const cEl = document.getElementById('inp-c-' + i);
+    if (bEl && saved.billing[i] !== null) bEl.value = saved.billing[i];
+    if (cEl && saved.cost[i] !== null) cEl.value = saved.cost[i];
+  }
+  // 4月は確定値をルートから自動計算
+  const aprilBilling = BILLING_ROUTES.reduce((s, r) => s + (r.billing[6] || 0), 0);
+  const aprilCost    = COST_ROUTES.reduce((s, r) => s + (r.cost[6] || 0), 0);
+  const bEl6 = document.getElementById('inp-b-6');
+  const cEl6 = document.getElementById('inp-c-6');
+  if (bEl6) bEl6.value = aprilBilling;
+  if (cEl6) cEl6.value = aprilCost;
+  updateInputStyles();
+}
+
+// =============================================
+// INVOICE INDEX
+// =============================================
+function buildInvoiceGrid(containerId, links) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  container.innerHTML = links.map(item => {
+    if (item.url) {
+      return `<a class="invoice-card" href="${item.url}" target="_blank" rel="noopener">
+        <div class="invoice-m">${item.month}</div>
+        <div class="invoice-icon-wrap">📄</div>
+        <span class="invoice-badge ready">確定</span>
+      </a>`;
+    } else {
+      return `<div class="invoice-card no-link">
+        <div class="invoice-m">${item.month}</div>
+        <div class="invoice-icon-wrap" style="opacity:.4">📄</div>
+        <span class="invoice-badge pending">準備中</span>
+      </div>`;
+    }
+  }).join('');
+}
+
 // 初期表示
-render();
+setMonth(6);
+initInputPanel();
+buildInvoiceGrid('inv-out-grid', INVOICE_LINKS.out);
+buildInvoiceGrid('inv-in-grid',  INVOICE_LINKS.in);
 </script>
 </body>
 </html>
