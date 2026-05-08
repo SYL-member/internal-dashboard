@@ -199,17 +199,17 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 <div class="kpi-row">
   <div class="kpi">
     <div class="kpi-label">請求額（対白銅）</div>
-    <div class="kpi-value" id="kpi-billing">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-value" id="kpi-billing">—<span class="kpi-unit">円</span></div>
     <div class="kpi-sub" id="kpi-billing-sub">—</div>
   </div>
   <div class="kpi recv">
     <div class="kpi-label">仕入額（対業者）</div>
-    <div class="kpi-value" id="kpi-cost">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-value" id="kpi-cost">—<span class="kpi-unit">円</span></div>
     <div class="kpi-sub" id="kpi-cost-sub">—</div>
   </div>
   <div class="kpi profit">
     <div class="kpi-label">粗利額</div>
-    <div class="kpi-value" id="kpi-profit">—<span class="kpi-unit">千円</span></div>
+    <div class="kpi-value" id="kpi-profit">—<span class="kpi-unit">円</span></div>
     <div class="kpi-sub" id="kpi-profit-sub"></div>
   </div>
   <div class="kpi rate">
@@ -244,22 +244,22 @@ tbody tr.grand-total td.num { color: #9fe86e; }
       <tbody>
         <tr>
           <td>請求額（千円）</td>
-          <td><input class="month-input" id="inp-b-0" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-b-1" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-b-2" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-b-3" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-b-4" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-b-5" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-0" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-1" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-2" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-3" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-4" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-b-5" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
           <td><input class="month-input" id="inp-b-6" type="number" disabled></td>
         </tr>
         <tr>
-          <td>仕入額（千円）</td>
-          <td><input class="month-input" id="inp-c-0" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-c-1" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-c-2" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-c-3" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-c-4" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
-          <td><input class="month-input" id="inp-c-5" type="number" min="0" placeholder="—" oninput="markChanged()"></td>
+          <td>仕入額（円）</td>
+          <td><input class="month-input" id="inp-c-0" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-1" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-2" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-3" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-4" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
+          <td><input class="month-input" id="inp-c-5" type="number" min="0" step="1000" placeholder="—" oninput="markChanged()"></td>
           <td><input class="month-input" id="inp-c-6" type="number" disabled></td>
         </tr>
       </tbody>
@@ -269,7 +269,7 @@ tbody tr.grand-total td.num { color: #9fe86e; }
       <button class="input-reset-btn" onclick="clearMonthlyData()">リセット</button>
       <span id="save-hint" style="font-size:11px;font-family:'JetBrains Mono',monospace;"></span>
     </div>
-    <div style="font-size:11px;color:var(--ink-muted);margin-top:10px;">※ データはブラウザのローカルストレージに保存されます。4月のデータはルート定義から自動計算。</div>
+    <div style="font-size:11px;color:var(--ink-muted);margin-top:10px;">※ 入力は円単位（例：16,541,000）。データはブラウザのlocalStorageに保存。4月のデータはルート定義から自動計算。</div>
   </div>
 </div>
 
@@ -277,7 +277,7 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 <div class="charts-row">
   <div class="chart-card">
     <div class="chart-title">月次推移 — 請求 / 仕入 / 粗利</div>
-    <div class="chart-sub">2025年10月〜2026年4月（税抜・千円）</div>
+    <div class="chart-sub">2025年10月〜2026年4月（税抜・円）</div>
     <canvas id="trendChart" height="100"></canvas>
   </div>
   <div class="chart-card">
@@ -297,7 +297,13 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 
   <!-- 対白銅 -->
   <div class="invoice-dir-block">
-    <div class="invoice-dir-label out">↑ SY-Link → 白銅　月次請求書</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+      <div class="invoice-dir-label out" style="margin-bottom:0">↑ SY-Link → 白銅　月次請求書</div>
+      <a href="javascript:void(0)" onclick="window.open(INVOICE_LINKS.outFolder,'_blank')" style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;padding:5px 12px;border:1px solid rgba(18,65,197,.3);background:rgba(18,65,197,.05);color:var(--blue);text-decoration:none;display:inline-flex;align-items:center;gap:5px;">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        フォルダを開く
+      </a>
+    </div>
     <div class="invoice-month-grid" id="inv-out-grid"></div>
   </div>
 
@@ -310,9 +316,8 @@ tbody tr.grand-total td.num { color: #9fe86e; }
   <div class="notes" style="margin-top:0">
     <div class="notes-title">請求書の管理について</div>
     <ul>
-      <li>リンクは SharePoint の対象ファイルURL に差し替えてください。URLは <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">hakudo-billing.html</code> の <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">INVOICE_LINKS</code> 定数を編集します。</li>
-      <li>対白銅請求書：月末締め翌月15日払い。締め後に請求書を SharePoint の <strong>白銅案件 &gt; 請求書</strong> フォルダへアップロード。</li>
-      <li>対業者請求書：各業者から翌月10日前後に届く。受領後 SharePoint の <strong>白銅案件 &gt; 仕入請求書</strong> フォルダへ保存。</li>
+      <li>対白銅請求書：SharePoint <strong>契約書関係/白銅株式会社/契約書・覚書・見積書/見積書・請求書/白銅/</strong> フォルダに <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">【YYYYMM】ご請求書　神奈川工場様.pdf</code> の命名規則で保存。</li>
+      <li>対業者仕入請求書：各業者から翌月10日前後に届く。受領後 SharePoint に保存し <code style="font-size:11px;background:var(--bg-soft);padding:1px 4px;">INVOICE_LINKS.in</code> の url を更新してください。</li>
     </ul>
   </div>
 </div>
@@ -393,10 +398,22 @@ tbody tr.grand-total td.num { color: #9fe86e; }
 const MONTHS = ['10月','11月','12月','1月','2月','3月','4月'];
 const MONTH_LABELS = ['2025/10','2025/11','2025/12','2026/1','2026/2','2026/3','2026/4'];
 
-// 請求書リンク定義（SharePointのURLに差し替え）
-// url: null = 準備中（グレー表示）
+// 請求書リンク定義（SharePoint）
+// outフォルダ: 契約書関係/白銅株式会社/契約書・覚書・見積書/見積書・請求書/白銅/
+const SP_OUT_BASE = 'https://sylink.sharepoint.com/sites/head-office/Shared%20Documents/%E5%A5%91%E7%B4%84%E6%9B%B8%E9%96%A2%E4%BF%82/%E7%99%BD%E9%8A%85%E6%A0%AA%E5%BC%8F%E4%BC%9A%E7%A4%BE/%E5%A5%91%E7%B4%84%E6%9B%B8%E3%83%BB%E8%A6%9A%E6%9B%B8%E3%83%BB%E8%A6%8B%E7%A9%8D%E6%9B%B8/%E8%A6%8B%E7%A9%8D%E6%9B%B8%E3%83%BB%E8%AB%8B%E6%B1%82%E6%9B%B8/%E7%99%BD%E9%8A%85/';
+// 【YYYYMM】ご請求書　神奈川工場様.pdf パターン
+const SP_OUT_FOLDER = SP_OUT_BASE;
 const INVOICE_LINKS = {
-  out: [  // SY-Link → 白銅
+  out: [  // SY-Link → 白銅（神奈川工場様宛）
+    { month: '10月', url: SP_OUT_BASE + '%E3%80%90202510%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '11月', url: SP_OUT_BASE + '%E3%80%90202511%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '12月', url: SP_OUT_BASE + '%E3%80%90202512%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '1月',  url: SP_OUT_BASE + '%E3%80%90202601%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '2月',  url: SP_OUT_BASE + '%E3%80%90202602%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '3月',  url: SP_OUT_BASE + '%E3%80%90202603%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+    { month: '4月',  url: SP_OUT_BASE + '%E3%80%90202604%E3%80%91%E3%81%94%E8%AB%8B%E6%B1%82%E6%9B%B8%E3%80%80%E7%A5%9E%E5%A5%88%E5%B7%9D%E5%B7%A5%E5%A0%B4%E6%A7%98.pdf' },
+  ],
+  in: [   // 業者 → SY-Link（仕入請求書 — URLは受領後に更新）
     { month: '10月', url: null },
     { month: '11月', url: null },
     { month: '12月', url: null },
@@ -405,15 +422,8 @@ const INVOICE_LINKS = {
     { month: '3月',  url: null },
     { month: '4月',  url: null },
   ],
-  in: [   // 業者 → SY-Link
-    { month: '10月', url: null },
-    { month: '11月', url: null },
-    { month: '12月', url: null },
-    { month: '1月',  url: null },
-    { month: '2月',  url: null },
-    { month: '3月',  url: null },
-    { month: '4月',  url: null },
-  ]
+  // フォルダを直接開く
+  outFolder: SP_OUT_FOLDER,
 };
 
 // 請求ルート定義
@@ -466,11 +476,12 @@ let currentMonth = 6; // 4月（index=6）
 
 function fmt(v) {
   if (v === null || v === undefined) return '<span style="color:#bbb">—</span>';
-  return '¥' + v.toLocaleString();
+  return '¥' + (v * 1000).toLocaleString();
 }
+// fmtK: 内部値は千円単位。表示は円換算（×1000）
 function fmtK(v) {
   if (v === null || v === undefined) return '—';
-  return (v >= 0 ? '' : '') + v.toLocaleString();
+  return (v * 1000).toLocaleString();
 }
 
 function setMonth(idx) {
@@ -483,8 +494,8 @@ function render() {
   const mi = currentMonth;
   const mLabel = MONTHS[mi];
 
-  document.getElementById('hd-month-out').textContent = mLabel + ' 請求額（千円）';
-  document.getElementById('hd-month-in').textContent  = mLabel + ' 仕入額（千円）';
+  document.getElementById('hd-month-out').textContent = mLabel + ' 請求額（円）';
+  document.getElementById('hd-month-in').textContent  = mLabel + ' 仕入額（円）';
   document.getElementById('footer-date').textContent = 'data: 2026年4月実績ベース';
 
   // ── 請求テーブル ──
@@ -563,9 +574,9 @@ function render() {
   document.getElementById('cost-tbody').innerHTML = costRows;
 
   // ── KPI ──
-  document.getElementById('kpi-billing').innerHTML = fmtK(totalBilling) + '<span class="kpi-unit">千円</span>';
-  document.getElementById('kpi-cost').innerHTML    = fmtK(totalCost)    + '<span class="kpi-unit">千円</span>';
-  document.getElementById('kpi-profit').innerHTML  = (totalGP >= 0 ? '+' : '') + fmtK(totalGP) + '<span class="kpi-unit">千円</span>';
+  document.getElementById('kpi-billing').innerHTML = fmtK(totalBilling) + '<span class="kpi-unit">円</span>';
+  document.getElementById('kpi-cost').innerHTML    = fmtK(totalCost)    + '<span class="kpi-unit">円</span>';
+  document.getElementById('kpi-profit').innerHTML  = (totalGP >= 0 ? '+' : '') + fmtK(totalGP) + '<span class="kpi-unit">円</span>';
   document.getElementById('kpi-rate').innerHTML    = (totalRate || '—') + '<span class="kpi-unit">%</span>';
   document.getElementById('kpi-count').innerHTML   = BILLING_ROUTES.filter(r => r.billing[mi] !== null).length + '<span class="kpi-unit">件</span>';
 
@@ -594,15 +605,16 @@ function render() {
 
 function renderTrendChart() {
   const saved = getSavedData();
+  // ルートデータに実績があればそれを使う。なければlocalStorage値。どちらもなければnull
   const billingByMonth = MONTHS.map((_, mi) => {
-    const fromRoutes = BILLING_ROUTES.reduce((s, r) => s + (r.billing[mi] || 0), 0);
-    if (fromRoutes > 0) return fromRoutes;
-    return saved.billing[mi] !== null ? saved.billing[mi] : null;
+    const hasRoute = BILLING_ROUTES.some(r => r.billing[mi] !== null);
+    if (hasRoute) return BILLING_ROUTES.reduce((s, r) => s + (r.billing[mi] || 0), 0);
+    return (saved.billing[mi] !== null && saved.billing[mi] > 0) ? saved.billing[mi] : null;
   });
   const costByMonth = MONTHS.map((_, mi) => {
-    const fromRoutes = COST_ROUTES.reduce((s, r) => s + (r.cost[mi] || 0), 0);
-    if (fromRoutes > 0) return fromRoutes;
-    return saved.cost[mi] !== null ? saved.cost[mi] : null;
+    const hasRoute = COST_ROUTES.some(r => r.cost[mi] !== null);
+    if (hasRoute) return COST_ROUTES.reduce((s, r) => s + (r.cost[mi] || 0), 0);
+    return (saved.cost[mi] !== null && saved.cost[mi] > 0) ? saved.cost[mi] : null;
   });
   const gpByMonth = billingByMonth.map((b, i) =>
     (b !== null && costByMonth[i] !== null) ? b - costByMonth[i] : null
@@ -622,9 +634,23 @@ function renderTrendChart() {
     options: {
       responsive: true,
       interaction: { mode: 'index', intersect: false },
-      plugins: { legend: { labels: { font: { size: 11 }, padding: 12 } } },
+      plugins: {
+        legend: { labels: { font: { size: 11 }, padding: 12 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const v = ctx.parsed.y;
+              if (v === null) return ctx.dataset.label + ': —';
+              return ctx.dataset.label + ': ¥' + (v * 1000).toLocaleString() + '円';
+            }
+          }
+        }
+      },
       scales: {
-        y: { ticks: { callback: v => '¥' + v.toLocaleString() + '千', font: { size: 10 } }, grid: { color: 'rgba(0,0,0,.04)' } },
+        y: {
+          ticks: { callback: v => '¥' + (v * 1000).toLocaleString(), font: { size: 10 } },
+          grid: { color: 'rgba(0,0,0,.04)' }
+        },
         x: { ticks: { font: { size: 11 } } }
       }
     }
@@ -650,8 +676,9 @@ function saveMonthlyData() {
   for (let i = 0; i < 7; i++) {
     const bEl = document.getElementById('inp-b-' + i);
     const cEl = document.getElementById('inp-c-' + i);
-    const bv = bEl && !bEl.disabled && bEl.value !== '' ? parseFloat(bEl.value) : null;
-    const cv = cEl && !cEl.disabled && cEl.value !== '' ? parseFloat(cEl.value) : null;
+    // 入力は円単位 → 千円単位に変換して保存
+    const bv = bEl && !bEl.disabled && bEl.value !== '' ? parseFloat(bEl.value) / 1000 : null;
+    const cv = cEl && !cEl.disabled && cEl.value !== '' ? parseFloat(cEl.value) / 1000 : null;
     billing.push(bv);
     cost.push(cv);
   }
@@ -708,16 +735,17 @@ function initInputPanel() {
   for (let i = 0; i < 6; i++) {
     const bEl = document.getElementById('inp-b-' + i);
     const cEl = document.getElementById('inp-c-' + i);
-    if (bEl && saved.billing[i] !== null) bEl.value = saved.billing[i];
-    if (cEl && saved.cost[i] !== null) cEl.value = saved.cost[i];
+    // 保存値は千円単位 → 円単位で表示
+    if (bEl && saved.billing[i] !== null) bEl.value = saved.billing[i] * 1000;
+    if (cEl && saved.cost[i] !== null) cEl.value = saved.cost[i] * 1000;
   }
-  // 4月は確定値をルートから自動計算
+  // 4月は確定値をルートから自動計算（千円→円に変換して表示）
   const aprilBilling = BILLING_ROUTES.reduce((s, r) => s + (r.billing[6] || 0), 0);
   const aprilCost    = COST_ROUTES.reduce((s, r) => s + (r.cost[6] || 0), 0);
   const bEl6 = document.getElementById('inp-b-6');
   const cEl6 = document.getElementById('inp-c-6');
-  if (bEl6) bEl6.value = aprilBilling;
-  if (cEl6) cEl6.value = aprilCost;
+  if (bEl6) bEl6.value = aprilBilling * 1000;
+  if (cEl6) cEl6.value = aprilCost * 1000;
   updateInputStyles();
 }
 
