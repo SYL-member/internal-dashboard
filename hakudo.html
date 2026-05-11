@@ -724,6 +724,10 @@ function goS(n) {
   document.querySelectorAll('nav button').forEach((b,i) => b.classList.toggle('on', i===n));
   document.getElementById('s'+n).classList.add('on');
   sn = n;
+  kill();
+  // offsetHeightを読んで強制同期リフロー → flexレイアウトを確定させてからチャート生成
+  void document.getElementById('s'+n).offsetHeight;
+  renderCharts(DB[cur]);
 }
 
 function switchMonth(m) {
