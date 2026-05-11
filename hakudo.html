@@ -97,6 +97,15 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 .atbl td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6}
 .atbl tr:last-child td{border-bottom:none}
 .atbl tr:hover td{background:rgba(18,65,197,0.04)}
+/* サムネイル */
+.acc-thumb{width:52px;height:40px;object-fit:cover;border-radius:4px;border:1px solid #e0e0da;cursor:zoom-in;display:block;transition:opacity .15s}
+.acc-thumb:hover{opacity:.8}
+/* ライトボックス */
+#lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:600;align-items:center;justify-content:center;cursor:zoom-out}
+#lightbox.on{display:flex}
+#lightbox img{max-width:90vw;max-height:90vh;border-radius:6px;box-shadow:0 8px 60px rgba(0,0,0,.6);object-fit:contain}
+#lightbox .lb-close{position:absolute;top:18px;right:22px;font-size:28px;color:#fff;cursor:pointer;line-height:1;background:none;border:none;opacity:.8}
+#lightbox .lb-close:hover{opacity:1}
 .badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;letter-spacing:.03em}
 .bm{background:#fde8e8;color:#7f1d1d}.bn{background:#f1f5f9;color:#475569}
 /* ツールバー */
@@ -795,7 +804,8 @@ function renderAll() {
         <td><span class="badge ${x.major?'bm':'bn'}">${x.type}</span></td>
         <td>${x.detail}</td>
         <td style="color:#666">${x.action}</td>
-        <td>${x.img?`<a href="${x.img}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#0057b8;text-decoration:none;border:1px solid #0057b8;border-radius:4px;padding:3px 8px;white-space:nowrap">📷 写真を開く</a>`:''}</td>
+        <td>${x.img?(x.img.startsWith('data:')?`<img class="acc-thumb" src="${x.img}" onclick="openLightbox(this.src)" title="クリックで拡大">`:
+          `<a href="${x.img}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;font-size:12px;color:#0057b8;text-decoration:none;border:1px solid #0057b8;border-radius:4px;padding:3px 8px;white-space:nowrap">📷 写真を開く</a>`):''}</td>
         <td style="white-space:nowrap">
           <button onclick="openAccidentEdit(${i})" style="padding:2px 8px;background:#555;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;margin-bottom:3px;display:block">編集</button>
           <button onclick="deleteAccidentDirect(${i})" style="padding:2px 8px;background:#8b2020;color:#fff;border:none;border-radius:3px;font-size:10px;cursor:pointer;display:block">削除</button>
@@ -1367,17 +1377,30 @@ function downloadTemplate() {
 // ===== 事故直接編集 =====
 let _accIdx = -1; // -1=新規, 0以上=編集対象index
 
-// 画像アップロード（base64変換）
+// 画像アップロード（Canvas圧縮→base64変換）
 function loadAccImg(input) {
   const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    const data = e.target.result;
-    document.getElementById('ac_imgurl').value = '';
-    document.getElementById('ac_imgthumb').src = data;
-    document.getElementById('ac_imgpreview').style.display = 'block';
-    document.getElementById('ac_imgpreview').dataset.base64 = data;
+    const img = new Image();
+    img.onload = () => {
+      const MAX = 800;
+      let w = img.naturalWidth, h = img.naturalHeight;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      const data = cv.toDataURL('image/jpeg', 0.72);
+      document.getElementById('ac_imgurl').value = '';
+      document.getElementById('ac_imgthumb').src = data;
+      document.getElementById('ac_imgpreview').style.display = 'block';
+      document.getElementById('ac_imgpreview').dataset.base64 = data;
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1446,6 +1469,16 @@ function deleteAccidentDirect(idx) {
   kill(); renderAll();
 }
 
+// ===== ライトボックス =====
+function openLightbox(src) {
+  const lb = document.getElementById('lightbox');
+  document.getElementById('lb_img').src = src;
+  lb.classList.add('on');
+}
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('on');
+}
+
 // ===== ヘルプ =====
 function openHelp() {
   document.getElementById('helpOv').style.display = 'flex';
@@ -1510,5 +1543,11 @@ renderAll();
 </div>
 
 
+
+<!-- ライトボックス -->
+<div id="lightbox" onclick="closeLightbox()">
+  <button class="lb-close" onclick="closeLightbox()">✕</button>
+  <img id="lb_img" src="" alt="事故写真">
+</div>
 
 </body></html>
