@@ -91,6 +91,17 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
 .cmt-kpi .kyear{font-size:10px;color:var(--muted);margin-bottom:2px;font-family:'DM Mono',monospace}
 .cmt-kpi .knum{font-size:26px;font-weight:700;color:var(--text);line-height:1;font-feature-settings:"tnum"}
 .cmt-kpi .knum.cur{color:var(--accent)}
+/* インサイトパネル */
+.insight-panel{display:flex;flex-direction:column;gap:8px;height:100%}
+.insight-block{background:#fff;border:1px solid var(--border);border-radius:6px;padding:10px 12px;flex-shrink:0}
+.insight-block.ib-note{flex:1;display:flex;flex-direction:column}
+.ib-hd{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-family:'DM Mono',monospace}
+.ib-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;border-bottom:1px solid #f0f0ec}
+.ib-row:last-child{border-bottom:none}
+.ib-lbl{font-size:11px;color:var(--muted)}
+.ib-val{font-size:14px;font-weight:700;font-feature-settings:"tnum";font-family:'DM Mono',monospace}
+.ib-val.up{color:var(--positive)}.ib-val.dn{color:var(--negative)}.ib-val.neu{color:var(--muted)}
+.ib-note textarea{flex:1;border:none;outline:none;font-size:13px;line-height:1.9;resize:none;background:transparent;color:var(--text);font-family:'Noto Sans JP',sans-serif;min-height:0}
 /* 事故テーブル */
 .atbl{width:100%;border-collapse:collapse;font-size:14px}
 .atbl th{padding:7px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.04em;font-family:'DM Mono',monospace}
@@ -299,13 +310,11 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
       </div>
     </div>
     <div class="side">
-      <div class="cmt-box" id="cmt0">2025年比
-月あたり（線）+0.6%
-1日あたり（棒）▲4.2%
-
-増えた便：801、675
-減った便：02、23、35
-　　　　　41、42、45、677</div>
+      <div class="insight-panel" id="insight0">
+        <div class="insight-block"><div class="ib-hd">前年同月比</div><div id="ib0_yoy"></div></div>
+        <div class="insight-block"><div class="ib-hd">前月比</div><div id="ib0_mom"></div></div>
+        <div class="insight-block ib-note"><div class="ib-hd">メモ</div><textarea id="cmt0" oninput="DB[cur].comments.s0=this.value" placeholder="気づき・所感を入力…"></textarea></div>
+      </div>
     </div>
   </div>
 </div>
@@ -325,14 +334,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
       </div>
     </div>
     <div class="side">
-      <div class="cmt-box" id="cmt1">2026年3月比
-
-増えた便
-801、41、45
-
-減った便
-02、23、35
-42、675、677</div>
+      <div class="insight-panel" id="insight1">
+        <div class="insight-block"><div class="ib-hd">前年同月比（便別）</div><div id="ib1_routes"></div></div>
+        <div class="insight-block ib-note"><div class="ib-hd">メモ</div><textarea id="cmt1" oninput="DB[cur].comments.s1=this.value" placeholder="気づき・所感を入力…"></textarea></div>
+      </div>
     </div>
   </div>
 </div>
@@ -392,7 +397,10 @@ nav .madd{flex:0 0 44px;font-size:16px;color:#aaa;border-left:1px solid var(--bo
     <div class="card" style="flex:1;margin-top:10px;overflow-y:auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <div class="ctitle">今月の事故詳細</div>
-        <button onclick="openAccidentEdit(-1)" style="padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 事故を追加</button>
+        <div style="display:flex;gap:8px;align-items:center">
+          <div id="s4note" style="font-size:12px;color:#888;font-style:italic"></div>
+          <button onclick="openAccidentEdit(-1)" style="padding:4px 12px;background:#8fc31f;color:#fff;border:none;border-radius:3px;font-size:11px;cursor:pointer">＋ 事故を追加</button>
+        </div>
       </div>
       <table class="atbl" id="atbl4">
         <thead><tr><th>日付</th><th>便</th><th>お客様</th><th>種別</th><th>事故詳細</th><th>対応</th><th>写真</th><th></th></tr></thead>
@@ -531,7 +539,8 @@ let DB = {
     "comments": {
       "s0": "",
       "s1": "",
-      "s3": ""
+      "s3": "",
+      "s4": ""
     }
   },
   "2026-02": {
@@ -599,7 +608,8 @@ let DB = {
     "comments": {
       "s0": "2025年比\n月あたり（線） 92.8%\n1日あたり（棒）98.0%\n\n去年より少ない\n一昨年より多い",
       "s1": "2026年2月比\n\n増えた便\n801、675\n\n減った便\n02、23、35\n41、42、45、677",
-      "s3": "2026年2月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"
+      "s3": "2026年2月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件",
+      "s4": ""
     }
   },
   "2026-04": {
@@ -625,7 +635,7 @@ let DB = {
       }
     },
     "quality": { "accidents": [] },
-    "comments": { "s0": "", "s1": "", "s3": "" }
+    "comments": { "s0": "", "s1": "", "s3": "", "s4": "" }
   },
   "2026-03": {
     "label": "2026年3月",
@@ -693,7 +703,8 @@ let DB = {
     "comments": {
       "s0": "2025年比\n月あたり（棒）+0.6%\n1日あたり（線）▲4.2%\n\n増えた便：801、677、41、45\n減った便：02、23、35\n　　　　　42、675",
       "s1": "2026年3月比\n\n増えた便\n801、677、41、45\n\n減った便\n02、23、35\n42、675",
-      "s3": "2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件"
+      "s3": "2026年3月発生分\n納品場所間違い・・・1件\n不在置き対応・・・0件",
+      "s4": ""
     }
   }
 };
@@ -754,8 +765,8 @@ function renderAll() {
   }
 
   // コメント
-  document.getElementById('cmt0').textContent = d.comments.s0 || '';
-  document.getElementById('cmt1').textContent = d.comments.s1 || '';
+  document.getElementById('cmt0').value = d.comments.s0 || '';
+  document.getElementById('cmt1').value = d.comments.s1 || '';
   document.getElementById('cmt3').textContent = d.comments.s3 || '';
 
   // Kg単価コメント（数値カード・動的）
@@ -789,13 +800,54 @@ function renderAll() {
     <div class="kcard"><div class="klbl">神奈川便</div><div class="kval">${fmt(v.kanagawaKg)}<span class="kunit"> kg</span></div><div class="kdelta neu">構成比 ${v.totalKg?Math.round(v.kanagawaKg/v.totalKg*100):0}%（東神）</div></div>
     <div class="kcard"><div class="klbl">推定運賃（概算）</div><div class="kval">${fmtMan(estBilling)}<span class="kunit"> 万円</span></div><div class="kdelta ${bp.v>=0?'up':'dn'}">${bp.s}　前年同月比推定</div><div class="kdelta neu" style="font-size:10px;margin-top:2px">${kgRate ? kgRate.toFixed(1)+'円/kg × '+fmt(v.totalKg)+'kg' : '単価データなし'}</div></div>`;
 
-  // KPI Slide 4
+  // ===== インサイトパネル（スライド0・1）=====
+  const keys = Object.keys(DB).sort();
+  const prevKey = keys[keys.indexOf(cur) - 1];
+  const pd = prevKey ? DB[prevKey] : null; // 前月データ
+
+  // スライド0：物量推移インサイト（prevTotal/prevDayは上で定義済み）
+  const yoyKg  = prevTotal ? pct(v.totalKg, prevTotal) : null;
+  const yoyDay = prevDay   ? pct(v.perDay,  prevDay)   : null;
+  const yoyBill= (estBilling && prevBilling) ? pct(estBilling, prevBilling) : null;
+  const momKg  = pd ? pct(v.totalKg,  pd.volume.totalKg)  : null;
+  const momDay = pd ? pct(v.perDay,   pd.volume.perDay)    : null;
+  const iRow = (label, pctObj, subText) => pctObj
+    ? `<div class="ib-row"><span class="ib-lbl">${label}</span><span class="ib-val ${pctObj.v>=0?'up':'dn'}">${pctObj.s}${subText?'<span style="font-size:9px;font-weight:400;margin-left:3px;color:#999">'+subText+'</span>':''}</span></div>`
+    : `<div class="ib-row"><span class="ib-lbl">${label}</span><span class="ib-val neu">—</span></div>`;
+
+  document.getElementById('ib0_yoy').innerHTML =
+    iRow('総重量', yoyKg, fmt(prevTotal)+'kg') +
+    iRow('日平均', yoyDay) +
+    iRow('推定運賃', yoyBill);
+  document.getElementById('ib0_mom').innerHTML = pd
+    ? iRow('総重量', momKg, pd.label) + iRow('日平均', momDay)
+    : '<div class="ib-row"><span class="ib-lbl neu" style="font-size:11px;color:#aaa">前月データなし</span></div>';
+
+  // スライド1：便別インサイト
+  const R = Object.keys(v.routes);
+  const routeRows = R.map(r => {
+    const curr = v.routes[r].curr, prev = v.routes[r].prev;
+    if (!prev) return `<div class="ib-row"><span class="ib-lbl">${r}便</span><span class="ib-val neu" style="font-size:10px">前年データなし</span></div>`;
+    const p = pct(curr, prev);
+    return `<div class="ib-row"><span class="ib-lbl">${r}便</span><span class="ib-val ${p.v>=0?'up':'dn'}">${p.s}</span></div>`;
+  }).join('');
+  document.getElementById('ib1_routes').innerHTML = routeRows;
+
+  // ===== KPI Slide 4
   const a = d.quality.accidents;
   const maj = a.filter(x => x.major).length;
   document.getElementById('kpi4').innerHTML = `
     <div class="kcard ${a.length>0?'kc-warn':''}"><div class="klbl">今月の事故件数</div><div class="kval">${a.length}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'重大 '+maj+'件':'重大事故なし'}</div></div>
     <div class="kcard ${maj>0?'kc-danger':''}"><div class="klbl">重大事故（紛失・破損）</div><div class="kval">${maj}<span class="kunit"> 件</span></div><div class="kdelta ${maj>0?'dn':'up'}">${maj>0?'要対応':'問題なし'}</div></div>
     <div class="kcard kc-neutral"><div class="klbl">その他</div><div class="kval">${a.length-maj}<span class="kunit"> 件</span></div><div class="kdelta neu">今月</div></div>`;
+
+  // 事故「なし」ノート
+  const s4note = document.getElementById('s4note');
+  if (s4note) {
+    const note = d.comments.s4 || '';
+    s4note.textContent = note || (a.length === 0 ? '今月の事故はありません' : '');
+    s4note.style.color = note ? '#2d6a2d' : '#aaa';
+  }
 
   // 事故テーブル
   const tbody = document.querySelector('#atbl4 tbody');
@@ -859,7 +911,7 @@ function renderCharts(d) {
   // Slide 1: 便別（前年同月比・増減色分け）
   const R = Object.keys(v.routes);
   const rCurr = R.map(r=>v.routes[r].curr);
-  const rPrev = R.map(r=>v.routes[r].prev);
+  const rPrev = R.map(r=>v.routes[r].prev || null); // 0はnull（未入力扱い）
   CH.r = new Chart(document.getElementById('cR'), {type:'bar',
     data:{labels:R.map(r=>r+'便'),datasets:[
       {label:'前年同月',data:rPrev,backgroundColor:'#d4d4cc',borderColor:'#bbb',borderWidth:1},
@@ -869,32 +921,55 @@ function renderCharts(d) {
       scales:{x:{ticks:{font:{size:13}},grid:{display:false}},y:{min:0,ticks:{font:{size:12},callback:K},grid:{color:'rgba(0,0,0,.05)'}}}}
   });
 
-  // Slide 2: Kg単価（3年連続タイムライン）
-  const kLabels=[], kData=[], kColors=[];
-  [{yr:'24',kg:TR.kg24,col:'#bbb'},{yr:'25',kg:TR.kg25,col:'#888'}].forEach(({yr,kg,col})=>{
-    TR.M.forEach((m,i)=>{ if(kg[i]!=null){kLabels.push(yr+'/'+m); kData.push(kg[i]); kColors.push(col);} });
-  });
-  TR.M.forEach((m,i)=>{ if(TR.kg26[i]!=null){kLabels.push('26/'+m); kData.push(TR.kg26[i]); kColors.push('#8fc31f');} });
+  // Slide 2: Kg単価 + 請求額（3年連続タイムライン）
+  const kLabels=[], kData=[], kColors=[], kBill=[];
 
-  CH.k = new Chart(document.getElementById('cK'), {type:'line',
-    data:{labels:kLabels,datasets:[{
-      data:kData,
-      borderColor:'#231815',
-      backgroundColor:'transparent',
-      borderWidth:2,
-      pointRadius:3,
-      pointBackgroundColor:kColors,
-      spanGaps:false,
-      segment:{borderColor:ctx=>kColors[ctx.p1DataIndex]||'#888'}
-    }]},
+  // DB月のkg→請求額ルックアップ用マップ（年月index→totalKg）
+  const dbKgMap = {};
+  Object.keys(DB).forEach(k => {
+    const mi2 = parseInt(k.split('-')[1]) - 1;
+    if (DB[k].volume.totalKg > 0) dbKgMap[k.split('-')[0]+'-'+mi2] = DB[k].volume.totalKg;
+  });
+
+  [{yr:'24',kg:TR.kg24,y:TR.y24,col:'#bbb'},{yr:'25',kg:TR.kg25,y:TR.y25,col:'#888'}].forEach(({yr,kg,y,col})=>{
+    TR.M.forEach((m,i)=>{
+      if(kg[i]!=null){
+        kLabels.push(yr+'/'+m);
+        kData.push(kg[i]);
+        kColors.push(col);
+        kBill.push(y[i]!=null ? Math.round(y[i]*kg[i]/10000) : null);
+      }
+    });
+  });
+  TR.M.forEach((m,i)=>{
+    if(TR.kg26[i]!=null){
+      const totalKg = dbKgMap['2026-'+i] || null;
+      kLabels.push('26/'+m);
+      kData.push(TR.kg26[i]);
+      kColors.push('#8fc31f');
+      kBill.push(totalKg ? Math.round(totalKg*TR.kg26[i]/10000) : null);
+    }
+  });
+
+  CH.k = new Chart(document.getElementById('cK'), {
+    data:{labels:kLabels,datasets:[
+      {type:'bar', data:kBill, backgroundColor:kColors.map(c=>c+'66'), borderColor:kColors, borderWidth:1, yAxisID:'yR', order:2, label:'請求額（万円）'},
+      {type:'line', data:kData, borderColor:'#231815', backgroundColor:'transparent', borderWidth:2.5,
+        pointRadius:3, pointBackgroundColor:kColors, spanGaps:false,
+        segment:{borderColor:ctx=>kColors[ctx.p1DataIndex]||'#888'}, yAxisID:'yL', order:1, label:'Kg単価（円）'}
+    ]},
     options:{responsive:true,maintainAspectRatio:false,
       plugins:{legend:{display:true,labels:{generateLabels:()=>[
-        {text:'24年',fillStyle:'#bbb',strokeStyle:'#bbb',lineWidth:0},
-        {text:'25年',fillStyle:'#888',strokeStyle:'#888',lineWidth:0},
-        {text:'26年',fillStyle:'#8fc31f',strokeStyle:'#8fc31f',lineWidth:0}
+        {text:'Kg単価',fillStyle:'transparent',strokeStyle:'#231815',lineWidth:2},
+        {text:'請求額 24年',fillStyle:'#bbb66',strokeStyle:'#bbb',lineWidth:0},
+        {text:'請求額 25年',fillStyle:'#88866',strokeStyle:'#888',lineWidth:0},
+        {text:'請求額 26年',fillStyle:'#8fc31f66',strokeStyle:'#8fc31f',lineWidth:0}
       ]}}},
-      scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:18},grid:{color:'rgba(0,0,0,.04)'}},
-        y:{min:0,ticks:{font:{size:12},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}}}}
+      scales:{
+        x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true,maxTicksLimit:18},grid:{color:'rgba(0,0,0,.04)'}},
+        yL:{type:'linear',position:'left', min:0,ticks:{font:{size:11},callback:v=>v===0?'0':v.toFixed(1)+'円'},grid:{color:'rgba(0,0,0,.05)'}},
+        yR:{type:'linear',position:'right',min:0,ticks:{font:{size:11},callback:v=>v===0?'0':v+'万'},grid:{drawOnChartArea:false}}
+      }}
   });
 
   // Slide 3: 事故グラフ
@@ -955,7 +1030,8 @@ function buildForm(d) {
       <div class="epst">コメント</div>
       <div class="fr"><label>スライド1：物量推移</label><textarea id="fs0" rows="4">${d.comments.s0||''}</textarea></div>
       <div class="fr"><label>スライド2：便別</label><textarea id="fs1" rows="4">${d.comments.s1||''}</textarea></div>
-      <div class="fr"><label>スライド4：事故</label><textarea id="fs3" rows="3">${d.comments.s3||''}</textarea></div>
+      <div class="fr"><label>スライド4：事故グラフ コメント</label><textarea id="fs3" rows="3">${d.comments.s3||''}</textarea></div>
+      <div class="fr"><label>スライド5：事故詳細 メモ（「なし」等）</label><textarea id="fs4" rows="2" placeholder="例：今月の事故はありません">${d.comments.s4||''}</textarea></div>
     </div>
     <div class="epsec">
       <div class="epst">事故データ</div>
@@ -1001,6 +1077,7 @@ function saveData() {
   d.comments.s0 = document.getElementById('fs0').value;
   d.comments.s1 = document.getElementById('fs1').value;
   d.comments.s3 = document.getElementById('fs3').value;
+  d.comments.s4 = document.getElementById('fs4')?.value || '';
   d.quality.accidents = [];
   document.querySelectorAll('.ae').forEach(e => {
     const imgUrl = e.querySelector('input.aimg')?.value || '';
@@ -1070,7 +1147,7 @@ function confirmAddMonth() {
 }
 function mkEmpty(k) {
   const [y,m] = k.split('-');
-  return {label:y+'年'+parseInt(m)+'月',volume:{totalKg:0,perDay:0,workDays:21,tokyoKg:0,kanagawaKg:0,prevTotalKg:0,prevPerDay:0,routes:{"801":{curr:0,prev:0},"02":{curr:0,prev:0},"23":{curr:0,prev:0},"35":{curr:0,prev:0},"41":{curr:0,prev:0},"42":{curr:0,prev:0},"45":{curr:0,prev:0},"675":{curr:0,prev:0},"677":{curr:0,prev:0}}},quality:{accidents:[]},comments:{s0:'',s1:'',s3:''}};
+  return {label:y+'年'+parseInt(m)+'月',volume:{totalKg:0,perDay:0,workDays:21,tokyoKg:0,kanagawaKg:0,prevTotalKg:0,prevPerDay:0,routes:{"801":{curr:0,prev:0},"02":{curr:0,prev:0},"23":{curr:0,prev:0},"35":{curr:0,prev:0},"41":{curr:0,prev:0},"42":{curr:0,prev:0},"45":{curr:0,prev:0},"675":{curr:0,prev:0},"677":{curr:0,prev:0}}},quality:{accidents:[]},comments:{s0:'',s1:'',s3:'',s4:''}};
 }
 
 async function exportHtml() {
