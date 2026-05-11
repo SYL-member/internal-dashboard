@@ -1,0 +1,845 @@
+<html lang="ja"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>青和飲料 コンサルDB</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#1241C5;--accent-h:#0e35a0;
+  --green:#4d7a0a;--green-l:#8fc31f;
+  --red:#8b2020;--orange:#c2620a;
+  --dark:#0f172a;--dark2:#1e293b;
+  --border:#dde3ed;--surface:#ffffff;--bg:#f5f7fa;
+  --ink:#0f172a;--muted:#64748b;
+  --tag-open:#dbeafe;--tag-open-c:#1e40af;
+  --tag-ip:#fef9c3;--tag-ip-c:#854d0e;
+  --tag-done:#dcfce7;--tag-done-c:#14532d;
+  --tag-risk:#fee2e2;--tag-risk-c:#7f1d1d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(18,65,197,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(18,65,197,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--dark);border-bottom:1px solid var(--dark2);padding:0 28px;display:flex;align-items:center;gap:0;position:relative;z-index:100}
+.tb-logo{display:flex;align-items:center;gap:10px;padding:14px 0;text-decoration:none;margin-right:24px}
+.tb-logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#4060D4);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0;font-family:'DM Mono',monospace}
+.tb-logo span{font-size:13px;font-weight:700;color:#fff;font-family:'DM Mono',monospace;letter-spacing:.04em}
+.tb-nav{display:flex;align-items:stretch;gap:0;flex:1}
+.tb-nav a{padding:0 16px;font-size:11px;font-weight:600;color:#94a3b8;text-decoration:none;display:flex;align-items:center;border-bottom:2px solid transparent;transition:color .15s;letter-spacing:.02em;height:52px}
+.tb-nav a:hover{color:#e2e8f0}
+.tb-nav a.on{color:#fff;border-bottom-color:var(--accent)}
+.tb-client{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:11px;color:#64748b}
+.tb-client strong{color:#94a3b8}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1120px;margin:0 auto;padding:28px 28px 60px;position:relative;z-index:1}
+.page{display:none}.page.on{display:block}
+
+/* ── PAGE HEADER ── */
+.phdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;gap:16px}
+.phdr-left h1{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.phdr-left p{font-size:12px;color:var(--muted)}
+.phdr-actions{display:flex;gap:8px;flex-shrink:0;align-items:center}
+
+/* ── BUTTONS ── */
+.btn{padding:7px 16px;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-family:'Noto Sans JP',sans-serif;display:inline-flex;align-items:center;gap:5px;transition:all .15s;white-space:nowrap}
+.btn:hover{border-color:#999;color:var(--ink)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-h);border-color:var(--accent-h);color:#fff}
+.btn-green{background:var(--green-l);color:#fff;border-color:var(--green-l)}
+.btn-green:hover{background:var(--green);border-color:var(--green);color:#fff}
+.btn-sm{padding:4px 10px;font-size:11px}
+.btn-danger{color:var(--red);border-color:#fca5a5}
+.btn-danger:hover{background:#fee2e2;color:var(--red)}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px}
+.card-title{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:12px}
+
+/* ── KPI ROW ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--surface);border:1px solid var(--border);border-top:3px solid var(--accent);border-radius:8px;padding:14px 16px}
+.kpi.kp-g{border-top-color:var(--green-l)}
+.kpi.kp-o{border-top-color:var(--orange)}
+.kpi.kp-r{border-top-color:var(--red)}
+.kpi-lbl{font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-family:'DM Mono',monospace;margin-bottom:4px}
+.kpi-val{font-size:26px;font-weight:700;color:var(--ink);line-height:1.1}
+.kpi-unit{font-size:12px;font-weight:400}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:'DM Mono',monospace}
+
+/* ── TABS (sub) ── */
+.stabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.stabs button{padding:9px 18px;font-size:12px;font-weight:600;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-family:'Noto Sans JP',sans-serif;transition:color .15s}
+.stabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+.stabs button:hover:not(.on){color:var(--ink)}
+
+/* ── ISSUE TABLE ── */
+.itable{width:100%;border-collapse:collapse;font-size:13px}
+.itable th{padding:8px 10px;border-bottom:2px solid var(--border);font-size:10px;font-weight:700;color:var(--muted);text-align:left;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace}
+.itable td{padding:10px 10px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.6}
+.itable tr:last-child td{border-bottom:none}
+.itable tr:hover td{background:rgba(18,65,197,.03)}
+.itable .pri{width:8px;height:8px;border-radius:50%;display:inline-block;flex-shrink:0;margin-top:5px}
+.pri-h{background:#ef4444}.pri-m{background:#f97316}.pri-l{background:#94a3b8}
+
+/* ── STATUS BADGE ── */
+.sbadge{display:inline-block;padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+.sb-open{background:var(--tag-open);color:var(--tag-open-c)}
+.sb-ip{background:var(--tag-ip);color:var(--tag-ip-c)}
+.sb-done{background:var(--tag-done);color:var(--tag-done-c)}
+.sb-risk{background:var(--tag-risk);color:var(--tag-risk-c)}
+
+/* ── MEETING LIST ── */
+.mlist{display:flex;flex-direction:column;gap:12px}
+.mcard{background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 8px 8px 0;padding:14px 18px;cursor:pointer;transition:box-shadow .15s}
+.mcard:hover{box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.mcard-hdr{display:flex;align-items:center;gap:12px;margin-bottom:6px}
+.mcard-date{font-size:11px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace;white-space:nowrap}
+.mcard-title{font-size:13px;font-weight:700;color:var(--ink)}
+.mcard-body{font-size:12px;color:var(--muted);white-space:pre-line;line-height:1.8}
+.mcard-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+
+/* ── PROPOSAL BOARD ── */
+.pboard{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pcol-hdr{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:'DM Mono',monospace;padding:0 4px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.pcard{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px 14px;margin-bottom:8px}
+.pcard-title{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:6px}
+.pcard-meta{font-size:11px;color:var(--muted);line-height:1.7}
+.pcard-actions{display:flex;gap:6px;margin-top:8px}
+
+/* ── MODAL / OVERLAY ── */
+.ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300}
+.ov.on{display:block}
+.modal{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:560px;max-height:88vh;overflow-y:auto;background:#fff;border-radius:10px;z-index:301;box-shadow:0 12px 50px rgba(0,0,0,.25)}
+.modal.on{display:block}
+.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1}
+.modal-hdr h3{font-size:14px;font-weight:700}
+.modal-close{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);line-height:1;padding:0}
+.modal-body{padding:20px}
+.modal-foot{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;position:sticky;bottom:0;background:#fff}
+
+/* ── FORM ── */
+.fr{margin-bottom:12px}
+.fr label{display:block;font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.03em}
+.fr input,.fr textarea,.fr select{width:100%;padding:7px 10px;border:1px solid var(--border);border-radius:5px;font-size:13px;font-family:'Noto Sans JP',sans-serif;background:#fafafa;color:var(--ink);transition:border .15s}
+.fr input:focus,.fr textarea:focus,.fr select:focus{outline:none;border-color:var(--accent);background:#fff}
+.fr textarea{resize:vertical;line-height:1.6}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:28px;right:28px;background:var(--dark);color:#fff;padding:10px 20px;border-radius:6px;font-size:12px;font-weight:600;z-index:400;opacity:0;transform:translateY(8px);transition:all .2s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+
+/* ── OVERVIEW ── */
+.ov-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.info-row{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;font-size:13px}
+.info-row .lbl{font-size:10px;font-weight:700;color:var(--muted);font-family:'DM Mono',monospace;min-width:80px;flex-shrink:0}
+.info-row .val{color:var(--ink)}
+.timeline{position:relative;padding-left:20px}
+.timeline::before{content:'';position:absolute;left:5px;top:4px;bottom:4px;width:2px;background:var(--border)}
+.tl-item{position:relative;margin-bottom:14px}
+.tl-dot{position:absolute;left:-18px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--accent);border:2px solid #fff;box-shadow:0 0 0 1px var(--accent)}
+.tl-date{font-size:10px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px}
+.tl-text{font-size:13px;color:var(--ink);line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a class="tb-logo" href="index.html">
+    <div class="tb-logo-mark">SY</div>
+    <span>SY-LINK</span>
+  </a>
+  <nav class="tb-nav">
+    <a href="index.html">🏠 ポータル</a>
+    <a href="#" onclick="showPage('overview')" id="nav-overview" class="on">概要</a>
+    <a href="#" onclick="showPage('issues')" id="nav-issues">課題管理</a>
+    <a href="#" onclick="showPage('proposals')" id="nav-proposals">施策進捗</a>
+    <a href="#" onclick="showPage('meetings')" id="nav-meetings">定例記録</a>
+  </nav>
+  <div class="tb-client">
+    <strong>コンサルティング</strong>
+    <span>／ 青和飲料株式会社</span>
+  </div>
+</div>
+
+<!-- WRAP -->
+<div class="wrap">
+
+<!-- ════════ PAGE: 概要 ════════ -->
+<div class="page on" id="page-overview">
+  <div class="phdr">
+    <div class="phdr-left">
+      <h1>青和飲料株式会社 — コンサルDB</h1>
+      <p id="ov-updated">最終更新：—</p>
+    </div>
+    <div class="phdr-actions">
+      <button class="btn btn-green" onclick="exportHtml()">☁️ GitHubに保存</button>
+      <button class="btn" onclick="openClientEdit()">✏️ 基本情報を編集</button>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row" id="kpi-row">
+    <div class="kpi"><div class="kpi-lbl">契約フェーズ</div><div class="kpi-val" id="kpi-phase" style="font-size:18px">—</div></div>
+    <div class="kpi kp-o"><div class="kpi-lbl">未解決課題</div><div class="kpi-val"><span id="kpi-open-issues">0</span><span class="kpi-unit"> 件</span></div><div class="kpi-sub" id="kpi-risk-issues">うちリスク 0件</div></div>
+    <div class="kpi kp-g"><div class="kpi-lbl">施策完了率</div><div class="kpi-val"><span id="kpi-proposal-rate">0</span><span class="kpi-unit"> %</span></div><div class="kpi-sub" id="kpi-proposal-sub">0 / 0 件完了</div></div>
+    <div class="kpi"><div class="kpi-lbl">月次フィー</div><div class="kpi-val" id="kpi-fee" style="font-size:18px">—</div></div>
+  </div>
+
+  <div class="ov-grid">
+    <!-- 基本情報 -->
+    <div class="card">
+      <div class="card-title">基本情報</div>
+      <div id="client-info">
+        <div class="info-row"><span class="lbl">会社名</span><span class="val" id="ci-name">青和飲料株式会社</span></div>
+        <div class="info-row"><span class="lbl">担当者</span><span class="val" id="ci-contact">—</span></div>
+        <div class="info-row"><span class="lbl">部署</span><span class="val" id="ci-dept">—</span></div>
+        <div class="info-row"><span class="lbl">SYL担当</span><span class="val" id="ci-syl">—</span></div>
+        <div class="info-row"><span class="lbl">契約開始</span><span class="val" id="ci-start">—</span></div>
+        <div class="info-row"><span class="lbl">月次フィー</span><span class="val" id="ci-fee2">—</span></div>
+        <div class="info-row"><span class="lbl">契約内容</span><span class="val" id="ci-scope" style="line-height:1.7">—</span></div>
+      </div>
+    </div>
+    <!-- タイムライン -->
+    <div class="card">
+      <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+        プロジェクト概要・経緯
+        <button class="btn btn-sm" onclick="openMemoEdit()">✏️ 編集</button>
+      </div>
+      <div class="timeline" id="timeline-area">
+        <div class="tl-item"><div class="tl-dot"></div><div class="tl-date">—</div><div class="tl-text" style="color:var(--muted);font-style:italic">まだ記録がありません</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 直近の課題サマリ -->
+  <div class="card" style="margin-top:0">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+      直近の課題（上位5件）
+      <a href="#" onclick="showPage('issues')" style="font-size:11px;color:var(--accent);text-decoration:none;font-weight:600">すべて見る →</a>
+    </div>
+    <table class="itable" id="ov-issue-table">
+      <thead><tr><th></th><th>課題</th><th>カテゴリ</th><th>ステータス</th><th>担当</th></tr></thead>
+      <tbody id="ov-issue-tbody"><tr><td colspan="5" style="color:var(--muted);font-style:italic;padding:16px">課題はまだ登録されていません</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════ PAGE: 課題管理 ════════ -->
+<div class="page" id="page-issues">
+  <div class="phdr">
+    <div class="phdr-left">
+      <h1>課題管理</h1>
+      <p>ヒアリング・発見事項・アクションアイテムを一元管理</p>
+    </div>
+    <div class="phdr-actions">
+      <button class="btn btn-primary" onclick="openIssueEdit(-1)">＋ 課題を追加</button>
+      <button class="btn btn-green" onclick="exportHtml()">☁️ GitHubに保存</button>
+    </div>
+  </div>
+
+  <div class="stabs" id="issue-filter-tabs">
+    <button class="on" onclick="filterIssues('all',this)">すべて</button>
+    <button onclick="filterIssues('open',this)">未対応</button>
+    <button onclick="filterIssues('in-progress',this)">対応中</button>
+    <button onclick="filterIssues('risk',this)">リスク</button>
+    <button onclick="filterIssues('done',this)">完了</button>
+  </div>
+
+  <div class="card" style="padding:0;overflow:hidden">
+    <table class="itable" id="issue-table">
+      <thead><tr><th style="width:8px"></th><th>課題・アクションアイテム</th><th>カテゴリ</th><th>発生日</th><th>期限</th><th>担当</th><th>ステータス</th><th></th></tr></thead>
+      <tbody id="issue-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ════════ PAGE: 施策進捗 ════════ -->
+<div class="page" id="page-proposals">
+  <div class="phdr">
+    <div class="phdr-left">
+      <h1>施策進捗</h1>
+      <p>提案・改善施策のステータスをボードで管理</p>
+    </div>
+    <div class="phdr-actions">
+      <button class="btn btn-primary" onclick="openProposalEdit(-1)">＋ 施策を追加</button>
+      <button class="btn btn-green" onclick="exportHtml()">☁️ GitHubに保存</button>
+    </div>
+  </div>
+  <div class="pboard">
+    <div>
+      <div class="pcol-hdr">提案済<span id="cnt-proposed" style="background:#e2e8f0;padding:1px 7px;border-radius:10px;font-size:10px">0</span></div>
+      <div id="col-proposed"></div>
+    </div>
+    <div>
+      <div class="pcol-hdr">進行中<span id="cnt-wip" style="background:#fef9c3;padding:1px 7px;border-radius:10px;font-size:10px">0</span></div>
+      <div id="col-wip"></div>
+    </div>
+    <div>
+      <div class="pcol-hdr">完了<span id="cnt-done" style="background:#dcfce7;padding:1px 7px;border-radius:10px;font-size:10px">0</span></div>
+      <div id="col-done"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ PAGE: 定例記録 ════════ -->
+<div class="page" id="page-meetings">
+  <div class="phdr">
+    <div class="phdr-left">
+      <h1>定例会記録</h1>
+      <p>議事録・決定事項・ネクストアクション</p>
+    </div>
+    <div class="phdr-actions">
+      <button class="btn btn-primary" onclick="openMeetingEdit(-1)">＋ 記録を追加</button>
+      <button class="btn btn-green" onclick="exportHtml()">☁️ GitHubに保存</button>
+    </div>
+  </div>
+  <div class="mlist" id="meeting-list"></div>
+</div>
+
+</div><!-- /wrap -->
+
+<!-- ══ MODAL: 基本情報編集 ══ -->
+<div class="ov" id="ov-client" onclick="closeModal('client')"></div>
+<div class="modal" id="modal-client">
+  <div class="modal-hdr"><h3>基本情報を編集</h3><button class="modal-close" onclick="closeModal('client')">✕</button></div>
+  <div class="modal-body">
+    <div class="g2">
+      <div class="fr"><label>担当者名</label><input id="mc-contact" placeholder="例：山田 太郎"></div>
+      <div class="fr"><label>部署</label><input id="mc-dept" placeholder="例：物流部"></div>
+    </div>
+    <div class="g2">
+      <div class="fr"><label>SYL担当者</label><input id="mc-syl" placeholder="例：赤倉 司"></div>
+      <div class="fr"><label>契約フェーズ</label>
+        <select id="mc-phase">
+          <option>ヒアリング中</option><option>提案中</option><option>契約交渉中</option>
+          <option>実行中</option><option>効果測定中</option><option>継続更新</option><option>完了</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fr"><label>契約開始日</label><input id="mc-start" type="date"></div>
+      <div class="fr"><label>月次フィー</label><input id="mc-fee" placeholder="例：300,000円"></div>
+    </div>
+    <div class="fr"><label>契約内容・スコープ</label><textarea id="mc-scope" rows="3" placeholder="例：物流コスト削減コンサルティング（月2回定例、報告書作成含む）"></textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" onclick="closeModal('client')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveClient()">保存</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: 概要メモ編集 ══ -->
+<div class="ov" id="ov-memo" onclick="closeModal('memo')"></div>
+<div class="modal" id="modal-memo">
+  <div class="modal-hdr"><h3>プロジェクト概要・経緯を編集</h3><button class="modal-close" onclick="closeModal('memo')">✕</button></div>
+  <div class="modal-body">
+    <div class="fr"><label>テキスト（1行ずつタイムラインに表示。日付：内容 形式で書くと見やすい）</label>
+      <textarea id="mm-text" rows="10" placeholder="2026/04/01：初回ヒアリング実施&#10;2026/04/15：課題整理レポート提出&#10;2026/05/01：コンサル契約締結"></textarea>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" onclick="closeModal('memo')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveMemo()">保存</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: 課題編集 ══ -->
+<div class="ov" id="ov-issue" onclick="closeModal('issue')"></div>
+<div class="modal" id="modal-issue">
+  <div class="modal-hdr"><h3 id="issue-modal-ttl">課題を追加</h3><button class="modal-close" onclick="closeModal('issue')">✕</button></div>
+  <div class="modal-body">
+    <div class="fr"><label>課題・アクションアイテム</label><input id="mi-title" placeholder="例：配送リードタイムが競合比20%長い"></div>
+    <div class="g2">
+      <div class="fr"><label>カテゴリ</label>
+        <select id="mi-cat">
+          <option>物流効率化</option><option>コスト削減</option><option>品質改善</option>
+          <option>人員・体制</option><option>システム</option><option>顧客対応</option><option>その他</option>
+        </select>
+      </div>
+      <div class="fr"><label>優先度</label>
+        <select id="mi-pri">
+          <option value="h">高</option><option value="m" selected>中</option><option value="l">低</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fr"><label>発生日</label><input id="mi-date" type="date"></div>
+      <div class="fr"><label>対応期限</label><input id="mi-due" type="date"></div>
+    </div>
+    <div class="g2">
+      <div class="fr"><label>担当者</label><input id="mi-owner" placeholder="例：赤倉"></div>
+      <div class="fr"><label>ステータス</label>
+        <select id="mi-status">
+          <option value="open">未対応</option><option value="in-progress">対応中</option>
+          <option value="risk">リスク</option><option value="done">完了</option>
+        </select>
+      </div>
+    </div>
+    <div class="fr"><label>詳細・メモ</label><textarea id="mi-detail" rows="3" placeholder="ヒアリング内容・背景・詳細を記入"></textarea></div>
+    <div class="fr"><label>対応方針・ネクストアクション</label><textarea id="mi-action" rows="2" placeholder="次に何をするか"></textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" onclick="closeModal('issue')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveIssue()">保存</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: 施策編集 ══ -->
+<div class="ov" id="ov-proposal" onclick="closeModal('proposal')"></div>
+<div class="modal" id="modal-proposal">
+  <div class="modal-hdr"><h3 id="proposal-modal-ttl">施策を追加</h3><button class="modal-close" onclick="closeModal('proposal')">✕</button></div>
+  <div class="modal-body">
+    <div class="fr"><label>施策タイトル</label><input id="mp-title" placeholder="例：ルート最適化による配送コスト削減"></div>
+    <div class="g2">
+      <div class="fr"><label>カテゴリ</label>
+        <select id="mp-cat">
+          <option>物流効率化</option><option>コスト削減</option><option>品質改善</option>
+          <option>人員・体制</option><option>システム</option><option>その他</option>
+        </select>
+      </div>
+      <div class="fr"><label>ステータス</label>
+        <select id="mp-status">
+          <option value="proposed">提案済</option><option value="wip">進行中</option><option value="done">完了</option>
+        </select>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="fr"><label>担当者</label><input id="mp-owner" placeholder="例：赤倉"></div>
+      <div class="fr"><label>期待効果</label><input id="mp-effect" placeholder="例：月間50万円削減"></div>
+    </div>
+    <div class="fr"><label>内容・進捗メモ</label><textarea id="mp-detail" rows="3"></textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" onclick="closeModal('proposal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveProposal()">保存</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: 定例記録編集 ══ -->
+<div class="ov" id="ov-meeting" onclick="closeModal('meeting')"></div>
+<div class="modal" id="modal-meeting">
+  <div class="modal-hdr"><h3 id="meeting-modal-ttl">定例記録を追加</h3><button class="modal-close" onclick="closeModal('meeting')">✕</button></div>
+  <div class="modal-body">
+    <div class="g2">
+      <div class="fr"><label>開催日</label><input id="mm2-date" type="date"></div>
+      <div class="fr"><label>回数・タイトル</label><input id="mm2-title" placeholder="例：第1回 初回ヒアリング"></div>
+    </div>
+    <div class="fr"><label>参加者</label><input id="mm2-members" placeholder="例：成沢、赤倉 / 青和：山田部長、佐藤課長"></div>
+    <div class="fr"><label>議題・報告内容</label><textarea id="mm2-agenda" rows="4" placeholder="・物流コスト現状ヒアリング&#10;・配送ルート確認&#10;・改善提案概要の説明"></textarea></div>
+    <div class="fr"><label>決定事項・合意内容</label><textarea id="mm2-decisions" rows="3" placeholder="・来月までに現状データを共有いただく&#10;・次回は具体的な改善案を提示する"></textarea></div>
+    <div class="fr"><label>ネクストアクション（NA）</label><textarea id="mm2-na" rows="3" placeholder="【SYL】調査レポート作成（担当：赤倉、期限：5/20）&#10;【青和】配送実績データ提供（担当：山田、期限：5/15）"></textarea></div>
+    <div class="fr"><label>備考・課題メモ</label><textarea id="mm2-note" rows="2"></textarea></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn" onclick="closeModal('meeting')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveMeeting()">保存</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">保存しました</div>
+
+<script>
+// ══════════════════════════════════════════════════
+// DB
+// ══════════════════════════════════════════════════
+let DB = {
+  client: {
+    name: "青和飲料株式会社",
+    contact: "",
+    dept: "",
+    syl: "",
+    phase: "ヒアリング中",
+    start: "",
+    fee: "",
+    scope: ""
+  },
+  memo: "",
+  issues: [],
+  proposals: [],
+  meetings: []
+};
+
+let _issueIdx = -1, _proposalIdx = -1, _meetingIdx = -1;
+let _issueFilter = 'all';
+
+// ══════════════════════════════════════════════════
+// PAGE NAVIGATION
+// ══════════════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.querySelectorAll('.tb-nav a').forEach(a => a.classList.remove('on'));
+  document.getElementById('page-' + id).classList.add('on');
+  document.getElementById('nav-' + id).classList.add('on');
+  if (id === 'overview') renderOverview();
+  if (id === 'issues')   renderIssues();
+  if (id === 'proposals') renderProposals();
+  if (id === 'meetings') renderMeetings();
+  return false;
+}
+
+// ══════════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════════
+function renderAll() {
+  renderOverview();
+  renderIssues();
+  renderProposals();
+  renderMeetings();
+}
+
+function renderOverview() {
+  const c = DB.client;
+  document.getElementById('ci-name').textContent    = c.name || '青和飲料株式会社';
+  document.getElementById('ci-contact').textContent = c.contact || '—';
+  document.getElementById('ci-dept').textContent    = c.dept    || '—';
+  document.getElementById('ci-syl').textContent     = c.syl     || '—';
+  document.getElementById('ci-start').textContent   = c.start   || '—';
+  document.getElementById('ci-fee2').textContent    = c.fee     || '—';
+  document.getElementById('ci-scope').innerHTML     = (c.scope||'—').replace(/\n/g,'<br>');
+  document.getElementById('kpi-phase').textContent  = c.phase   || '—';
+  document.getElementById('kpi-fee').textContent    = c.fee     || '—';
+
+  // issue KPIs
+  const open = DB.issues.filter(x => x.status !== 'done');
+  const risk = DB.issues.filter(x => x.status === 'risk');
+  document.getElementById('kpi-open-issues').textContent = open.length;
+  document.getElementById('kpi-risk-issues').textContent = `うちリスク ${risk.length}件`;
+
+  // proposal KPIs
+  const done = DB.proposals.filter(x => x.status === 'done').length;
+  const total = DB.proposals.length;
+  const rate = total > 0 ? Math.round(done / total * 100) : 0;
+  document.getElementById('kpi-proposal-rate').textContent = rate;
+  document.getElementById('kpi-proposal-sub').textContent = `${done} / ${total} 件完了`;
+
+  // timeline
+  const tl = document.getElementById('timeline-area');
+  if (!DB.memo || !DB.memo.trim()) {
+    tl.innerHTML = '<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">—</div><div class="tl-text" style="color:var(--muted);font-style:italic">まだ記録がありません</div></div>';
+  } else {
+    tl.innerHTML = DB.memo.split('\n').filter(l=>l.trim()).map(l => {
+      const m = l.match(/^([^：:]+)[：:](.+)$/);
+      if (m) return `<div class="tl-item"><div class="tl-dot"></div><div class="tl-date">${m[1].trim()}</div><div class="tl-text">${m[2].trim()}</div></div>`;
+      return `<div class="tl-item"><div class="tl-dot"></div><div class="tl-text">${l}</div></div>`;
+    }).join('');
+  }
+
+  // overview issue table (top 5 open)
+  const top = DB.issues.filter(x=>x.status!=='done').slice(0,5);
+  const tbody = document.getElementById('ov-issue-tbody');
+  tbody.innerHTML = top.length === 0
+    ? '<tr><td colspan="5" style="color:var(--muted);font-style:italic;padding:16px">課題はまだ登録されていません</td></tr>'
+    : top.map((x,i) => `<tr>
+        <td><span class="pri pri-${x.priority}" style="display:inline-block"></span></td>
+        <td>${x.title}</td>
+        <td><span style="font-size:11px;color:var(--muted)">${x.category}</span></td>
+        <td>${statusBadge(x.status)}</td>
+        <td style="font-size:12px;color:var(--muted)">${x.owner||'—'}</td>
+      </tr>`).join('');
+}
+
+function renderIssues() {
+  const tbody = document.getElementById('issue-tbody');
+  let list = DB.issues;
+  if (_issueFilter !== 'all') list = list.filter(x => x.status === _issueFilter);
+  tbody.innerHTML = list.length === 0
+    ? `<tr><td colspan="8" style="color:var(--muted);font-style:italic;padding:20px">課題がありません　<button class="btn btn-sm" onclick="openIssueEdit(-1)">＋ 追加</button></td></tr>`
+    : list.map((x, i) => {
+        const realIdx = DB.issues.indexOf(x);
+        return `<tr>
+          <td style="padding:10px 8px"><span class="pri pri-${x.priority}" style="display:inline-block"></span></td>
+          <td>
+            <div style="font-weight:600;margin-bottom:2px">${x.title}</div>
+            ${x.detail?`<div style="font-size:11px;color:var(--muted);line-height:1.5">${x.detail.slice(0,60)}${x.detail.length>60?'…':''}</div>`:''}
+          </td>
+          <td style="white-space:nowrap"><span style="font-size:11px;color:var(--muted)">${x.category}</span></td>
+          <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${x.date||'—'}</td>
+          <td style="white-space:nowrap;font-size:12px;${x.due&&x.due<today()?'color:var(--red);font-weight:600':''}">${x.due||'—'}</td>
+          <td style="white-space:nowrap;font-size:12px;color:var(--muted)">${x.owner||'—'}</td>
+          <td>${statusBadge(x.status)}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn-sm" onclick="openIssueEdit(${realIdx})" style="margin-bottom:3px;display:block">編集</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteIssue(${realIdx})">削除</button>
+          </td>
+        </tr>`;
+      }).join('');
+}
+
+function renderProposals() {
+  const cols = {proposed: 'col-proposed', wip: 'col-wip', done: 'col-done'};
+  const cnts = {proposed:0, wip:0, done:0};
+  Object.keys(cols).forEach(s => document.getElementById(cols[s]).innerHTML = '');
+  DB.proposals.forEach((p, i) => {
+    const s = p.status || 'proposed';
+    cnts[s] = (cnts[s]||0) + 1;
+    const col = document.getElementById(cols[s]);
+    if (!col) return;
+    col.innerHTML += `<div class="pcard">
+      <div class="pcard-title">${p.title}</div>
+      <div class="pcard-meta">
+        <span style="font-size:10px;background:#e2e8f0;padding:1px 6px;border-radius:3px">${p.category}</span>
+        ${p.effect?`<span style="margin-left:6px;color:var(--green)">💡 ${p.effect}</span>`:''}
+        <br>担当：${p.owner||'—'}
+        ${p.detail?`<br><span style="font-size:11px;color:var(--muted)">${p.detail.slice(0,60)}${p.detail.length>60?'…':''}</span>`:''}
+      </div>
+      <div class="pcard-actions">
+        <button class="btn btn-sm" onclick="openProposalEdit(${i})">編集</button>
+        ${s!=='done'?`<button class="btn btn-sm" style="color:var(--green);border-color:#bbf7d0" onclick="moveProposal(${i},'${s==='proposed'?'wip':'done'}')">→ ${s==='proposed'?'進行中へ':'完了へ'}</button>`:''}
+        <button class="btn btn-sm btn-danger" onclick="deleteProposal(${i})">削除</button>
+      </div>
+    </div>`;
+  });
+  Object.keys(cnts).forEach(s => {
+    const el = document.getElementById('cnt-' + (s==='proposed'?'proposed':s==='wip'?'wip':'done'));
+    if (el) el.textContent = cnts[s];
+  });
+}
+
+function renderMeetings() {
+  const el = document.getElementById('meeting-list');
+  if (DB.meetings.length === 0) {
+    el.innerHTML = '<div style="color:var(--muted);font-style:italic;padding:24px 0">定例記録がありません</div>';
+    return;
+  }
+  el.innerHTML = [...DB.meetings].reverse().map((m, ri) => {
+    const i = DB.meetings.length - 1 - ri;
+    return `<div class="mcard" onclick="toggleMeeting(this)">
+      <div class="mcard-hdr">
+        <span class="mcard-date">${m.date||'—'}</span>
+        <span class="mcard-title">${m.title||'定例会'}</span>
+        <span style="margin-left:auto;font-size:11px;color:var(--muted)">${m.members||''}</span>
+        <button class="btn btn-sm" style="margin-left:12px" onclick="event.stopPropagation();openMeetingEdit(${i})">編集</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteMeeting(${i})">削除</button>
+      </div>
+      <div class="mcard-detail" style="display:none;margin-top:10px">
+        ${m.agenda?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">議題・報告</div><div class="mcard-body">${m.agenda}</div></div>`:''}
+        ${m.decisions?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">決定事項</div><div class="mcard-body">${m.decisions}</div></div>`:''}
+        ${m.na?`<div style="margin-bottom:10px"><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">ネクストアクション</div><div class="mcard-body">${m.na}</div></div>`:''}
+        ${m.note?`<div><div style="font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em">備考</div><div class="mcard-body">${m.note}</div></div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleMeeting(el) {
+  const d = el.querySelector('.mcard-detail');
+  d.style.display = d.style.display === 'none' ? 'block' : 'none';
+}
+
+// ══════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════
+function statusBadge(s) {
+  const map = {open:'sb-open',未対応:'sb-open','in-progress':'sb-ip',対応中:'sb-ip',risk:'sb-risk',リスク:'sb-risk',done:'sb-done',完了:'sb-done'};
+  const lbl = {open:'未対応','in-progress':'対応中',risk:'リスク',done:'完了'};
+  return `<span class="sbadge ${map[s]||'sb-open'}">${lbl[s]||s}</span>`;
+}
+function today() { return new Date().toISOString().slice(0,10); }
+function filterIssues(f, btn) {
+  _issueFilter = f;
+  document.querySelectorAll('#issue-filter-tabs button').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderIssues();
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg || '保存しました';
+  t.classList.add('on');
+  setTimeout(() => t.classList.remove('on'), 2000);
+}
+
+// ══════════════════════════════════════════════════
+// MODAL OPEN/CLOSE
+// ══════════════════════════════════════════════════
+function openModal(id) {
+  document.getElementById('ov-'+id).classList.add('on');
+  document.getElementById('modal-'+id).classList.add('on');
+}
+function closeModal(id) {
+  document.getElementById('ov-'+id).classList.remove('on');
+  document.getElementById('modal-'+id).classList.remove('on');
+}
+
+// ── Client ──
+function openClientEdit() {
+  const c = DB.client;
+  document.getElementById('mc-contact').value = c.contact||'';
+  document.getElementById('mc-dept').value    = c.dept   ||'';
+  document.getElementById('mc-syl').value     = c.syl    ||'';
+  document.getElementById('mc-phase').value   = c.phase  ||'ヒアリング中';
+  document.getElementById('mc-start').value   = c.start  ||'';
+  document.getElementById('mc-fee').value     = c.fee    ||'';
+  document.getElementById('mc-scope').value   = c.scope  ||'';
+  openModal('client');
+}
+function saveClient() {
+  DB.client.contact = document.getElementById('mc-contact').value.trim();
+  DB.client.dept    = document.getElementById('mc-dept').value.trim();
+  DB.client.syl     = document.getElementById('mc-syl').value.trim();
+  DB.client.phase   = document.getElementById('mc-phase').value;
+  DB.client.start   = document.getElementById('mc-start').value;
+  DB.client.fee     = document.getElementById('mc-fee').value.trim();
+  DB.client.scope   = document.getElementById('mc-scope').value.trim();
+  closeModal('client'); renderOverview(); toast();
+}
+
+// ── Memo ──
+function openMemoEdit() {
+  document.getElementById('mm-text').value = DB.memo || '';
+  openModal('memo');
+}
+function saveMemo() {
+  DB.memo = document.getElementById('mm-text').value;
+  closeModal('memo'); renderOverview(); toast();
+}
+
+// ── Issue ──
+function openIssueEdit(idx) {
+  _issueIdx = idx;
+  const x = idx >= 0 ? DB.issues[idx] : {title:'',category:'物流効率化',priority:'m',date:'',due:'',owner:'',status:'open',detail:'',action:''};
+  document.getElementById('issue-modal-ttl').textContent = idx >= 0 ? '課題を編集' : '課題を追加';
+  document.getElementById('mi-title').value  = x.title   ||'';
+  document.getElementById('mi-cat').value    = x.category||'物流効率化';
+  document.getElementById('mi-pri').value    = x.priority||'m';
+  document.getElementById('mi-date').value   = x.date    ||'';
+  document.getElementById('mi-due').value    = x.due     ||'';
+  document.getElementById('mi-owner').value  = x.owner   ||'';
+  document.getElementById('mi-status').value = x.status  ||'open';
+  document.getElementById('mi-detail').value = x.detail  ||'';
+  document.getElementById('mi-action').value = x.action  ||'';
+  openModal('issue');
+}
+function saveIssue() {
+  const x = {
+    title:    document.getElementById('mi-title').value.trim(),
+    category: document.getElementById('mi-cat').value,
+    priority: document.getElementById('mi-pri').value,
+    date:     document.getElementById('mi-date').value,
+    due:      document.getElementById('mi-due').value,
+    owner:    document.getElementById('mi-owner').value.trim(),
+    status:   document.getElementById('mi-status').value,
+    detail:   document.getElementById('mi-detail').value.trim(),
+    action:   document.getElementById('mi-action').value.trim()
+  };
+  if (!x.title) { alert('課題名を入力してください'); return; }
+  if (_issueIdx >= 0) DB.issues[_issueIdx] = x; else DB.issues.push(x);
+  closeModal('issue'); renderAll(); toast('課題を保存しました');
+}
+function deleteIssue(idx) {
+  if (!confirm('この課題を削除しますか？')) return;
+  DB.issues.splice(idx, 1); renderAll();
+}
+
+// ── Proposal ──
+function openProposalEdit(idx) {
+  _proposalIdx = idx;
+  const p = idx >= 0 ? DB.proposals[idx] : {title:'',category:'物流効率化',status:'proposed',owner:'',effect:'',detail:''};
+  document.getElementById('proposal-modal-ttl').textContent = idx >= 0 ? '施策を編集' : '施策を追加';
+  document.getElementById('mp-title').value  = p.title   ||'';
+  document.getElementById('mp-cat').value    = p.category||'物流効率化';
+  document.getElementById('mp-status').value = p.status  ||'proposed';
+  document.getElementById('mp-owner').value  = p.owner   ||'';
+  document.getElementById('mp-effect').value = p.effect  ||'';
+  document.getElementById('mp-detail').value = p.detail  ||'';
+  openModal('proposal');
+}
+function saveProposal() {
+  const p = {
+    title:    document.getElementById('mp-title').value.trim(),
+    category: document.getElementById('mp-cat').value,
+    status:   document.getElementById('mp-status').value,
+    owner:    document.getElementById('mp-owner').value.trim(),
+    effect:   document.getElementById('mp-effect').value.trim(),
+    detail:   document.getElementById('mp-detail').value.trim()
+  };
+  if (!p.title) { alert('施策タイトルを入力してください'); return; }
+  if (_proposalIdx >= 0) DB.proposals[_proposalIdx] = p; else DB.proposals.push(p);
+  closeModal('proposal'); renderAll(); toast('施策を保存しました');
+}
+function moveProposal(idx, status) {
+  DB.proposals[idx].status = status; renderProposals();
+}
+function deleteProposal(idx) {
+  if (!confirm('この施策を削除しますか？')) return;
+  DB.proposals.splice(idx, 1); renderAll();
+}
+
+// ── Meeting ──
+function openMeetingEdit(idx) {
+  _meetingIdx = idx;
+  const m = idx >= 0 ? DB.meetings[idx] : {date:'',title:'',members:'',agenda:'',decisions:'',na:'',note:''};
+  document.getElementById('meeting-modal-ttl').textContent = idx >= 0 ? '定例記録を編集' : '定例記録を追加';
+  document.getElementById('mm2-date').value    = m.date     ||'';
+  document.getElementById('mm2-title').value   = m.title    ||'';
+  document.getElementById('mm2-members').value = m.members  ||'';
+  document.getElementById('mm2-agenda').value  = m.agenda   ||'';
+  document.getElementById('mm2-decisions').value = m.decisions||'';
+  document.getElementById('mm2-na').value      = m.na       ||'';
+  document.getElementById('mm2-note').value    = m.note     ||'';
+  openModal('meeting');
+}
+function saveMeeting() {
+  const m = {
+    date:      document.getElementById('mm2-date').value,
+    title:     document.getElementById('mm2-title').value.trim(),
+    members:   document.getElementById('mm2-members').value.trim(),
+    agenda:    document.getElementById('mm2-agenda').value.trim(),
+    decisions: document.getElementById('mm2-decisions').value.trim(),
+    na:        document.getElementById('mm2-na').value.trim(),
+    note:      document.getElementById('mm2-note').value.trim()
+  };
+  if (_meetingIdx >= 0) DB.meetings[_meetingIdx] = m; else DB.meetings.push(m);
+  DB.meetings.sort((a,b) => (a.date||'').localeCompare(b.date||''));
+  closeModal('meeting'); renderAll(); toast('定例記録を保存しました');
+}
+function deleteMeeting(idx) {
+  if (!confirm('この記録を削除しますか？')) return;
+  DB.meetings.splice(idx, 1); renderAll();
+}
+
+// ══════════════════════════════════════════════════
+// EXPORT (GitHub保存)
+// ══════════════════════════════════════════════════
+async function exportHtml() {
+  const btn = document.querySelector('.btn-green');
+  const orig = btn.textContent;
+  btn.textContent = '保存中...'; btn.disabled = true;
+
+  const dbJson = JSON.stringify(DB, null, 2);
+  const html = document.documentElement.outerHTML
+    .replace(/let DB = \{[\s\S]*?\};\s*\n\n/, 'let DB = ' + dbJson + ';\n\n');
+
+  const PAT   = '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';
+  const OWNER = 'SYL-member';
+  const REPO  = 'internal-dashboard';
+  const PATH  = 'consul-seiwa.html';
+  const API   = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+  const heads = {'Authorization':'token '+PAT,'Content-Type':'application/json'};
+
+  try {
+    const r1 = await fetch(API, {headers: heads});
+    const j1 = await r1.json();
+    const sha = j1.sha;
+    const now = new Date().toLocaleString('ja-JP',{timeZone:'Asia/Tokyo'});
+    const body = JSON.stringify({message:`update: consul-seiwa ${now}`, content: btoa(unescape(encodeURIComponent(html))), sha});
+    const r2 = await fetch(API, {method:'PUT', headers: heads, body});
+    if (!r2.ok) throw new Error(await r2.text());
+    toast('GitHubに保存しました ✓');
+    document.getElementById('ov-updated').textContent = `最終更新：${now}`;
+  } catch(e) {
+    alert('保存失敗: ' + e.message);
+  } finally {
+    btn.textContent = orig; btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+renderAll();
+</script>
+</body></html>
