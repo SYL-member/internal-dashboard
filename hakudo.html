@@ -650,7 +650,7 @@ let DB = {
       "routes": {
         "23": {
           "curr": 15897,
-          "prev": 99999
+          "prev": 0
         },
         "35": {
           "curr": 23069,
@@ -1229,7 +1229,16 @@ function handleExcelUpload(input) {
         handleSourceExcel(wb); return;
       }
       if (!sheetNames.includes('物量')) {
-        alert('対応するシートが見つかりません。\n・請求書Excelまたは\n・テンプレートExcel（「物量」シート）をアップしてください。');
+        // 未知フォーマット → シート構造をコンソールへダンプして前年データ取込を試みる
+        console.log('=== XLSX DUMP: ' + file.name + ' ===');
+        console.log('Sheets:', sheetNames.join(', '));
+        sheetNames.forEach(sn => {
+          const ws = wb.Sheets[sn];
+          const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+          console.log('--- Sheet: [' + sn + '] rows=' + rows.length);
+          rows.slice(0, 30).forEach((r, i) => console.log('  r' + i + ': ' + JSON.stringify(r)));
+        });
+        alert('シート「物量」が見つかりません。\n→ コンソールにシート構造を出力しました。\n（テンプレートExcelまたは請求書Excelをご利用ください）');
         input.value = ''; return;
       }
 
