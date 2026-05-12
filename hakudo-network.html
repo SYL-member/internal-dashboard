@@ -408,6 +408,21 @@ tbody tr:last-child td { border-bottom: none; }
   margin-top: 2px;
   border: 1px solid var(--line);
 }
+.driver-tel {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-muted);
+  background: transparent;
+  margin-left: 2px;
+  letter-spacing: .02em;
+}
+.driver-note {
+  font-size: 10px;
+  color: var(--ink-muted);
+  font-style: italic;
+  margin-top: 2px;
+}
 .tag {
   display: inline-block;
   font-size: 10px;
@@ -1400,10 +1415,11 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">スタンダード運輸（4台）</div>
             <div class="driver">
-              <span class="driver-tag">高田淳一</span>横浜
-              <span class="driver-tag">藤田一男</span>横須賀
+              <span class="driver-tag">高田 淳一</span><span class="driver-tel">080-5531-4952</span> 北部<br>
+              <span class="driver-tag">藤田 一男</span><span class="driver-tel">090-1304-9875</span> 南部
+              <span class="driver-tag">谷越 正弥</span><span class="driver-tel">090-5437-6745</span>
             </div>
-            <div class="vendor-sub" style="margin-top:4px">+ イマディア / SBS神奈川</div>
+            <div class="vendor-sub" style="margin-top:4px">+ イマディア（南部）/ SBS神奈川</div>
           </td>
           <td class="num">¥39,900<br><span style="font-size:10px;color:var(--ink-muted)">横浜3t</span><br>¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">横須賀2t</span></td>
           <td class="num">36,330 kg</td>
@@ -1420,9 +1436,10 @@ tbody tr:last-child td { border-bottom: none; }
             <div class="bin-area-tbl">EXP35-02：日軽秦野（軽車両）／伊勢原・厚木・小田原</div>
           </td>
           <td>
-            <div class="vendor">スタンダード + 日軽秦野</div>
+            <div class="vendor">スタンダード + 日経秦野</div>
             <div class="driver">
-              <span class="driver-tag">金親隆之</span>35便
+              <span class="driver-tag">金親 隆之</span><span class="driver-tel">090-4811-4838</span> 北部<br>
+              <span class="driver-tag">石渡 政幸</span><span class="driver-tel">090-2470-3315</span> 南部（日経秦野）
             </div>
           </td>
           <td class="num">¥39,900<br><span style="font-size:10px;color:var(--ink-muted)">相模原3t</span><br>¥20,000<br><span style="font-size:10px;color:var(--ink-muted)">小田原軽</span></td>
@@ -1442,7 +1459,7 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">スタンダード運輸</div>
             <div class="driver">
-              <span class="driver-tag">梶山宏</span>45便
+              <span class="driver-tag">梶山 宏</span><span class="driver-tel">090-1778-5457</span>
             </div>
             <div class="vendor-sub" style="margin-top:4px">+ SBS即配 神奈川支店</div>
           </td>
@@ -1502,8 +1519,10 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">カーレントサービス</div>
             <div class="driver">
-              <span class="driver-tag">鈴木幸太</span>801便
+              <span class="driver-tag">秋山 智洋</span><span class="driver-tel">070-1735-5414</span><br>
+              <span class="driver-tag">韮澤 孝典</span><span class="driver-tel">080-3164-7963</span>
             </div>
+            <div class="driver-note">通常は秋山が対応</div>
             <div class="vendor-sub">伊勢原市粟窪1002-1</div>
           </td>
           <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
@@ -1523,7 +1542,7 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">カーレントサービス</div>
             <div class="driver">
-              <span class="driver-tag">鈴木こうじ</span>SBS（江東）+15件
+              <span class="driver-tag">鈴木 孝二</span><span class="driver-tel">070-3701-4349</span> SBS（江東）+15件
             </div>
             <div class="vendor-sub" style="margin-top:4px">2023年8月にディーノから移管</div>
           </td>
@@ -1544,8 +1563,7 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">ディーノプロジェクト</div>
             <div class="driver">
-              <span class="driver-tag">谷内</span>SBS城北+15件
-              <span class="driver-tag">斎藤</span>21件
+              <span class="driver-tag">谷内 芳之</span><span class="driver-tel">090-3007-2038</span> SBS城北+15件
             </div>
             <div class="vendor-sub" style="margin-top:4px">厚木市戸田2242-11</div>
           </td>
@@ -1566,8 +1584,10 @@ tbody tr:last-child td { border-bottom: none; }
           <td>
             <div class="vendor">スタンダード運輸</div>
             <div class="driver">
-              <span class="driver-tag">谷山恵</span>23便
+              <span class="driver-tag">工藤 大</span><span class="driver-tel">080-4168-5642</span><br>
+              <span class="driver-tag">斎藤 増二</span><span class="driver-tel">090-8490-0616</span>
             </div>
+            <div class="driver-note">工藤が別便対応時は斎藤が代行</div>
             <div class="vendor-sub" style="margin-top:4px">SBS23便は当日配達難しい</div>
           </td>
           <td class="num">¥36,900<br><span style="font-size:10px;color:var(--ink-muted)">2t平</span></td>
@@ -1715,7 +1735,10 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td>
             <div class="vendor">カーレントサービス</div>
-            <div class="vendor-sub">宮本様 090-6447-0531</div>
+            <div class="driver">
+              <span class="driver-tag">村松 憲太</span><span class="driver-tel">080-7012-0671</span>
+            </div>
+            <div class="vendor-sub">管理：宮本様 090-6447-0531</div>
           </td>
           <td>4t 火〜金</td>
           <td class="num">¥48,500<br><span style="font-size:10px;color:var(--ink-muted)">+高速¥8,540</span></td>
