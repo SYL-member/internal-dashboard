@@ -105,6 +105,9 @@ h1 {
   letter-spacing: 0.05em;
 }
 
+.cost-col { color: var(--neg); }
+.gross-col { color: var(--pos); font-weight: 600; }
+
 /* KPI */
 .kpi-row {
   display: grid;
@@ -430,6 +433,9 @@ tbody tr:last-child td { border-bottom: none; }
     <span>各エリア最新見積書反映</span>
   </div>
   <div class="tax-notice">ALL PRICES · 税抜表示</div>
+  <div style="margin-top:10px;font-size:11px;color:var(--ink-muted);font-family:'JetBrains Mono',monospace;line-height:1.8;">
+    →白銅請求 = SY-Link → 白銅株式会社への請求額（税抜）　←仕入 = 各運送会社 → SY-Link への請求額（推定）
+  </div>
 </header>
 
 <!-- KPI -->
@@ -506,7 +512,9 @@ tbody tr:last-child td { border-bottom: none; }
           <th>ドライバー / TEL</th>
           <th class="num">単価</th>
           <th class="num">月間重量</th>
-          <th class="num">月間請求額</th>
+          <th class="num">→白銅請求</th>
+          <th class="num">←仕入</th>
+          <th class="num">粗利</th>
         </tr>
       </thead>
       <tbody>
@@ -534,7 +542,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥61/kg</span>
           </td>
           <td class="num">36,330 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥2,210,891</td>
+          <td class="num" style="font-weight:700;">¥2,210,891</td>
+          <td class="num cost-col">¥1,577,492</td>
+          <td class="num gross-col">¥633,399</td>
         </tr>
         <tr>
           <td><span class="bin-code">035便</span></td>
@@ -556,7 +566,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥61/kg</span>
           </td>
           <td class="num">35,774 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥2,177,067</td>
+          <td class="num" style="font-weight:700;">¥2,177,067</td>
+          <td class="num cost-col">¥1,553,369</td>
+          <td class="num gross-col">¥623,698</td>
         </tr>
         <tr>
           <td><span class="bin-code">045便</span></td>
@@ -575,7 +587,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥61/kg</span>
           </td>
           <td class="num">26,710 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥1,625,470</td>
+          <td class="num" style="font-weight:700;">¥1,625,470</td>
+          <td class="num cost-col">¥1,160,015</td>
+          <td class="num gross-col">¥465,455</td>
         </tr>
         <tr>
           <td><span class="bin-code">023便</span></td>
@@ -597,7 +611,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥48/kg</span>
           </td>
           <td class="num">17,292 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥828,645</td>
+          <td class="num" style="font-weight:700;">¥828,645</td>
+          <td class="num cost-col">¥638,003</td>
+          <td class="num gross-col">¥190,642</td>
         </tr>
       </tbody>
     </table>
@@ -605,7 +621,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="company-total-row">
     <span class="company-total-row-label">スタンダード運輸 月間合計</span>
-    <span class="company-total-row-val">¥6,842,073</span>
+    <span class="company-total-row-val">→白銅請求（月間）: ¥6,842,073　←仕入（月間）: ¥4,928,879　粗利: ¥1,913,194（28.0%）</span>
   </div>
 
   <div class="notes">
@@ -616,6 +632,7 @@ tbody tr:last-child td { border-bottom: none; }
       <li>002便北部（横浜）は3t平4台体制。南部（横須賀方面）は2t</li>
       <li>035便小田原方面は日軽秦野（石渡政幸）がサブ対応。¥20,000/日</li>
       <li>アプリ用スマホ（別番号）：002便 080-4366-5078 / 035便 080-4366-4964 / 045便 080-4366-4882 / 042便 080-4366-5064</li>
+      <li>仕入額は3pl-pnl.htmlのルート別実績コスト比率（2026.4）から按分した推定値。便別の個別仕入契約額とは差異が生じる場合があります。</li>
     </ul>
   </div>
 </div>
@@ -656,7 +673,9 @@ tbody tr:last-child td { border-bottom: none; }
           <th>ドライバー / TEL</th>
           <th class="num">単価</th>
           <th class="num">月間重量/稼働</th>
-          <th class="num">月間請求額</th>
+          <th class="num">→白銅請求</th>
+          <th class="num">←仕入</th>
+          <th class="num">粗利</th>
         </tr>
       </thead>
       <tbody>
@@ -680,7 +699,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥61/kg</span>
           </td>
           <td class="num">36,735 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥2,235,570</td>
+          <td class="num" style="font-weight:700;">¥2,235,570</td>
+          <td class="num cost-col">¥1,721,220</td>
+          <td class="num gross-col">¥514,350</td>
         </tr>
         <tr>
           <td><span class="bin-code">041便</span></td>
@@ -700,7 +721,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">¥61/kg</span>
           </td>
           <td class="num">13,770 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥838,027</td>
+          <td class="num" style="font-weight:700;">¥838,027</td>
+          <td class="num cost-col">¥645,082</td>
+          <td class="num gross-col">¥192,945</td>
         </tr>
         <tr>
           <td><span class="bin-code">806便</span></td>
@@ -723,7 +746,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:10px;color:var(--ink-muted);">仕入¥45,000/日+高速¥12,710</span>
           </td>
           <td class="num">月21回稼働</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥976,500</td>
+          <td class="num" style="font-weight:700;">¥976,500</td>
+          <td class="num cost-col">¥918,789</td>
+          <td class="num gross-col">¥57,711</td>
         </tr>
       </tbody>
     </table>
@@ -731,7 +756,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="company-total-row">
     <span class="company-total-row-label">カーレントサービス 月間合計</span>
-    <span class="company-total-row-val">¥4,050,097</span>
+    <span class="company-total-row-val">→白銅請求（月間）: ¥4,050,097　←仕入（月間）: ¥3,285,091　粗利: ¥765,006（18.9%）</span>
   </div>
 
   <div class="notes">
@@ -741,6 +766,7 @@ tbody tr:last-child td { border-bottom: none; }
       <li>041便はもともとディーノプロジェクト担当だったが2023年8月にカーレントへ移管</li>
       <li>806便は静岡浜松エリア専用。火〜金運行（月21回）。高速代は別途請求・仕入双方に発生</li>
       <li>仕入と請求の高速代に差異あり（仕入¥12,710 vs 請求¥8,540）。月次精算時に確認要</li>
+      <li>801便・041便の仕入額は3pl-pnl.htmlのルート別実績コスト比率（2026.4）から按分した推定値。便別の個別仕入契約額とは差異が生じる場合があります。</li>
     </ul>
   </div>
 </div>
@@ -781,7 +807,9 @@ tbody tr:last-child td { border-bottom: none; }
           <th>ドライバー / TEL</th>
           <th class="num">単価</th>
           <th class="num">月間重量</th>
-          <th class="num">月間請求額</th>
+          <th class="num">→白銅請求</th>
+          <th class="num">←仕入</th>
+          <th class="num">粗利</th>
         </tr>
       </thead>
       <tbody>
@@ -803,7 +831,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">+¥44/kg 加算型</span>
           </td>
           <td class="num">19,114 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥1,163,234</td>
+          <td class="num" style="font-weight:700;">¥1,163,234</td>
+          <td class="num cost-col">¥895,579</td>
+          <td class="num gross-col">¥267,655</td>
         </tr>
       </tbody>
     </table>
@@ -811,7 +841,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="company-total-row">
     <span class="company-total-row-label">ディーノプロジェクト 月間合計</span>
-    <span class="company-total-row-val">¥1,163,234</span>
+    <span class="company-total-row-val">→白銅請求（月間）: ¥1,163,234　←仕入（月間）: ¥895,579　粗利: ¥267,655（23.0%）</span>
   </div>
 
   <div class="notes">
@@ -822,6 +852,7 @@ tbody tr:last-child td { border-bottom: none; }
       <li>新砂・新木場エリアはアバンティが配達担当（ディーノではなくSBSサブ）</li>
       <li>041便は2023年8月にカーレントへ移管済。現在ディーノ担当は042便のみ</li>
       <li>アプリ用スマホ（042便用）：080-4366-5064（スタンダード運輸名義）</li>
+      <li>仕入額は3pl-pnl.htmlのルート別実績コスト比率（2026.4）から按分した推定値。便別の個別仕入契約額とは差異が生じる場合があります。</li>
     </ul>
   </div>
 </div>
@@ -852,7 +883,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div style="margin-left:auto;">
       <div class="company-total-label">社内合計（月間）</div>
-      <div class="company-total">¥2,837,154</div>
+      <div class="company-total">¥3,389,953</div>
     </div>
   </div>
 
@@ -865,7 +896,9 @@ tbody tr:last-child td { border-bottom: none; }
           <th>TEL / 担当</th>
           <th class="num">単価・条件</th>
           <th class="num">月間重量</th>
-          <th class="num">月間請求額（4月）</th>
+          <th class="num">→白銅請求</th>
+          <th class="num">←仕入</th>
+          <th class="num">粗利</th>
         </tr>
       </thead>
       <tbody>
@@ -885,6 +918,8 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td class="num">—</td>
           <td class="num" style="font-weight:700;color:#1241C5;">¥496,301</td>
+          <td class="num cost-col">¥358,793</td>
+          <td class="num gross-col">¥137,508</td>
         </tr>
         <tr>
           <td><span class="bin-code" style="color:#1241C5;">埼玉幹線</span></td>
@@ -896,7 +931,9 @@ tbody tr:last-child td { border-bottom: none; }
           </td>
           <td class="num">—</td>
           <td class="num">—</td>
-          <td class="num" style="font-weight:700;color:#1241C5;">¥1,166,000</td>
+          <td class="num" style="font-weight:700;color:#1241C5;">¥2,215,500</td>
+          <td class="num cost-col">¥1,848,000</td>
+          <td class="num gross-col">¥367,500</td>
         </tr>
         <tr>
           <td><span class="bin-code">450便</span></td>
@@ -906,7 +943,9 @@ tbody tr:last-child td { border-bottom: none; }
           <td><span class="driver-tel">0476-85-7188</span></td>
           <td class="num">¥24/kg</td>
           <td class="num">853.7 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥20,662</td>
+          <td class="num" style="font-weight:700;">¥20,662</td>
+          <td class="num cost-col">¥14,932</td>
+          <td class="num gross-col">¥5,730</td>
         </tr>
         <tr>
           <td><span class="bin-code">451便</span></td>
@@ -916,7 +955,9 @@ tbody tr:last-child td { border-bottom: none; }
           <td><span class="driver-tel">043-216-6800</span></td>
           <td class="num">¥24/kg</td>
           <td class="num">7,871 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥185,072</td>
+          <td class="num" style="font-weight:700;">¥185,072</td>
+          <td class="num cost-col">¥133,770</td>
+          <td class="num gross-col">¥51,302</td>
         </tr>
         <tr>
           <td><span class="bin-code">452便</span></td>
@@ -931,7 +972,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span style="font-size:11px;color:var(--ink-muted);">+MF¥3,700/日</span>
           </td>
           <td class="num">12,042 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥260,132</td>
+          <td class="num" style="font-weight:700;">¥260,132</td>
+          <td class="num cost-col">¥187,981</td>
+          <td class="num gross-col">¥72,151</td>
         </tr>
         <tr>
           <td><span class="bin-code">453便</span></td>
@@ -941,7 +984,9 @@ tbody tr:last-child td { border-bottom: none; }
           <td>—</td>
           <td class="num">¥22/kg</td>
           <td class="num">1,541 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥33,924</td>
+          <td class="num" style="font-weight:700;">¥33,924</td>
+          <td class="num cost-col">¥24,519</td>
+          <td class="num gross-col">¥9,405</td>
         </tr>
         <tr>
           <td><span class="bin-code">454便</span></td>
@@ -951,7 +996,9 @@ tbody tr:last-child td { border-bottom: none; }
           <td>—</td>
           <td class="num">¥29/kg</td>
           <td class="num">1,584 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥45,378</td>
+          <td class="num" style="font-weight:700;">¥45,378</td>
+          <td class="num cost-col">¥32,790</td>
+          <td class="num gross-col">¥12,588</td>
         </tr>
         <tr>
           <td><span class="bin-code">455便</span></td>
@@ -961,7 +1008,9 @@ tbody tr:last-child td { border-bottom: none; }
           <td>—</td>
           <td class="num">¥21/kg</td>
           <td class="num">6,222 kg</td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥133,384</td>
+          <td class="num" style="font-weight:700;">¥133,384</td>
+          <td class="num cost-col">¥96,387</td>
+          <td class="num gross-col">¥36,997</td>
         </tr>
       </tbody>
     </table>
@@ -969,7 +1018,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="company-total-row">
     <span class="company-total-row-label">千葉通商 月間合計（幹線+小口）</span>
-    <span class="company-total-row-val">¥2,837,154</span>
+    <span class="company-total-row-val">→白銅請求（月間）: ¥3,389,953　←仕入（月間）: ¥2,697,172　粗利: ¥692,781（20.4%）</span>
   </div>
 
   <div class="notes">
@@ -981,6 +1030,7 @@ tbody tr:last-child td { border-bottom: none; }
       <li>454便（君津・木更津）はkg単価¥29と千葉エリアで最高単価（遠方対応のため）</li>
       <li>千葉小口5便合計：¥1,174,853（4月実績）</li>
       <li>コクヨ/KSL案件で千葉通商は鍵となる取引先。関係維持を優先</li>
+      <li>仕入額は3pl-pnl.htmlのルート別実績コスト比率（2026.4）から按分した推定値。便別の個別仕入契約額とは差異が生じる場合があります。</li>
     </ul>
   </div>
 </div>
@@ -1007,7 +1057,7 @@ tbody tr:last-child td { border-bottom: none; }
     </div>
     <div style="margin-left:auto;">
       <div class="company-total-label">社内合計（月間）</div>
-      <div class="company-total">¥968,000</div>
+      <div class="company-total">¥1,093,600</div>
     </div>
   </div>
 
@@ -1019,7 +1069,9 @@ tbody tr:last-child td { border-bottom: none; }
           <th>担当エリア・内容</th>
           <th>運行条件</th>
           <th class="num">高速代</th>
-          <th class="num">月間請求額（4月）</th>
+          <th class="num">→白銅請求</th>
+          <th class="num">←仕入</th>
+          <th class="num">粗利</th>
         </tr>
       </thead>
       <tbody>
@@ -1034,7 +1086,9 @@ tbody tr:last-child td { border-bottom: none; }
             <span class="tag">翌早朝着</span>
           </td>
           <td class="num">¥6,560<span style="font-size:10px;color:var(--ink-muted);">/回 別途</span></td>
-          <td class="num" style="font-weight:700;color:var(--green-darker);">¥968,000<br><span style="font-size:10px;color:var(--ink-muted);">（高速別途¥6,560）</span></td>
+          <td class="num" style="font-weight:700;">¥1,093,600<br><span style="font-size:10px;color:var(--ink-muted);">（高速込み）</span></td>
+          <td class="num cost-col">¥1,027,600<br><span style="font-size:10px;">(¥968,000+高速¥6,560×10回等)</span></td>
+          <td class="num gross-col">¥66,000</td>
         </tr>
       </tbody>
     </table>
@@ -1042,7 +1096,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   <div class="company-total-row">
     <span class="company-total-row-label">（株）ジャス 月間合計</span>
-    <span class="company-total-row-val">¥968,000</span>
+    <span class="company-total-row-val">→白銅請求（月間）: ¥1,093,600　←仕入（月間）: ¥1,027,600　粗利: ¥66,000（6.0%）</span>
   </div>
 
   <div class="notes">
