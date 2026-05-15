@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaaS損益ダッシュボード — SY-Link</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root {
+  --green: #8fc31f;
+  --green-deep: #6fa015;
+  --green-darker: #4d7a0a;
+  --green-50: #f4faea;
+  --green-100: #e7f3d2;
+  --green-200: #d0e7a8;
+  --bg: #fafaf7;
+  --bg-card: #ffffff;
+  --bg-soft: #f4f3ee;
+  --ink: #1a1a17;
+  --ink-soft: #4a4a45;
+  --ink-muted: #8a8a82;
+  --line: #e8e6df;
+  --line-strong: #d4d2ca;
+  --pos: #4d7a0a;
+  --neg: #a84545;
+  --accent: #1241C5;
+  --accent-light: #4060D4;
+  --positive: #059669;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Noto Sans JP', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  font-feature-settings: "palt";
+  -webkit-font-smoothing: antialiased;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 40px;
+}
+
+/* TOPNAV */
+.topnav {
+  background: #0f172a;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.topnav a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 11px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  white-space: nowrap;
+  transition: color .15s;
+}
+.topnav a:hover { color: #e2e8f0; }
+.topnav a.active { color: #fff; border-bottom-color: var(--accent); }
+.topnav-sep { color: #1e293b; margin: 0 4px; font-size: 14px; }
+
+/* HEADER */
+.header {
+  border-bottom: 3px solid var(--ink);
+  padding-bottom: 24px;
+  margin-bottom: 40px;
+  position: relative;
+}
+.header::after {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  width: 120px;
+  height: 3px;
+  background: var(--accent);
+}
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+h1 {
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 12px;
+}
+.subtitle {
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+}
+.subtitle span { display: flex; align-items: center; gap: 8px; }
+.subtitle span::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.tax-notice {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  background: var(--ink);
+  color: white;
+  padding: 4px 10px;
+  margin-top: 12px;
+  letter-spacing: 0.05em;
+}
+
+/* PRODUCT TABS */
+.tab-bar {
+  display: flex;
+  gap: 0;
+  margin-bottom: 40px;
+  border-bottom: 2px solid var(--line);
+}
+.tab-btn {
+  padding: 12px 28px;
+  font-family: 'Noto Sans JP', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  letter-spacing: 0.02em;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active[data-product="trackerr"] {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.tab-btn.active[data-product="hairoku"] {
+  color: var(--positive);
+  border-bottom-color: var(--positive);
+}
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* KPI */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.kpi {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--accent);
+  padding: 20px 24px;
+}
+.kpi.kpi-green { border-left-color: var(--positive); }
+.kpi.kpi-dark { border-left-color: var(--ink); }
+.kpi-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.kpi-value {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+}
+.kpi-unit { font-size: 14px; font-weight: 500; color: var(--ink-muted); margin-left: 4px; }
+.kpi-sub { font-size: 11px; color: var(--ink-muted); margin-top: 6px; }
+
+/* SECTION */
+.section { margin-bottom: 56px; }
+.section-header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--ink);
+}
+.section-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.section-num.green { color: var(--positive); }
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.section-meta {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+
+/* TABLE */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  overflow-x: auto;
+  margin-bottom: 16px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead { background: var(--ink); color: white; }
+thead th {
+  padding: 12px 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+thead th.num { text-align: right; }
+tbody td {
+  padding: 14px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: middle;
+}
+tbody td.num {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+  font-weight: 500;
+}
+tbody tr:hover { background: var(--bg-soft); }
+tbody tr:last-child td { border-bottom: none; }
+
+/* STATUS BADGES */
+.badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 3px;
+  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', monospace;
+}
+.badge-active {
+  background: rgba(5,150,105,0.12);
+  color: #059669;
+  border: 1px solid rgba(5,150,105,0.3);
+}
+.badge-trial {
+  background: rgba(217,119,6,0.12);
+  color: #d97706;
+  border: 1px solid rgba(217,119,6,0.3);
+}
+.badge-churn {
+  background: rgba(168,69,69,0.12);
+  color: #a84545;
+  border: 1px solid rgba(168,69,69,0.3);
+}
+
+/* EMPTY STATE */
+.empty-state {
+  background: var(--bg-card);
+  border: 1px dashed var(--line-strong);
+  padding: 48px 32px;
+  text-align: center;
+  margin-bottom: 16px;
+}
+.empty-state-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  opacity: 0.4;
+}
+.empty-state-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-muted);
+  margin-bottom: 6px;
+}
+.empty-state-sub {
+  font-size: 12px;
+  color: var(--ink-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* CHART CARD */
+.chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  padding: 22px 24px;
+  margin-bottom: 16px;
+}
+.chart-card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.chart-card-sub {
+  font-size: 11px;
+  color: var(--ink-muted);
+  margin-bottom: 18px;
+}
+
+/* NOTES */
+.notes {
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ink);
+  padding: 18px 22px;
+  margin-top: 16px;
+}
+.notes-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.notes ul { list-style: none; padding: 0; }
+.notes li {
+  font-size: 12px;
+  padding: 5px 0 5px 18px;
+  position: relative;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+.notes li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+.notes.green .notes-title { color: var(--positive); }
+.notes.green li::before { color: var(--positive); }
+
+/* FOOTER */
+.footer {
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-muted);
+}
+.footer-source { display: flex; gap: 16px; }
+
+@media (max-width: 1000px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .container { padding: 24px 20px; }
+}
+@media (max-width: 600px) {
+  .kpi-row { grid-template-columns: 1fr; }
+  h1 { font-size: 26px; }
+  .topnav { padding: 0 16px; overflow-x: auto; }
+}
+@media print {
+  body { background: white; }
+  .section { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    ポータル
+  </a>
+  <span class="topnav-sep">|</span>
+  <a href="hakudo.html">白銅 定例</a>
+  <a href="gross-profit.html">粗利分析</a>
+  <a href="3pl-pnl.html">3PL損益</a>
+  <a href="pnl.html">収支実績</a>
+  <a href="saas-pnl.html" class="active">SaaS</a>
+  <a href="dev-projects.html">開発</a>
+</nav>
+
+<div class="container">
+
+<header class="header">
+  <div class="eyebrow">SY-LINK · DX Division · SaaS P&amp;L</div>
+  <h1>SaaS損益ダッシュボード</h1>
+  <div class="subtitle">
+    <span>trackerr（物流追跡SaaS）</span>
+    <span>配録 / Hairoku（配送記録SaaS）</span>
+    <span>2026年5月時点</span>
+  </div>
+  <div class="tax-notice">ALL PRICES · 税抜表示</div>
+</header>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-btn active" data-product="trackerr" data-tab="trackerr" onclick="switchTab('trackerr')">trackerr</button>
+  <button class="tab-btn" data-product="hairoku" data-tab="hairoku" onclick="switchTab('hairoku')">配録（Hairoku）</button>
+</div>
+
+
+<!-- =============================================
+     TAB: trackerr
+============================================= -->
+<div id="tab-trackerr" class="tab-pane active">
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi">
+      <div class="kpi-label">契約社数</div>
+      <div class="kpi-value">1<span class="kpi-unit">社</span></div>
+      <div class="kpi-sub">ローソンエンタテインメント</div>
+    </div>
+    <div class="kpi kpi-dark">
+      <div class="kpi-label">MRR（月次経常収益）</div>
+      <div class="kpi-value">¥<span class="kpi-unit">—</span></div>
+      <div class="kpi-sub">データ入力待ち</div>
+    </div>
+    <div class="kpi kpi-dark">
+      <div class="kpi-label">ARR（年次経常収益）</div>
+      <div class="kpi-value">¥<span class="kpi-unit">—</span></div>
+      <div class="kpi-sub">データ入力待ち</div>
+    </div>
+    <div class="kpi kpi-dark">
+      <div class="kpi-label">平均粗利率</div>
+      <div class="kpi-value">—<span class="kpi-unit">%</span></div>
+      <div class="kpi-sub">データ入力待ち</div>
+    </div>
+  </div>
+
+  <!-- 顧客テーブル -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title">顧客一覧</span>
+      <span class="section-meta">trackerr 契約顧客</span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>顧客名</th>
+            <th>プラン</th>
+            <th class="num">月額（税抜）</th>
+            <th>契約開始日</th>
+            <th>ステータス</th>
+            <th>備考</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="font-weight:700;">ローソンエンタテインメント</td>
+            <td><span style="color:var(--ink-muted);font-family:'JetBrains Mono',monospace;font-size:12px;">—</span></td>
+            <td class="num"><span style="color:var(--ink-muted);">¥—</span></td>
+            <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--ink-muted);">—</td>
+            <td><span class="badge badge-active">稼働中</span></td>
+            <td style="font-size:12px;color:var(--ink-soft);">trackerr 導入済</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 月次MRR推移グラフ -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title">月次MRR推移</span>
+      <span class="section-meta">Chart.js 折れ線グラフ</span>
+    </div>
+
+    <div class="empty-state">
+      <div class="empty-state-icon">📊</div>
+      <div class="empty-state-title">データ入力待ち</div>
+      <div class="empty-state-sub">MRRデータが入力されると推移グラフが表示されます</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes">
+    <div class="notes-title">Notes / trackerr について</div>
+    <ul>
+      <li>trackerr（旧イツクル）は物流追跡SaaS。ローソンエンタテインメント導入済。</li>
+      <li>MRR・ARRは契約金額確定次第入力してください。</li>
+    </ul>
+  </div>
+
+</div><!-- /#tab-trackerr -->
+
+
+<!-- =============================================
+     TAB: 配録（Hairoku）
+============================================= -->
+<div id="tab-hairoku" class="tab-pane">
+
+  <!-- KPI -->
+  <div class="kpi-row">
+    <div class="kpi kpi-green">
+      <div class="kpi-label">契約社数</div>
+      <div class="kpi-value">0<span class="kpi-unit">社</span></div>
+      <div class="kpi-sub">顧客なし</div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-label">MRR（月次経常収益）</div>
+      <div class="kpi-value">¥<span class="kpi-unit">0</span></div>
+      <div class="kpi-sub">契約なし</div>
+    </div>
+    <div class="kpi kpi-green">
+      <div class="kpi-label">ARR（年次経常収益）</div>
+      <div class="kpi-value">¥<span class="kpi-unit">0</span></div>
+      <div class="kpi-sub">契約なし</div>
+    </div>
+    <div class="kpi kpi-dark">
+      <div class="kpi-label">平均粗利率</div>
+      <div class="kpi-value">—<span class="kpi-unit">%</span></div>
+      <div class="kpi-sub">データなし</div>
+    </div>
+  </div>
+
+  <!-- 顧客テーブル（空状態） -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-num green">01</span>
+      <span class="section-title">顧客一覧</span>
+      <span class="section-meta">配録（Hairoku）契約顧客</span>
+    </div>
+
+    <div class="empty-state">
+      <div class="empty-state-icon">🗂</div>
+      <div class="empty-state-title">まだ顧客データがありません</div>
+      <div class="empty-state-sub">配録の顧客が追加されるとここに表示されます</div>
+    </div>
+  </div>
+
+  <!-- Notes -->
+  <div class="notes green">
+    <div class="notes-title">Notes / 配録（Hairoku）について</div>
+    <ul>
+      <li>配録（旧イツクルPOS）は配送記録SaaS。</li>
+      <li>顧客獲得後、顧客テーブルに追加してください。</li>
+    </ul>
+  </div>
+
+</div><!-- /#tab-hairoku -->
+
+
+<footer class="footer">
+  <div>SY-LINK · SaaS損益ダッシュボード · 2026-05</div>
+  <div class="footer-source">
+    <span>saas-pnl.html</span>
+    <span>ALL PRICES 税抜</span>
+  </div>
+</footer>
+
+</div><!-- /.container -->
+
+<script>
+function switchTab(product) {
+  // タブボタン切り替え
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === product);
+  });
+  // タブペイン切り替え
+  document.querySelectorAll('.tab-pane').forEach(pane => {
+    pane.classList.toggle('active', pane.id === 'tab-' + product);
+  });
+}
+</script>
+
+</body>
+</html>
